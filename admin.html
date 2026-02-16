@@ -1,0 +1,554 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard | ARTÉVA Maison</title>
+
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:wght@400;500;600;700&family=Noto+Sans+Arabic:wght@300;400;500;600;700&display=swap"
+        rel="stylesheet">
+
+    <!-- Stylesheets -->
+    <link rel="stylesheet" href="assets/css/admin.css">
+    <link rel="icon" type="image/png" href="assets/images/favicon.png">
+</head>
+
+<body class="admin-body">
+
+    <!-- Mobile Toggle -->
+    <button class="mobile-toggle" id="mobileToggle" aria-label="Toggle Sidebar">☰</button>
+
+    <!-- Sidebar Overlay (Mobile) -->
+    <div class="sidebar-overlay" id="sidebarOverlay"></div>
+
+    <!-- Sidebar -->
+    <aside class="admin-sidebar" id="adminSidebar">
+        <div class="sidebar-header">
+            <div>
+                <div class="sidebar-logo">ARTÉVA</div>
+                <span class="sidebar-logo-sub">Maison Admin</span>
+            </div>
+        </div>
+        <ul class="sidebar-nav">
+            <li><a href="#dashboard" class="sidebar-link active" data-i18n="admin_dashboard"><span
+                        class="icon">📊</span> <span class="nav-text">Dashboard</span></a></li>
+            <li><a href="#products" class="sidebar-link" data-i18n="admin_products"><span class="icon">📦</span> <span
+                        class="nav-text">Products</span></a></li>
+            <li><a href="#orders" class="sidebar-link" data-i18n="admin_orders"><span class="icon">🛍️</span> <span
+                        class="nav-text">Orders</span> <span class="badge hidden" id="newOrderBadge">0</span></a></li>
+            <li><a href="#users" class="sidebar-link" data-i18n="admin_users"><span class="icon">👥</span> <span
+                        class="nav-text">Users</span></a></li>
+            <li><a href="#drivers" class="sidebar-link" data-i18n="admin_drivers"><span class="icon">🚗</span> <span
+                        class="nav-text">Drivers</span></a></li>
+            <li><a href="#settings" class="sidebar-link" data-i18n="admin_marketing"><span class="icon">📧</span> <span
+                        class="nav-text">Marketing</span></a></li>
+            <li><a href="#" id="logoutBtn" class="sidebar-link" data-i18n="admin_logout"><span class="icon">🚪</span>
+                    <span class="nav-text">Logout</span></a></li>
+        </ul>
+        <div class="sidebar-footer">
+            <div class="lang-switcher">
+                <button id="lang-en" class="lang-btn" data-lang="en">EN</button>
+                <button id="lang-ar" class="lang-btn" data-lang="ar">AR</button>
+            </div>
+        </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="admin-main">
+
+        <!-- ========== DASHBOARD ========== -->
+        <div id="dashboard" class="admin-section">
+            <div class="admin-page-header">
+                <h1 class="admin-page-title" data-i18n="admin_dashboard">Dashboard</h1>
+            </div>
+
+            <div class="admin-stats">
+                <div class="admin-stat-card">
+                    <div class="stat-icon-wrap">👥</div>
+                    <div class="stat-content">
+                        <h3 id="statMembers">0</h3>
+                        <p data-i18n="admin_total_users">Total Users</p>
+                    </div>
+                </div>
+                <div class="admin-stat-card">
+                    <div class="stat-icon-wrap">📦</div>
+                    <div class="stat-content">
+                        <h3 id="statProducts">0</h3>
+                        <p data-i18n="admin_products_count">Products</p>
+                    </div>
+                </div>
+                <div class="admin-stat-card">
+                    <div class="stat-icon-wrap">🛍️</div>
+                    <div class="stat-content">
+                        <h3 id="statOrders">0</h3>
+                        <p data-i18n="admin_orders_count">Orders</p>
+                    </div>
+                </div>
+                <div class="admin-stat-card">
+                    <div class="stat-icon-wrap">💰</div>
+                    <div class="stat-content">
+                        <h3 id="statRevenue">0.000</h3>
+                        <p data-i18n="admin_revenue">Revenue (KWD)</p>
+                    </div>
+                </div>
+            </div>
+
+            <h2 style="font-family: 'Playfair Display', serif; font-size: 20px; margin-bottom: 16px;"
+                data-i18n="admin_recent_orders">Recent Orders</h2>
+            <div class="admin-table-wrap">
+                <div class="admin-table-scroll">
+                    <table class="admin-table">
+                        <thead>
+                            <tr>
+                                <th data-i18n="admin_order_number">Order #</th>
+                                <th data-i18n="admin_customer">Customer</th>
+                                <th data-i18n="admin_date">Date</th>
+                                <th data-i18n="admin_total">Amount</th>
+                                <th data-i18n="admin_status">Status</th>
+                            </tr>
+                        </thead>
+                        <tbody id="recentOrdersTable">
+                            <!-- Populated by JS -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- ========== PRODUCTS ========== -->
+        <div id="products" class="admin-section hidden">
+            <div class="admin-page-header">
+                <h1 class="admin-page-title" data-i18n="admin_products">Products</h1>
+                <button class="admin-btn admin-btn-primary" onclick="openAddProductModal()"
+                    data-i18n="admin_add_product">+ Add Product</button>
+            </div>
+
+            <div class="admin-search-wrap">
+                <span class="admin-search-icon">🔍</span>
+                <input type="text" class="admin-search" id="productSearch" data-i18n-placeholder="admin_search_products"
+                    placeholder="Search products by name...">
+            </div>
+
+            <div class="admin-table-wrap">
+                <div class="admin-table-scroll">
+                    <table class="admin-table">
+                        <thead>
+                            <tr>
+                                <th data-i18n="admin_image">Image</th>
+                                <th data-i18n="admin_name">Name</th>
+                                <th data-i18n="admin_category">Category</th>
+                                <th data-i18n="admin_price">Price (KWD)</th>
+                                <th data-i18n="admin_stock">Stock</th>
+                                <th data-i18n="admin_actions">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="productsTableBody">
+                            <!-- Populated by JS -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- ========== ORDERS ========== -->
+        <div id="orders" class="admin-section hidden">
+            <div class="admin-page-header">
+                <h1 class="admin-page-title" data-i18n="admin_orders">Orders</h1>
+            </div>
+
+            <div class="admin-search-wrap">
+                <span class="admin-search-icon">🔍</span>
+                <input type="text" class="admin-search" id="orderSearch" data-i18n-placeholder="admin_search_orders"
+                    placeholder="Search by order number or customer name...">
+            </div>
+
+            <div class="admin-table-wrap">
+                <div class="admin-table-scroll">
+                    <table class="admin-table">
+                        <thead>
+                            <tr>
+                                <th data-i18n="admin_order_number">Order #</th>
+                                <th data-i18n="admin_customer">Customer</th>
+                                <th data-i18n="admin_total">Total</th>
+                                <th data-i18n="admin_status">Status</th>
+                                <th data-i18n="admin_driver">Driver</th>
+                                <th data-i18n="admin_date">Date</th>
+                                <th data-i18n="admin_actions">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="ordersTableBody">
+                            <!-- Populated by JS -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- ========== USERS ========== -->
+        <div id="users" class="admin-section hidden">
+            <div class="admin-page-header">
+                <h1 class="admin-page-title" data-i18n="admin_users">Users</h1>
+            </div>
+
+            <div class="admin-search-wrap">
+                <span class="admin-search-icon">🔍</span>
+                <input type="text" class="admin-search" id="userSearch" data-i18n-placeholder="admin_search_users"
+                    placeholder="Search by name or email...">
+            </div>
+
+            <div class="admin-table-wrap">
+                <div class="admin-table-scroll">
+                    <table class="admin-table">
+                        <thead>
+                            <tr>
+                                <th data-i18n="admin_name">Name</th>
+                                <th>Email</th>
+                                <th data-i18n="admin_role">Role</th>
+                                <th data-i18n="admin_joined">Joined</th>
+                                <th data-i18n="admin_actions">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="usersTableBody">
+                            <!-- Populated by JS -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- ========== DRIVERS ========== -->
+        <div id="drivers" class="admin-section hidden">
+            <div class="admin-page-header">
+                <h1 class="admin-page-title" data-i18n="admin_drivers">Drivers</h1>
+            </div>
+
+            <div class="admin-search-wrap">
+                <span class="admin-search-icon">🔍</span>
+                <input type="text" class="admin-search" id="driverSearch" data-i18n-placeholder="admin_search_drivers"
+                    placeholder="Search drivers by name...">
+            </div>
+
+            <div class="admin-table-wrap">
+                <div class="admin-table-scroll">
+                    <table class="admin-table">
+                        <thead>
+                            <tr>
+                                <th data-i18n="admin_name">Name</th>
+                                <th>Email</th>
+                                <th data-i18n="admin_phone">Phone</th>
+                                <th data-i18n="admin_status">Status</th>
+                                <th data-i18n="admin_active_orders">Active Orders</th>
+                                <th data-i18n="admin_joined">Joined</th>
+                            </tr>
+                        </thead>
+                        <tbody id="driversTableBody">
+                            <!-- Populated by JS -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- ========== MARKETING ========== -->
+        <div id="settings" class="admin-section hidden">
+            <div class="admin-page-header">
+                <h1 class="admin-page-title" data-i18n="admin_email_marketing">Email Marketing</h1>
+            </div>
+
+            <div class="admin-table-wrap" style="max-width: 600px;">
+                <div style="padding: 28px;">
+                    <form id="emailMarketingForm">
+                        <div class="admin-form-group">
+                            <label data-i18n="admin_recipient_group">Recipient Group</label>
+                            <select name="recipientType">
+                                <option value="all" data-i18n="admin_all_users">All Users</option>
+                                <option value="subscribers" data-i18n="admin_subscribers_only">Subscribers Only</option>
+                            </select>
+                        </div>
+                        <div class="admin-form-group">
+                            <label data-i18n="admin_email_subject">Email Subject</label>
+                            <input type="text" name="subject" required data-i18n-placeholder="admin_enter_subject"
+                                placeholder="Enter email subject...">
+                        </div>
+                        <div class="admin-form-group">
+                            <label data-i18n="admin_message_content">Message Content</label>
+                            <textarea name="message" rows="6" required data-i18n-placeholder="admin_write_message"
+                                placeholder="Write your campaign message..."></textarea>
+                        </div>
+                        <div class="admin-form-actions" style="border: none; padding-top: 0;">
+                            <button type="submit" class="admin-btn admin-btn-primary" data-i18n="admin_send_campaign">📧
+                                Send Campaign</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- ========== MODALS ========== -->
+
+    <!-- Product Add/Edit Modal -->
+    <div id="productModal" class="admin-modal hidden">
+        <div class="admin-modal-content">
+            <div class="admin-modal-header">
+                <h2 id="modalTitle">Add Product</h2>
+                <button class="admin-btn-icon" onclick="closeProductModal()">✕</button>
+            </div>
+            <div class="admin-modal-body">
+                <form id="productForm" enctype="multipart/form-data">
+                    <input type="hidden" id="productId">
+
+                    <div class="admin-form-row">
+                        <div class="admin-form-group">
+                            <label data-i18n="admin_product_name_en">Product Name (English)</label>
+                            <input type="text" name="name" required>
+                        </div>
+                        <div class="admin-form-group">
+                            <label data-i18n="admin_product_name_ar">Product Name (Arabic)</label>
+                            <input type="text" name="nameAr" dir="rtl">
+                        </div>
+                    </div>
+
+                    <div class="admin-form-row">
+                        <div class="admin-form-group">
+                            <label data-i18n="admin_price">Price (KWD)</label>
+                            <input type="number" name="price" step="0.001" required>
+                        </div>
+                        <div class="admin-form-group">
+                            <label data-i18n="admin_stock">Stock</label>
+                            <input type="number" name="stock" value="10" required>
+                        </div>
+                    </div>
+
+                    <div class="admin-form-row">
+                        <div class="admin-form-group">
+                            <label data-i18n="admin_category">Category</label>
+                            <select name="category" id="categorySelect" required>
+                                <option value="" data-i18n="admin_select_category">Select Category</option>
+                            </select>
+                        </div>
+                        <div class="admin-form-group">
+                            <label data-i18n="admin_sku">SKU</label>
+                            <input type="text" name="sku">
+                        </div>
+                    </div>
+
+                    <div class="admin-form-group">
+                        <label data-i18n="admin_images">Images</label>
+                        <input type="file" name="images" multiple accept="image/*">
+                        <small style="color: var(--admin-text-muted); font-size: 11px; margin-top: 4px; display: block;"
+                            data-i18n="admin_first_image_primary">First image will be the primary image</small>
+                    </div>
+
+                    <div class="admin-form-group">
+                        <label data-i18n="admin_description_en">Description (English)</label>
+                        <textarea name="description" rows="3"></textarea>
+                    </div>
+                    <div class="admin-form-group">
+                        <label data-i18n="admin_description_ar">Description (Arabic)</label>
+                        <textarea name="descriptionAr" rows="3" dir="rtl"></textarea>
+                    </div>
+
+                    <div class="admin-checkbox-group">
+                        <label><input type="checkbox" name="isFeatured"> <span
+                                data-i18n="admin_featured_product">Featured Product</span></label>
+                        <label><input type="checkbox" name="isNewArrival"> <span data-i18n="admin_new_arrival">New
+                                Arrival</span></label>
+                        <label><input type="checkbox" name="isComingSoon"> <span data-i18n="admin_coming_soon">Coming
+                                Soon</span></label>
+                    </div>
+
+                    <div class="admin-form-actions">
+                        <button type="button" class="admin-btn-cancel" onclick="closeProductModal()"
+                            data-i18n="admin_cancel">Cancel</button>
+                        <button type="submit" class="admin-btn admin-btn-primary" data-i18n="admin_save_product">Save
+                            Product</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Product View Modal -->
+    <div id="productViewModal" class="admin-modal hidden">
+        <div class="admin-modal-content" style="max-width: 800px;">
+            <div class="admin-modal-header">
+                <h2 data-i18n="admin_product_details">Product Details</h2>
+                <button class="admin-btn-icon" onclick="closeProductViewModal()">✕</button>
+            </div>
+            <div class="admin-modal-body">
+                <div class="product-view-grid">
+                    <div>
+                        <img id="viewProductImage" src="" alt="Product" class="product-view-img">
+                        <div id="viewProductGallery" class="product-view-gallery"></div>
+                    </div>
+                    <div>
+                        <h3 id="viewProductName"
+                            style="margin: 0 0 4px; font-family: 'Playfair Display', serif; font-size: 22px;"></h3>
+                        <p id="viewProductNameAr"
+                            style="color: var(--admin-text-muted); font-family: 'Noto Sans Arabic'; margin-bottom: 16px;">
+                        </p>
+
+                        <div class="product-detail-grid">
+                            <div class="product-detail-item">
+                                <strong>Price</strong>
+                                <span id="viewProductPrice" class="price-value"></span>
+                            </div>
+                            <div class="product-detail-item">
+                                <strong>Stock</strong>
+                                <span id="viewProductStock"></span>
+                            </div>
+                            <div class="product-detail-item">
+                                <strong>Category</strong>
+                                <span id="viewProductCategory"></span>
+                            </div>
+                            <div class="product-detail-item">
+                                <strong>SKU</strong>
+                                <span id="viewProductSku"></span>
+                            </div>
+                        </div>
+
+                        <div style="margin-bottom: 16px;">
+                            <strong
+                                style="display: block; margin-bottom: 6px; font-size: 12px; text-transform: uppercase; letter-spacing: 0.05em; color: var(--admin-text-muted);">Description</strong>
+                            <p id="viewProductDescription"
+                                style="line-height: 1.6; color: #555; background: #fafaf8; padding: 12px; border-radius: 8px; font-size: 13px;">
+                            </p>
+                        </div>
+                        <div style="margin-bottom: 16px;">
+                            <strong
+                                style="display: block; margin-bottom: 6px; font-size: 12px; text-transform: uppercase; letter-spacing: 0.05em; color: var(--admin-text-muted);">الوصف</strong>
+                            <p id="viewProductDescriptionAr"
+                                style="line-height: 1.6; color: #555; background: #fafaf8; padding: 12px; border-radius: 8px; font-family: 'Noto Sans Arabic'; font-size: 13px;"
+                                dir="rtl"></p>
+                        </div>
+
+                        <div style="display: flex; gap: 8px;">
+                            <span id="viewProductFeatured" class="status-badge"
+                                style="display: none; background: #fef9e7; color: #b7950b;">Featured</span>
+                            <span id="viewProductNew" class="status-badge"
+                                style="display: none; background: #eafaf1; color: #239b56;">New Arrival</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Order Details Modal -->
+    <div id="orderModal" class="admin-modal hidden">
+        <div class="admin-modal-content" style="max-width: 800px;">
+            <div class="admin-modal-header">
+                <h2 data-i18n="admin_order_details">Order <span id="modalOrderNumber"
+                        style="font-weight: 400; color: var(--admin-text-muted);"></span>
+                </h2>
+                <button class="admin-btn-icon" onclick="closeOrderModal()">✕</button>
+            </div>
+            <div class="admin-modal-body">
+                <div class="order-info-grid">
+                    <div class="order-info-card">
+                        <h4 data-i18n="admin_customer">Customer</h4>
+                        <p><strong data-i18n="admin_name">Name:</strong> <span id="modalCustomerName"></span></p>
+                        <p><strong>Email:</strong> <span id="modalCustomerEmail"></span></p>
+                        <p><strong data-i18n="admin_phone">Phone:</strong> <span id="modalCustomerPhone"></span></p>
+                    </div>
+                    <div class="order-info-card">
+                        <h4 data-i18n="admin_shipping">Shipping</h4>
+                        <p id="modalShippingAddress" style="line-height: 1.6;"></p>
+                    </div>
+                    <div class="order-info-card">
+                        <h4>Details</h4>
+                        <p><strong data-i18n="admin_payment">Payment:</strong> <span id="modalPaymentMethod"
+                                style="text-transform: uppercase;"></span></p>
+                        <p><strong data-i18n="admin_driver">Driver:</strong> <span id="modalDriverName"></span></p>
+                    </div>
+                </div>
+
+                <h4 style="font-size: 13px; text-transform: uppercase; letter-spacing: 0.06em; color: var(--admin-text-muted); margin-bottom: 12px;"
+                    data-i18n="admin_order_items">
+                    Order Items</h4>
+                <div class="admin-table-wrap">
+                    <div class="admin-table-scroll">
+                        <table class="admin-table" style="font-size: 13px;">
+                            <thead>
+                                <tr>
+                                    <th data-i18n="admin_name">Product</th>
+                                    <th style="text-align: center;" data-i18n="admin_price">Price</th>
+                                    <th style="text-align: center;" data-i18n="quantity">Qty</th>
+                                    <th style="text-align: right;" data-i18n="admin_total">Total</th>
+                                </tr>
+                            </thead>
+                            <tbody id="modalOrderItems"></tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <div class="order-total-section">
+                    <p style="margin: 4px 0; font-size: 14px;"><span data-i18n="admin_subtotal">Subtotal</span>: <span
+                            id="modalSubtotal">0.000</span> KWD</p>
+                    <p class="grand-total" style="margin-top: 8px;"><span data-i18n="admin_total">Total</span>: <span
+                            id="modalTotal">0.000</span> KWD</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Track Driver Modal -->
+    <div id="trackDriverModal" class="admin-modal hidden">
+        <div class="admin-modal-content" style="max-width: 900px;">
+            <div class="admin-modal-header">
+                <h2><span data-i18n="admin_track_driver">Track Driver</span> - <span
+                        data-i18n="admin_orders">Order</span> <span id="trackDriverOrderNumber"
+                        style="font-weight: 400; color: var(--admin-text-muted);"></span></h2>
+                <button class="admin-btn-icon" onclick="closeTrackDriverModal()">✕</button>
+            </div>
+            <div class="admin-modal-body">
+                <div id="trackDriverMap" style="width: 100%; height: 500px; border-radius: 8px; margin-bottom: 16px;">
+                </div>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;" class="track-driver-info-grid">
+                    <div class="order-info-card">
+                        <h4 data-i18n="admin_driver_info">Driver Info</h4>
+                        <p><strong data-i18n="admin_name">Name:</strong> <span id="trackDriverName">-</span></p>
+                        <p><strong data-i18n="admin_phone">Phone:</strong> <span id="trackDriverPhone">-</span></p>
+                        <p><strong data-i18n="admin_status">Status:</strong> <span id="trackDriverStatus">-</span></p>
+                    </div>
+                    <div class="order-info-card">
+                        <h4 data-i18n="admin_location">Location</h4>
+                        <p><strong data-i18n="admin_last_update">Last Update:</strong> <span
+                                id="trackDriverLastUpdate">-</span></p>
+                        <p><strong data-i18n="admin_coordinates">Coordinates:</strong> <span
+                                id="trackDriverCoords">-</span></p>
+                    </div>
+                </div>
+            </div>
+            <div class="admin-modal-footer">
+                <button class="admin-btn" onclick="closeTrackDriverModal()" data-i18n="admin_close">Close</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast Container -->
+    <div class="toast-container" id="toastContainer"></div>
+
+    <!-- Notification Sound -->
+    <audio id="notificationSound" preload="auto">
+        <source src="data:audio/wav;base64,UklGRl9vT19teleXFIZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQAAAA=="
+            type="audio/wav">
+    </audio>
+
+    <!-- Scripts -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
+    <script src="assets/js/i18n.js"></script>
+    <script src="assets/js/config.js"></script>
+    <script src="assets/js/api.js"></script>
+    <script src="assets/js/admin.js?v=6"></script>
+</body>
+
+</html>

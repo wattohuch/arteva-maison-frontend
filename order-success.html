@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Order Confirmation - ARTEVA Maison">
+    <title data-i18n="order_confirmed">Order Confirmed | ARTEVA Maison</title>
+
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600;700&family=Montserrat:wght@300;400;500;600&display=swap"
+        rel="stylesheet">
+
+    <!-- Stylesheets -->
+    <link rel="stylesheet" href="assets/css/main.css">
+
+    <style>
+        .success-container {
+            max-width: 600px;
+            margin: 0 auto;
+            padding: var(--space-12) var(--space-4);
+            margin-top: var(--header-height);
+            text-align: center;
+        }
+
+        .success-icon {
+            width: 80px;
+            height: 80px;
+            background: linear-gradient(135deg, #10b981, #059669);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto var(--space-6);
+            animation: scaleIn 0.5s ease;
+        }
+
+        .success-icon svg {
+            width: 40px;
+            height: 40px;
+            stroke: white;
+            stroke-width: 2;
+        }
+
+        @keyframes scaleIn {
+            0% {
+                transform: scale(0);
+                opacity: 0;
+            }
+
+            50% {
+                transform: scale(1.1);
+            }
+
+            100% {
+                transform: scale(1);
+                opacity: 1;
+            }
+        }
+
+        .success-title {
+            font-family: var(--font-display);
+            font-size: var(--fs-3xl);
+            margin-bottom: var(--space-3);
+        }
+
+        .success-message {
+            color: var(--text-muted);
+            margin-bottom: var(--space-6);
+            line-height: 1.6;
+        }
+
+        .order-number {
+            background: var(--bg-secondary);
+            padding: var(--space-4);
+            border-radius: var(--radius-md);
+            margin-bottom: var(--space-6);
+        }
+
+        .order-number-label {
+            font-size: var(--fs-sm);
+            color: var(--text-muted);
+            margin-bottom: var(--space-1);
+        }
+
+        .order-number-value {
+            font-family: var(--font-display);
+            font-size: var(--fs-xl);
+            font-weight: 600;
+            color: var(--color-gold);
+        }
+
+        .success-actions {
+            display: flex;
+            flex-direction: column;
+            gap: var(--space-3);
+        }
+
+        .success-btn {
+            display: inline-block;
+            padding: var(--space-4) var(--space-6);
+            border-radius: var(--radius-md);
+            font-family: var(--font-body);
+            font-size: var(--fs-base);
+            font-weight: 500;
+            text-decoration: none;
+            text-align: center;
+            transition: all var(--transition-fast);
+        }
+
+        .success-btn.primary {
+            background: var(--color-gold);
+            color: white;
+        }
+
+        .success-btn.primary:hover {
+            background: var(--color-gold-dark);
+        }
+
+        .success-btn.secondary {
+            background: transparent;
+            color: var(--text-primary);
+            border: 1px solid var(--border-light);
+        }
+
+        .success-btn.secondary:hover {
+            border-color: var(--color-gold);
+            color: var(--color-gold);
+        }
+
+        .email-notice {
+            margin-top: var(--space-6);
+            padding: var(--space-4);
+            background: rgba(212, 175, 55, 0.1);
+            border-radius: var(--radius-md);
+            font-size: var(--fs-sm);
+            color: var(--text-secondary);
+        }
+    </style>
+    <link rel="icon" type="image/png" href="assets/images/favicon.png">
+</head>
+
+<body>
+    <!-- Header -->
+    <header class="header" id="header">
+        <div class="header-container">
+            <div class="header-left">
+                <a href="index.html" class="logo">ARTÉVA</a>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="success-container">
+        <div class="success-icon">
+            <svg viewBox="0 0 24 24" fill="none">
+                <path d="M20 6L9 17l-5-5" stroke-linecap="round" stroke-linejoin="round" />
+            </svg>
+        </div>
+
+        <h1 class="success-title" data-i18n="order_confirmed">Order Confirmed!</h1>
+        <p class="success-message" data-i18n="order_success_msg">
+            Thank you for your order. We're preparing your items and will notify you when they ship.
+        </p>
+
+        <div class="order-number">
+            <div class="order-number-label" data-i18n="order_number_label">Order Number</div>
+            <div class="order-number-value" id="orderNumber">Loading...</div>
+        </div>
+
+        <div class="success-actions">
+            <a href="#" class="success-btn primary" id="trackOrderBtn" data-i18n="track_order_btn">Track My Order</a>
+            <a href="account.html" class="success-btn secondary" data-i18n="view_orders_btn">View My Orders</a>
+            <a href="collections.html" class="success-btn secondary" data-i18n="continue_shopping">Continue Shopping</a>
+        </div>
+
+        <div class="email-notice" data-i18n="email_confirmation">
+            📧 A confirmation email has been sent to your registered email address with order details and tracking
+            information.
+        </div>
+    </main>
+
+    <!-- Scripts -->
+    <script src="assets/js/i18n.js"></script>
+    <script src="assets/js/config.js"></script>
+    <script src="assets/js/api.js"></script>
+    <script>
+        var API_BASE_URL = window.API_BASE_URL || (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
+            ? 'http://localhost:5000/api'
+            : 'https://arteva-maison-backend-gy1x.onrender.com/api');
+
+        document.addEventListener('DOMContentLoaded', async () => {
+
+            const urlParams = new URLSearchParams(window.location.search);
+            const orderNumber = urlParams.get('order');
+            const sessionId = urlParams.get('session_id');
+
+            const orderNumberEl = document.getElementById('orderNumber');
+            const trackOrderBtn = document.getElementById('trackOrderBtn');
+            let finalOrderNumber = null;
+
+            if (orderNumber) {
+                finalOrderNumber = orderNumber;
+                orderNumberEl.textContent = orderNumber;
+            } else if (sessionId) {
+                // Fetch order details from Stripe session
+                try {
+                    const response = await fetch(`${API_BASE_URL}/payments/session/${sessionId}`, {
+                        headers: {
+                            'Authorization': `Bearer ${localStorage.getItem('arteva_token')}`
+                        }
+                    });
+                    const data = await response.json();
+                    if (data.success && data.data.orderNumber) {
+                        finalOrderNumber = data.data.orderNumber;
+                        orderNumberEl.textContent = data.data.orderNumber;
+                    } else {
+                        orderNumberEl.textContent = window.getTranslation ? window.getTranslation('processing') : 'Processing...';
+                    }
+                } catch (error) {
+                    orderNumberEl.textContent = window.getTranslation ? window.getTranslation('order_received') : 'Order Received';
+                }
+            } else {
+                orderNumberEl.textContent = 'Order Received';
+            }
+
+            // Set track order button link
+            if (finalOrderNumber) {
+                trackOrderBtn.href = `order-tracking.html?order=${finalOrderNumber}`;
+            } else {
+                trackOrderBtn.href = 'order-tracking.html';
+            }
+
+            // Clear cart
+            localStorage.removeItem('arteva_cart');
+        });
+    </script>
+</body>
+
+</html>

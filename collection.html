@@ -1,0 +1,641 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description"
+        content="Shop luxury home décor at ARTEVA Maison - Premium glassware, crystals, and decorative pieces.">
+    <title>Shop Collection | ARTEVA Maison</title>
+
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:wght@400;500;600;700&family=Noto+Sans+Arabic:wght@300;400;500;600;700&display=swap"
+        rel="stylesheet">
+
+    <!-- Stylesheets -->
+    <link rel="stylesheet" href="assets/css/main.css">
+    <link rel="stylesheet" href="assets/css/components.css">
+    <link rel="stylesheet" href="assets/css/pages.css">
+
+    <!-- Flag Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flag-icons@7.2.3/css/flag-icons.min.css">
+    <link rel="icon" type="image/png" href="assets/images/favicon.png">
+</head>
+
+<body>
+    <!-- Header -->
+    <header class="header" id="header">
+        <div class="header-inner">
+            <div class="header-left">
+                <button class="menu-toggle" id="menuToggle" aria-label="Toggle Menu">
+                    <span></span><span></span><span></span>
+                </button>
+                <nav class="main-nav" id="mainNav">
+                    <div class="nav-item"><a href="index.html" class="nav-link">Home</a></div>
+                    <div class="nav-item">
+                        <a href="#" class="nav-link"><span data-i18n="categories">Categories</span><svg
+                                xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                stroke-width="2">
+                                <path d="M6 9l6 6 6-6" />
+                            </svg></a>
+                        <div class="dropdown-menu">
+                            <a href="collection.html?cat=new" class="dropdown-item">New Arrivals<span
+                                    class="ar">جديد</span></a>
+                            <a href="collection.html?cat=crystals" class="dropdown-item">Crystals<span
+                                    class="ar">كريستال</span></a>
+                            <a href="collection.html?cat=glassware" class="dropdown-item">Glassware<span
+                                    class="ar">الأواني الزجاجية</span></a>
+                            <a href="collection.html?cat=vases" class="dropdown-item">Vases<span
+                                    class="ar">المزهريات</span></a>
+                            <a href="collection.html?cat=bowls" class="dropdown-item">Bowls<span
+                                    class="ar">الأوعية</span></a>
+                            <a href="collection.html?cat=plates" class="dropdown-item">Plates<span
+                                    class="ar">الأطباق</span></a>
+                            <a href="collection.html?cat=lighting" class="dropdown-item">Lighting<span
+                                    class="ar">الإضاءة</span></a>
+                            <a href="collections.html" class="dropdown-item">View All<span class="ar">عرض
+                                    الكل</span></a>
+                        </div>
+                    </div>
+                    <div class="nav-item"><a href="collections.html" class="nav-link">Collections</a></div>
+                    <div class="nav-item"><a href="contact.html" class="nav-link">Contact</a></div>
+                </nav>
+            </div>
+            <div class="logo">
+                <a href="index.html"><span class="logo-text"><span class="main">ARTÉVA</span><span
+                            class="sub">MAISON</span></span></a>
+            </div>
+            <div class="header-right">
+                <div class="lang-switcher">
+                    <button id="lang-en" class="lang-btn active">EN</button>
+                    <span class="lang-separator">|</span>
+                    <button id="lang-ar" class="lang-btn">AR</button>
+                </div>
+                <div class="header-currency">
+                    <div class="currency-selector">
+                        <button class="currency-trigger" aria-label="Select Currency">
+                            <span class="currency-flag fi fi-kw"></span>
+                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
+                                stroke="currentColor" stroke-width="2"
+                                style="width: 12px; height: 12px; margin-left: 2px;">
+                                <path d="M6 9l6 6 6-6" />
+                            </svg>
+                        </button>
+                        <div class="currency-dropdown">
+                            <div class="currency-option active" data-currency="KWD">
+                                <span class="currency-option-flag fi fi-kw" aria-label="Kuwait"></span>
+                                <div class="currency-option-info">
+                                    <div class="currency-option-code" style="display: none;">KWD</div>
+                                    <div class="currency-option-name">Kuwaiti Dinar</div>
+                                </div>
+                            </div>
+                            <div class="currency-option" data-currency="SAR">
+                                <span class="currency-option-flag fi fi-sa" aria-label="Saudi Arabia"></span>
+                                <div class="currency-option-info">
+                                    <div class="currency-option-code" style="display: none;">SAR</div>
+                                    <div class="currency-option-name">Saudi Riyal</div>
+                                </div>
+                            </div>
+                            <div class="currency-option" data-currency="AED">
+                                <span class="currency-option-flag fi fi-ae" aria-label="UAE"></span>
+                                <div class="currency-option-info">
+                                    <div class="currency-option-code" style="display: none;">AED</div>
+                                    <div class="currency-option-name">UAE Dirham</div>
+                                </div>
+                            </div>
+                            <div class="currency-option" data-currency="QAR">
+                                <span class="currency-option-flag fi fi-qa" aria-label="Qatar"></span>
+                                <div class="currency-option-info">
+                                    <div class="currency-option-code" style="display: none;">QAR</div>
+                                    <div class="currency-option-name">Qatari Riyal</div>
+                                </div>
+                            </div>
+                            <div class="currency-option" data-currency="BHD">
+                                <span class="currency-option-flag fi fi-bh" aria-label="Bahrain"></span>
+                                <div class="currency-option-info">
+                                    <div class="currency-option-code" style="display: none;">BHD</div>
+                                    <div class="currency-option-name">Bahraini Dinar</div>
+                                </div>
+                            </div>
+                            <div class="currency-option" data-currency="OMR">
+                                <span class="currency-option-flag fi fi-om" aria-label="Oman"></span>
+                                <div class="currency-option-info">
+                                    <div class="currency-option-code" style="display: none;">OMR</div>
+                                    <div class="currency-option-name">Omani Rial</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <button class="header-icon" id="searchToggle" aria-label="Search">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                        stroke-width="2">
+                        <circle cx="11" cy="11" r="8" />
+                        <path d="M21 21l-4.35-4.35" />
+                    </svg>
+                </button>
+                <a href="account.html" class="header-icon" aria-label="Account">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                        stroke-width="2">
+                        <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
+                        <circle cx="12" cy="7" r="4" />
+                    </svg>
+                </a>
+                <button class="header-icon cart-icon" id="cartToggle" aria-label="Cart">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                        stroke-width="2">
+                        <path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z" />
+                        <line x1="3" y1="6" x2="21" y2="6" />
+                        <path d="M16 10a4 4 0 0 1-8 0" />
+                    </svg>
+                    <span class="cart-count" id="cartCount">0</span>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Mobile Menu -->
+    <div class="mobile-menu" id="mobileMenu">
+        <div class="mobile-menu-header">
+            <div class="logo"><a href="index.html"><span class="logo-text"><span class="main">ARTÉVA</span><span
+                            class="sub">MAISON</span></span></a></div>
+            <button class="mobile-menu-close" id="mobileMenuClose" aria-label="Close Menu">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                    stroke-width="2">
+                    <line x1="18" y1="6" x2="6" y2="18" />
+                    <line x1="6" y1="6" x2="18" y2="18" />
+                </svg>
+            </button>
+        </div>
+        <nav class="mobile-nav">
+            <div class="mobile-nav-item"><a href="index.html" class="mobile-nav-link">Home</a></div>
+            <div class="mobile-nav-item has-submenu">
+                <a href="#" class="mobile-nav-link"><span data-i18n="categories">Categories</span><svg
+                        xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                        stroke-width="2">
+                        <path d="M6 9l6 6 6-6" />
+                    </svg></a>
+                <div class="mobile-submenu">
+                    <a href="collection.html?cat=crystals">Crystals</a>
+                    <a href="collection.html?cat=glassware">Glassware</a>
+                    <a href="collection.html?cat=vases">Vases</a>
+                    <a href="collection.html?cat=bowls">Bowls</a>
+                    <a href="collection.html?cat=plates">Plates</a>
+                </div>
+            </div>
+            <div class="mobile-nav-item"><a href="collections.html" class="mobile-nav-link">Collections</a></div>
+            <div class="mobile-nav-item"><a href="contact.html" class="mobile-nav-link">Contact</a></div>
+        </nav>
+    </div>
+
+    <!-- Search Modal -->
+    <div class="search-modal" id="searchModal">
+        <button class="search-close" id="searchClose" aria-label="Close Search">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                stroke-width="2">
+                <line x1="18" y1="6" x2="6" y2="18" />
+                <line x1="6" y1="6" x2="18" y2="18" />
+            </svg>
+        </button>
+        <div class="search-modal-content">
+            <div class="search-input-wrapper">
+                <span class="search-input-icon"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
+                        stroke="currentColor" stroke-width="2">
+                        <circle cx="11" cy="11" r="8" />
+                        <path d="M21 21l-4.35-4.35" />
+                    </svg></span>
+                <input type="text" class="search-input" id="searchInput" placeholder="Search for products..."
+                    autocomplete="off">
+            </div>
+        </div>
+    </div>
+
+    <!-- Cart Drawer -->
+    <div class="cart-drawer" id="cartDrawer">
+        <div class="cart-header">
+            <h3 class="cart-title">Your Cart</h3>
+            <button class="cart-close" id="cartClose" aria-label="Close Cart">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                    stroke-width="2">
+                    <line x1="18" y1="6" x2="6" y2="18" />
+                    <line x1="6" y1="6" x2="18" y2="18" />
+                </svg>
+            </button>
+        </div>
+        <div class="cart-items" id="cartItems">
+            <div class="cart-empty" id="cartEmpty">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                    stroke-width="2">
+                    <path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z" />
+                    <line x1="3" y1="6" x2="21" y2="6" />
+                    <path d="M16 10a4 4 0 0 1-8 0" />
+                </svg>
+                <p>Your cart is empty</p>
+                <a href="collections.html" class="btn btn-primary">Continue Shopping</a>
+            </div>
+        </div>
+        <div class="cart-footer" id="cartFooter" style="display: none;">
+            <div class="cart-subtotal"><span>Subtotal</span><strong id="cartSubtotal">0.000 KWD</strong></div>
+            <a href="cart.html" class="btn btn-primary cart-checkout-btn">View Cart</a>
+        </div>
+    </div>
+
+    <div class="overlay" id="overlay"></div>
+
+    <!-- Main Content -->
+    <main>
+        <!-- Page Header -->
+        <div class="page-header">
+            <div class="container">
+                <nav class="breadcrumb">
+                    <a href="index.html">Home</a>
+                    <span class="breadcrumb-separator">/</span>
+                    <a href="collections.html">Collections</a>
+                    <span class="breadcrumb-separator">/</span>
+                    <span id="categoryName">All Products</span>
+                </nav>
+                <h1 class="page-title" id="pageTitle" data-i18n="all_collections">All Products</h1>
+                <p class="page-subtitle" id="pageSubtitle" data-i18n="browse_collections">Discover our complete
+                    collection</p>
+            </div>
+        </div>
+
+        <!-- Collection Content -->
+        <section class="section" style="background-color: var(--bg-primary);">
+            <div class="container">
+                <!-- Toolbar -->
+                <div class="collection-toolbar">
+                    <span class="results-count"><span id="productCount">14</span> <span
+                            data-i18n="products_count">products</span></span>
+                    <div class="toolbar-actions">
+                        <button class="filter-toggle" id="filterToggle">
+                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
+                                stroke="currentColor" stroke-width="2">
+                                <line x1="4" y1="21" x2="4" y2="14" />
+                                <line x1="4" y1="10" x2="4" y2="3" />
+                                <line x1="12" y1="21" x2="12" y2="12" />
+                                <line x1="12" y1="8" x2="12" y2="3" />
+                                <line x1="20" y1="21" x2="20" y2="16" />
+                                <line x1="20" y1="12" x2="20" y2="3" />
+                                <line x1="1" y1="14" x2="7" y2="14" />
+                                <path d="M6 9l6 6 6-6" />
+                            </svg>
+                            <span data-i18n="filter">Filters</span>
+                        </button>
+                        <select class="sort-select" id="sortSelect">
+                            <option value="featured" data-i18n="sort_featured">Featured</option>
+                            <option value="price-low" data-i18n="sort_price_low">Price: Low to High</option>
+                            <option value="price-high" data-i18n="sort_price_high">Price: High to Low</option>
+                            <option value="newest" data-i18n="sort_newest">Newest</option>
+                            <option value="name" data-i18n="sort_name">Name: A-Z</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Products Grid -->
+                <div class="products-grid" id="productsGrid">
+                    <!-- Products will be dynamically inserted here -->
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-grid">
+                <div class="footer-brand">
+                    <div class="logo"><a href="index.html"><span class="logo-text"><span class="main">ARTÉVA</span><span
+                                    class="sub">MAISON</span></span></a></div>
+                    <p>Discover the art of luxury living with our exquisite collection of handcrafted home décor.</p>
+                </div>
+                <div class="footer-links-section">
+                    <h4 class="footer-title">Quick Links</h4>
+                    <div class="footer-links">
+                        <a href="index.html">Home</a>
+                        <a href="collections.html">Collections</a>
+                        <a href="contact.html">Contact Us</a>
+                    </div>
+                </div>
+                <div class="footer-links-section">
+                    <h4 class="footer-title" data-i18n="categories">Categories</h4>
+                    <div class="footer-links">
+                        <a href="collection.html?cat=crystals">Crystals</a>
+                        <a href="collection.html?cat=glassware">Glassware</a>
+                        <a href="collection.html?cat=vases">Vases</a>
+                    </div>
+                </div>
+                <div class="footer-contact">
+                    <h4 class="footer-title">Contact</h4>
+                    <div class="footer-contact-item">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2">
+                            <path
+                                d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z" />
+                        </svg>
+                        <div>
+                            <p>+965 6561 1566</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p class="footer-copyright">© 2026 ARTÉVA Maison. All rights reserved.</p>
+                <!-- GCC Currency Switcher -->
+                <div class="footer-currency">
+                    <span class="currency-label">Currency:</span>
+                    <div class="currency-options">
+                        <button class="currency-btn active" data-currency="KWD">KWD</button>
+                        <button class="currency-btn" data-currency="SAR">SAR</button>
+                        <button class="currency-btn" data-currency="AED">AED</button>
+                        <button class="currency-btn" data-currency="QAR">QAR</button>
+                        <button class="currency-btn" data-currency="BHD">BHD</button>
+                        <button class="currency-btn" data-currency="OMR">OMR</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <script src="assets/js/config.js"></script>
+    <script src="assets/js/api.js"></script>
+    <script src="assets/js/i18n.js"></script>
+    <script src="assets/js/main.js"></script>
+    <script src="assets/js/cart.js"></script>
+    <script src="assets/js/currency.js"></script>
+    <script>
+        // Collection page — fetches products from live API
+        document.addEventListener('DOMContentLoaded', async function () {
+            const productsGrid = document.getElementById('productsGrid');
+            const categoryName = document.getElementById('categoryName');
+            const pageTitle = document.getElementById('pageTitle');
+            const pageSubtitle = document.getElementById('pageSubtitle');
+            const productCount = document.getElementById('productCount');
+            const sortSelect = document.getElementById('sortSelect');
+
+            // Get params from URL
+            const urlParams = new URLSearchParams(window.location.search);
+            const category = urlParams.get('cat');
+            const query = urlParams.get('q');
+
+            // Category display names
+            const categoryNames = {
+                'new': { en: 'New Arrivals', ar: 'وصل حديثاً' },
+                'crystals': { en: 'Crystals', ar: 'كريستال' },
+                'glassware': { en: 'Glassware', ar: 'الأواني الزجاجية' },
+                'vases': { en: 'Vases', ar: 'المزهريات' },
+                'bowls': { en: 'Artisan Bowls', ar: 'الأوعية' },
+                'plates': { en: 'Decorative Plates', ar: 'الأطباق' },
+                'serveware': { en: 'Serveware', ar: 'التقديم' },
+                'decor': { en: 'Décor', ar: 'ديكور' },
+                'candles': { en: 'Candle Holders', ar: 'حاملات الشموع' },
+                'candle-holders': { en: 'Candle Holders', ar: 'حاملات الشموع' },
+                'outlet': { en: 'Outlet', ar: 'التخفيضات' }
+            };
+
+            let allProducts = [];
+
+            function updatePageContent() {
+                const lang = localStorage.getItem('site_lang') || 'en';
+                if (category && categoryNames[category]) {
+                    const catInfo = categoryNames[category];
+                    const name = catInfo[lang];
+                    categoryName.textContent = name;
+                    pageTitle.textContent = name;
+                } else if (query) {
+                    categoryName.textContent = `${lang === 'ar' ? 'بحث' : 'Search'}: "${query}"`;
+                    pageTitle.textContent = lang === 'ar' ? 'نتائج البحث' : 'Search Results';
+                    pageSubtitle.textContent = `${lang === 'ar' ? 'عرض النتائج لـ' : 'Showing results for'} "${query}"`;
+                } else {
+                    pageTitle.textContent = lang === 'ar' ? 'جميع المنتجات' : 'All Collections';
+                    pageSubtitle.textContent = lang === 'ar' ? 'تصفح مجموعتنا المنسقة من ديكور المنزل الفاخر' : 'Browse our curated collections of luxury home décor';
+                }
+            }
+
+            updatePageContent();
+
+            // Show loading state
+            productsGrid.innerHTML = `
+                <div style="grid-column: 1/-1; text-align: center; padding: 60px 20px;">
+                    <div style="width: 40px; height: 40px; border: 3px solid #eee; border-top-color: #c9a962; border-radius: 50%; animation: spin 0.8s linear infinite; margin: 0 auto;"></div>
+                    <p style="margin-top: 16px; color: var(--text-muted); font-size: 14px;">Loading products...</p>
+                    <style>@keyframes spin { to { transform: rotate(360deg); } }</style>
+                </div>`;
+
+            // Fetch products from API
+            try {
+                const params = { limit: 100 };
+                if (category) {
+                    if (category === 'new') {
+                        params.isNew = 'true';
+                    } else {
+                        params.category = category;
+                    }
+                }
+                if (query) params.search = query;
+
+                let response;
+                try {
+                    response = await ProductsAPI.getAll(params);
+                } catch (fetchErr) {
+                    // Fallback: if category filter fails on old server, fetch all and filter client-side
+                    if (category && category !== 'new') {
+                        console.warn('Category API filter failed, falling back to client-side filter');
+                        response = await ProductsAPI.getAll({ limit: 100 });
+                    } else {
+                        throw fetchErr;
+                    }
+                }
+
+                if (response && response.success) {
+                    allProducts = response.data;
+                    // Client-side category filtering fallback
+                    if (category && category !== 'new' && allProducts.length > 0) {
+                        const catFiltered = allProducts.filter(p => {
+                            if (p.category && typeof p.category === 'object') {
+                                return p.category.slug === category;
+                            }
+                            return false;
+                        });
+                        // Only apply filter if it matches something (otherwise show all)
+                        if (catFiltered.length > 0) allProducts = catFiltered;
+                    }
+                } else {
+                    allProducts = [];
+                }
+            } catch (err) {
+                console.error('Failed to load products:', err);
+                allProducts = [];
+            }
+
+            // Sort handler
+            sortSelect.addEventListener('change', function () {
+                const sortBy = this.value;
+                switch (sortBy) {
+                    case 'price-low':
+                        allProducts.sort((a, b) => a.price - b.price);
+                        break;
+                    case 'price-high':
+                        allProducts.sort((a, b) => b.price - a.price);
+                        break;
+                    case 'newest':
+                        allProducts.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+                        break;
+                    case 'name':
+                        allProducts.sort((a, b) => a.name.localeCompare(b.name));
+                        break;
+                    default:
+                        allProducts.sort((a, b) => (b.isFeatured ? 1 : 0) - (a.isFeatured ? 1 : 0));
+                        break;
+                }
+                renderProducts(allProducts);
+            });
+
+            function getProductImage(product) {
+                if (product.images && product.images.length > 0) {
+                    const primary = product.images.find(img => img.isPrimary) || product.images[0];
+                    return primary.url;
+                }
+                return 'assets/images/products/placeholder.png';
+            }
+
+            function getProductCategory(product) {
+                if (product.category && typeof product.category === 'object') {
+                    return product.category.slug || '';
+                }
+                return '';
+            }
+
+            function renderProducts(products) {
+                productCount.textContent = products.length;
+                productsGrid.innerHTML = '';
+                const lang = localStorage.getItem('site_lang') || 'en';
+
+                if (products.length === 0) {
+                    const noProdMsg = lang === 'ar' ? 'لم يتم العثور على منتجات في هذا القسم.' : 'No products found in this category.';
+                    const browseMsg = lang === 'ar' ? 'تصفح كل المجموعات' : 'Browse All Collections';
+                    productsGrid.innerHTML = `
+                        <div style="grid-column: 1/-1; text-align: center; padding: 60px 20px;">
+                            <p style="font-size: 18px; color: var(--text-muted);">${noProdMsg}</p>
+                            <a href="collections.html" class="btn btn-primary" style="margin-top: 20px;">${browseMsg}</a>
+                        </div>`;
+                    return;
+                }
+
+                products.forEach(product => {
+                    const card = document.createElement('div');
+                    card.className = 'product-card';
+                    card.dataset.productId = product._id;
+
+                    const productName = lang === 'ar' && product.nameAr ? product.nameAr : product.name;
+                    const productImage = getProductImage(product);
+                    const isNewArrival = product.isNewArrival;
+                    const newBadge = isNewArrival ? `<span class="product-badge badge-new">${lang === 'ar' ? 'جديد' : 'New'}</span>` : '';
+                    const addToCartText = lang === 'ar' ? 'أضف للسلة' : 'Add to Cart';
+                    const currency = lang === 'ar' ? 'د.ك' : 'KWD';
+
+                    // Stock & Coming Soon Logic
+                    let stockBadge = '';
+                    let isOutOfStock = false;
+                    let isComingSoon = product.isComingSoon;
+
+                    if (isComingSoon) {
+                        stockBadge = `<span class="product-badge badge-coming-soon" style="background: #3b82f6; color: white;">${lang === 'ar' ? 'قريباً' : 'Coming Soon'}</span>`;
+                    } else if (product.stock !== undefined) {
+                        if (product.stock === 0) {
+                            isOutOfStock = true;
+                            stockBadge = `<span class="product-badge badge-out-stock" style="background: #ef4444; color: white;">${lang === 'ar' ? 'غير متوفر' : 'Out of Stock'}</span>`;
+                        } else if (product.stock <= 3) {
+                            stockBadge = `<span class="product-badge badge-low-stock" style="background: #f59e0b; color: white;">${lang === 'ar' ? 'بقي القليل' : 'Low Stock'}</span>`;
+                        }
+                    }
+
+                    // Combine badges
+                    let badgesHtml = '';
+                    if (isComingSoon) {
+                        badgesHtml = stockBadge;
+                    } else if (isOutOfStock) {
+                        badgesHtml = stockBadge;
+                    } else {
+                        // Show new badge only if in stock
+                        if (newBadge) badgesHtml += newBadge;
+                        if (stockBadge) badgesHtml += stockBadge;
+                    }
+
+                    card.innerHTML = `
+                        <div class="product-image">
+                            <a href="product.html?id=${product._id}">
+                                <img src="${productImage}" alt="${productName}" loading="lazy" style="${(isOutOfStock || isComingSoon) ? 'opacity: 0.8;' : ''}" onerror="if(typeof handleImageError==='function') handleImageError(this); else this.src='assets/images/products/placeholder.png';">
+                            </a>
+                            <div class="product-badges" style="display: flex; gap: 5px; flex-wrap: wrap;">${badgesHtml}</div>
+                            <button class="product-wishlist" aria-label="Add to Wishlist">
+                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+                            </button>
+                            <div class="product-actions">
+                                <button class="add-to-cart-btn" data-product-id="${product._id}" ${(isOutOfStock || isComingSoon) ? 'disabled style="background: var(--text-color); opacity: 0.8; cursor: default;"' : ''}>
+                                    ${isComingSoon ? (lang === 'ar' ? 'قريباً' : 'Coming Soon') : (isOutOfStock ? (lang === 'ar' ? 'غير متوفر' : 'Out of Stock') : addToCartText)}
+                                </button>
+                            </div>
+                        </div>
+                        <div class="product-info">
+                            <h4 class="product-name">
+                                <a href="product.html?id=${product._id}">${productName}</a>
+                            </h4>
+                            <div class="product-price">
+                                <span class="current-price" data-base-price="${product.price.toFixed(3)}">${product.price.toFixed(3)} ${currency}</span>
+                            </div>
+                        </div>`;
+                    productsGrid.appendChild(card);
+                });
+
+                // Trigger currency update if API exists
+                if (window.CurrencyAPI) window.CurrencyAPI.updatePagePrices();
+
+                initAddToCartButtons();
+                initWishlistButtons();
+            }
+
+            // Initial render
+            renderProducts(allProducts);
+
+            // Language switch re-renders
+            document.getElementById('lang-en')?.addEventListener('click', () => setTimeout(() => { updatePageContent(); renderProducts(allProducts); }, 50));
+            document.getElementById('lang-ar')?.addEventListener('click', () => setTimeout(() => { updatePageContent(); renderProducts(allProducts); }, 50));
+
+            function initWishlistButtons() {
+                document.querySelectorAll('.product-wishlist').forEach(btn => {
+                    btn.addEventListener('click', (e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        btn.classList.toggle('active');
+                        const isActive = btn.classList.contains('active');
+                        if (window.showNotification) {
+                            const lang = localStorage.getItem('site_lang') || 'en';
+                            const msg = isActive ? (lang === 'ar' ? 'تمت الإضافة للمفضلة' : 'Added to wishlist') : (lang === 'ar' ? 'تم الحذف من المفضلة' : 'Removed from wishlist');
+                            window.showNotification(msg, isActive ? 'success' : 'info');
+                        }
+                    });
+                });
+            }
+
+            function initAddToCartButtons() {
+                document.querySelectorAll('.add-to-cart-btn').forEach(btn => {
+                    btn.addEventListener('click', (e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        const productId = btn.dataset.productId;
+                        const product = allProducts.find(p => p._id === productId);
+                        if (product && window.addToCart) {
+                            window.addToCart(productId, 1, product);
+                        }
+                    });
+                });
+            }
+        });
+    </script>
+</body>
+
+</html>

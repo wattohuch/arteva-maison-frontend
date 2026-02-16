@@ -1,0 +1,312 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Order Receipt | ARTEVA Maison</title>
+
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600;700&family=Montserrat:wght@300;400;500;600&display=swap"
+        rel="stylesheet">
+
+    <style>
+        :root {
+            --color-text: #2c241b;
+            --color-text-light: #666;
+            --color-border: #e6e1d6;
+            --color-gold: #D4AF37;
+            --font-display: 'Cormorant Garamond', serif;
+            --font-body: 'Montserrat', sans-serif;
+        }
+
+        body {
+            font-family: var(--font-body);
+            color: var(--color-text);
+            background: #fff;
+            padding: 40px;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+            padding-bottom: 20px;
+            border-bottom: 2px solid var(--color-gold);
+        }
+
+        .logo {
+            font-family: var(--font-display);
+            font-size: 32px;
+            font-weight: 700;
+            letter-spacing: 2px;
+            margin-bottom: 10px;
+            text-transform: uppercase;
+        }
+
+        .receipt-title {
+            font-size: 14px;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            color: var(--color-text-light);
+        }
+
+        .order-meta {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 40px;
+        }
+
+        .meta-group h3 {
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: var(--color-text-light);
+            margin: 0 0 5px 0;
+        }
+
+        .meta-group p {
+            margin: 0;
+            font-weight: 500;
+        }
+
+        .items-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 30px;
+        }
+
+        .items-table th {
+            text-align: left;
+            padding: 10px 0;
+            border-bottom: 1px solid var(--color-border);
+            font-family: var(--font-display);
+            font-size: 16px;
+        }
+
+        .items-table td {
+            padding: 15px 0;
+            border-bottom: 1px solid var(--color-border);
+        }
+
+        .total-section {
+            width: 300px;
+            margin-left: auto;
+        }
+
+        .total-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 5px 0;
+        }
+
+        .total-row.final {
+            border-top: 2px solid var(--color-border);
+            margin-top: 10px;
+            padding-top: 10px;
+            font-weight: 700;
+            font-size: 18px;
+        }
+
+        .footer {
+            margin-top: 60px;
+            text-align: center;
+            font-size: 12px;
+            color: var(--color-text-light);
+            border-top: 1px solid var(--color-border);
+            padding-top: 20px;
+        }
+
+        @media print {
+            body {
+                padding: 0;
+            }
+
+            .no-print {
+                display: none;
+            }
+        }
+
+        .btn-print {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            background: var(--color-gold);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-family: var(--font-body);
+            font-weight: 600;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+    </style>
+</head>
+
+<body>
+    <button class="btn-print no-print" onclick="window.print()">Print Receipt</button>
+
+    <div class="header">
+        <div class="logo">ARTÉVA MAISON</div>
+        <div class="receipt-title">Order Receipt</div>
+    </div>
+
+    <div class="loading" id="loading">Loading receipt details...</div>
+
+    <div id="receiptContent" style="display: none;">
+        <div class="order-meta">
+            <div class="meta-group">
+                <h3>Order Number</h3>
+                <p id="orderNumber">...</p>
+            </div>
+            <div class="meta-group">
+                <h3>Date</h3>
+                <p id="orderDate">...</p>
+            </div>
+            <div class="meta-group" style="text-align: right;">
+                <h3>Customer</h3>
+                <p id="customerName">...</p>
+                <p id="customerPhone" style="font-size: 12px; color: #666;"></p>
+            </div>
+        </div>
+
+        <table class="items-table">
+            <thead>
+                <tr>
+                    <th width="50%">Item</th>
+                    <th width="20%">Price</th>
+                    <th width="10%">Qty</th>
+                    <th width="20%" style="text-align: right;">Total</th>
+                </tr>
+            </thead>
+            <tbody id="itemsList">
+                <!-- Items here -->
+            </tbody>
+        </table>
+
+        <div class="total-section">
+            <div class="total-row">
+                <span>Subtotal</span>
+                <span id="subtotal">0.000 KWD</span>
+            </div>
+            <div class="total-row">
+                <span>Shipping</span>
+                <span id="shipping">0.000 KWD</span>
+            </div>
+            <div class="total-row final">
+                <span>Total</span>
+                <span id="total">0.000 KWD</span>
+            </div>
+        </div>
+
+        <div style="margin-top: 40px;">
+            <div class="meta-group">
+                <h3>Shipping Address</h3>
+                <p id="shippingAddress" style="white-space: pre-line; line-height: 1.5;"></p>
+            </div>
+        </div>
+    </div>
+
+    <div class="footer">
+        <p>Thank you for shopping with ARTEVA Maison.</p>
+        <p>www.artevamaisonkw.com</p>
+    </div>
+
+    <script src="assets/js/config.js"></script>
+    <script src="assets/js/api.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', async () => {
+            const urlParams = new URLSearchParams(window.location.search);
+            const orderId = urlParams.get('id'); // Can be ID or Order Number
+
+            if (!orderId) {
+                document.getElementById('loading').textContent = 'Order ID not provided.';
+                return;
+            }
+
+            try {
+                // Try to find order by ID first
+                let order;
+                try {
+                    // Check if it's an ID (24 hex chars)
+                    if (orderId.match(/^[0-9a-fA-F]{24}$/)) {
+                        const res = await window.API.orders.getById(orderId);
+                        order = res.data;
+                    } else {
+                        // It might be an Order Number, we need a search capability or just list all
+                        // For now, let's assume we can get it via ID. 
+                        // If the user link passes 'ART-XXXXXX', we need an endpoint for that or logic.
+                        // Since `orders.js` usually has the _id, we should link using _id.
+                        document.getElementById('loading').textContent = 'Invalid Order ID format.';
+                        return;
+                    }
+                } catch (e) {
+                    console.error('Fetch error', e);
+                    document.getElementById('loading').textContent = 'Failed to load order. Please try again.';
+                    return;
+                }
+
+                if (!order) {
+                    document.getElementById('loading').textContent = 'Order not found.';
+                    return;
+                }
+
+                // Populate Data
+                document.getElementById('orderNumber').textContent = order.orderNumber;
+                document.getElementById('orderDate').textContent = new Date(order.createdAt).toLocaleDateString('en-US', {
+                    year: 'numeric',
+                    month: 'long',
+                    day: 'numeric'
+                });
+
+                document.getElementById('customerName').textContent = order.user ? order.user.name : (order.shippingAddress.firstName || 'Guest');
+                // Use phone from shipping address if available
+                document.getElementById('customerPhone').textContent = order.shippingAddress.phone || order.user?.phone || '';
+
+                // Address
+                const addr = order.shippingAddress;
+                document.getElementById('shippingAddress').textContent =
+                    `${addr.street}\n${addr.city}, ${addr.state || ''} ${addr.zipCode || ''}\n${addr.country}`;
+
+                // Items
+                const tbody = document.getElementById('itemsList');
+                tbody.innerHTML = order.items.map(item => `
+                    <tr>
+                        <td>
+                            <div style="font-weight: 500;">${item.name}</div>
+                            <div style="font-size: 12px; color: #888;">${item.variant ? item.variant : ''}</div>
+                        </td>
+                        <td>${item.price.toFixed(3)} KWD</td>
+                        <td>${item.quantity}</td>
+                        <td style="text-align: right;">${(item.price * item.quantity).toFixed(3)} KWD</td>
+                    </tr>
+                `).join('');
+
+                // Totals
+                document.getElementById('subtotal').textContent = order.subtotal.toFixed(3) + ' KWD';
+                document.getElementById('shipping').textContent = (order.shippingCost || 0).toFixed(3) + ' KWD';
+                document.getElementById('total').textContent = order.total.toFixed(3) + ' KWD';
+
+                // Show content
+                document.getElementById('loading').style.display = 'none';
+                document.getElementById('receiptContent').style.display = 'block';
+
+                // Auto print after a short delay to allow rendering
+                setTimeout(() => {
+                    // window.print(); 
+                }, 1000);
+
+            } catch (error) {
+                console.error(error);
+                document.getElementById('loading').textContent = 'Error loading receipt.';
+            }
+        });
+    </script>
+</body>
+
+</html>

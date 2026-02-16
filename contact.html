@@ -1,0 +1,411 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Contact ARTEVA Maison - Luxury home décor in Kuwait">
+    <title data-i18n="contact_us">Contact Us | ARTEVA Maison</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:wght@400;500;600;700&family=Noto+Sans+Arabic:wght@300;400;500;600;700&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="assets/css/main.css">
+    <link rel="stylesheet" href="assets/css/components.css">
+    <link rel="stylesheet" href="assets/css/pages.css">
+
+    <!-- Flag Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flag-icons@7.2.3/css/flag-icons.min.css">
+    <link rel="icon" type="image/png" href="assets/images/favicon.png">
+</head>
+
+<body>
+    <!-- Header -->
+    <header class="header" id="header">
+        <div class="header-inner">
+            <div class="header-left">
+                <button class="menu-toggle" id="menuToggle" aria-label="Toggle Menu">
+                    <span></span><span></span><span></span>
+                </button>
+                <nav class="main-nav" id="mainNav">
+                    <div class="nav-item"><a href="index.html" class="nav-link">Home</a></div>
+                    <div class="nav-item">
+                        <a href="#" class="nav-link"><span data-i18n="categories">Categories</span><svg
+                                xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                stroke-width="2">
+                                <path d="M6 9l6 6 6-6" />
+                            </svg></a>
+                        <div class="dropdown-menu">
+                            <a href="collection.html?cat=crystals" class="dropdown-item">Crystals<span
+                                    class="ar">كريستال</span></a>
+                            <a href="collection.html?cat=glassware" class="dropdown-item">Glassware<span
+                                    class="ar">الأواني الزجاجية</span></a>
+                            <a href="collection.html?cat=vases" class="dropdown-item">Vases<span
+                                    class="ar">المزهريات</span></a>
+                            <a href="collections.html" class="dropdown-item">View All<span class="ar">عرض
+                                    الكل</span></a>
+                        </div>
+                    </div>
+                    <div class="nav-item"><a href="collections.html" class="nav-link">Collections</a></div>
+                    <div class="nav-item"><a href="contact.html" class="nav-link">Contact</a></div>
+                </nav>
+            </div>
+            <div class="logo">
+                <a href="index.html"><span class="logo-text"><span class="main">ARTÉVA</span><span
+                            class="sub">MAISON</span></span></a>
+            </div>
+            <div class="header-right">
+                <div class="lang-switcher">
+                    <button id="lang-en" class="lang-btn active">EN</button>
+                    <span class="lang-separator">|</span>
+                    <button id="lang-ar" class="lang-btn">AR</button>
+                </div>
+                <div class="header-currency">
+                    <div class="currency-selector">
+                        <button class="currency-trigger" aria-label="Select Currency">
+                            <span class="currency-flag fi fi-kw"></span>
+                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
+                                stroke="currentColor" stroke-width="2"
+                                style="width: 12px; height: 12px; margin-left: 2px;">
+                                <path d="M6 9l6 6 6-6" />
+                            </svg>
+                        </button>
+                        <div class="currency-dropdown">
+                            <div class="currency-option active" data-currency="KWD">
+                                <span class="currency-option-flag fi fi-kw" aria-label="Kuwait"></span>
+                                <div class="currency-option-info">
+                                    <div class="currency-option-code" style="display: none;">KWD</div>
+                                    <div class="currency-option-name">Kuwaiti Dinar</div>
+                                </div>
+                            </div>
+                            <div class="currency-option" data-currency="SAR">
+                                <span class="currency-option-flag fi fi-sa" aria-label="Saudi Arabia"></span>
+                                <div class="currency-option-info">
+                                    <div class="currency-option-code" style="display: none;">SAR</div>
+                                    <div class="currency-option-name">Saudi Riyal</div>
+                                </div>
+                            </div>
+                            <div class="currency-option" data-currency="AED">
+                                <span class="currency-option-flag fi fi-ae" aria-label="UAE"></span>
+                                <div class="currency-option-info">
+                                    <div class="currency-option-code" style="display: none;">AED</div>
+                                    <div class="currency-option-name">UAE Dirham</div>
+                                </div>
+                            </div>
+                            <div class="currency-option" data-currency="QAR">
+                                <span class="currency-option-flag fi fi-qa" aria-label="Qatar"></span>
+                                <div class="currency-option-info">
+                                    <div class="currency-option-code" style="display: none;">QAR</div>
+                                    <div class="currency-option-name">Qatari Riyal</div>
+                                </div>
+                            </div>
+                            <div class="currency-option" data-currency="BHD">
+                                <span class="currency-option-flag fi fi-bh" aria-label="Bahrain"></span>
+                                <div class="currency-option-info">
+                                    <div class="currency-option-code" style="display: none;">BHD</div>
+                                    <div class="currency-option-name">Bahraini Dinar</div>
+                                </div>
+                            </div>
+                            <div class="currency-option" data-currency="OMR">
+                                <span class="currency-option-flag fi fi-om" aria-label="Oman"></span>
+                                <div class="currency-option-info">
+                                    <div class="currency-option-code" style="display: none;">OMR</div>
+                                    <div class="currency-option-name">Omani Rial</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <button class="header-icon" id="searchToggle" aria-label="Search">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                        stroke-width="2">
+                        <circle cx="11" cy="11" r="8" />
+                        <path d="M21 21l-4.35-4.35" />
+                    </svg>
+                </button>
+                <a href="account.html" class="header-icon" aria-label="Account">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                        stroke-width="2">
+                        <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
+                        <circle cx="12" cy="7" r="4" />
+                    </svg>
+                </a>
+                <button class="header-icon cart-icon" id="cartToggle" aria-label="Cart">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                        stroke-width="2">
+                        <path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z" />
+                        <line x1="3" y1="6" x2="21" y2="6" />
+                        <path d="M16 10a4 4 0 0 1-8 0" />
+                    </svg>
+                    <span class="cart-count" id="cartCount">0</span>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Mobile Menu -->
+    <div class="mobile-menu" id="mobileMenu">
+        <div class="mobile-menu-header">
+            <div class="logo"><a href="index.html"><span class="logo-text"><span class="main">ARTÉVA</span><span
+                            class="sub">MAISON</span></span></a></div>
+            <button class="mobile-menu-close" id="mobileMenuClose" aria-label="Close Menu">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                    stroke-width="2">
+                    <line x1="18" y1="6" x2="6" y2="18" />
+                    <line x1="6" y1="6" x2="18" y2="18" />
+                </svg>
+            </button>
+        </div>
+        <nav class="mobile-nav">
+            <div class="mobile-nav-item"><a href="index.html" class="mobile-nav-link">Home</a></div>
+            <div class="mobile-nav-item"><a href="collections.html" class="mobile-nav-link">Collections</a></div>
+            <div class="mobile-nav-item"><a href="contact.html" class="mobile-nav-link">Contact</a></div>
+        </nav>
+    </div>
+
+    <!-- Search Modal -->
+    <div class="search-modal" id="searchModal">
+        <button class="search-close" id="searchClose" aria-label="Close Search">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                stroke-width="2">
+                <line x1="18" y1="6" x2="6" y2="18" />
+                <line x1="6" y1="6" x2="18" y2="18" />
+            </svg>
+        </button>
+        <div class="search-modal-content">
+            <div class="search-input-wrapper">
+                <span class="search-input-icon"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
+                        stroke="currentColor" stroke-width="2">
+                        <circle cx="11" cy="11" r="8" />
+                        <path d="M21 21l-4.35-4.35" />
+                    </svg></span>
+                <input type="text" class="search-input" id="searchInput" placeholder="Search for products..."
+                    autocomplete="off">
+            </div>
+        </div>
+    </div>
+
+    <!-- Cart Drawer -->
+    <div class="cart-drawer" id="cartDrawer">
+        <div class="cart-header">
+            <h3 class="cart-title">Your Cart</h3>
+            <button class="cart-close" id="cartClose" aria-label="Close Cart">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                    stroke-width="2">
+                    <line x1="18" y1="6" x2="6" y2="18" />
+                    <line x1="6" y1="6" x2="18" y2="18" />
+                </svg>
+            </button>
+        </div>
+        <div class="cart-items" id="cartItems">
+            <div class="cart-empty" id="cartEmpty">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                    stroke-width="2">
+                    <path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z" />
+                    <line x1="3" y1="6" x2="21" y2="6" />
+                    <path d="M16 10a4 4 0 0 1-8 0" />
+                </svg>
+                <p>Your cart is empty</p>
+                <a href="collections.html" class="btn btn-primary">Continue Shopping</a>
+            </div>
+        </div>
+        <div class="cart-footer" id="cartFooter" style="display: none;">
+            <div class="cart-subtotal"><span>Subtotal</span><strong id="cartSubtotal">0.000 KWD</strong></div>
+            <a href="cart.html" class="btn btn-primary cart-checkout-btn">View Cart</a>
+        </div>
+    </div>
+
+    <div class="overlay" id="overlay"></div>
+
+    <main class="contact-page">
+        <div class="container">
+            <div class="text-center" style="margin-bottom:48px">
+                <h1 class="page-title" data-i18n="contact_us">Contact Us</h1>
+            </div>
+            <div class="contact-layout">
+                <div class="contact-info">
+                    <h2 class="contact-info-title" data-i18n="get_in_touch">Get in Touch</h2>
+                    <p class="contact-info-text" data-i18n="contact_desc">We'd love to hear from you!</p>
+                    <div class="contact-details">
+                        <div class="contact-detail">
+                            <div class="contact-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                    stroke-width="2">
+                                    <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" />
+                                    <circle cx="12" cy="10" r="3" />
+                                </svg></div>
+                            <div class="contact-detail-content">
+                                <h4 data-i18n="address">Address</h4>
+                                <p>ARTÉVA Maison<br>Kuwait City, Kuwait</p>
+                            </div>
+                        </div>
+                        <div class="contact-detail">
+                            <div class="contact-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                    stroke-width="2">
+                                    <path
+                                        d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z" />
+                                </svg></div>
+                            <div class="contact-detail-content">
+                                <h4 data-i18n="phone">Phone</h4>
+                                <p>+965 6561 1566</p>
+                            </div>
+                        </div>
+                        <div class="contact-detail">
+                            <div class="contact-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                    stroke-width="2">
+                                    <path
+                                        d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z" />
+                                    <polyline points="22,6 12,13 2,6" />
+                                </svg></div>
+                            <div class="contact-detail-content">
+                                <h4 data-i18n="email">Email</h4>
+                                <p>info@artevamaison.com</p>
+                            </div>
+                        </div>
+                        <div class="contact-detail">
+                            <div class="contact-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                    stroke-width="2">
+                                    <circle cx="12" cy="12" r="10" />
+                                    <polyline points="12 6 12 12 16 14" />
+                                </svg></div>
+                            <div class="contact-detail-content">
+                                <h4 data-i18n="hours">Hours</h4>
+                                <p>Sat-Thu: 10AM-10PM<br>Fri: 2PM-10PM</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="contact-form-section">
+                    <h2 class="contact-form-title" data-i18n="send_message">Send a Message</h2>
+                    <form class="contact-form" id="contactForm">
+                        <div class="form-row">
+                            <div class="form-group"><label class="form-label" for="firstName"
+                                    data-i18n="first_name">First Name</label><input type="text" class="form-input"
+                                    id="firstName" required></div>
+                            <div class="form-group"><label class="form-label" for="lastName" data-i18n="last_name">Last
+                                    Name</label><input type="text" class="form-input" id="lastName" required></div>
+                        </div>
+                        <div class="form-group"><label class="form-label" for="email"
+                                data-i18n="email">Email</label><input type="email" class="form-input" id="email"
+                                required></div>
+                        <div class="form-group"><label class="form-label" for="phone"
+                                data-i18n="phone">Phone</label><input type="tel" class="form-input" id="phone"
+                                placeholder="+965 XXXX XXXX"></div>
+                        <div class="form-group"><label class="form-label" for="subject"
+                                data-i18n="subject">Subject</label><select class="form-input" id="subject">
+                                <option>General Inquiry</option>
+                                <option>Order Status</option>
+                                <option>Product Question</option>
+                                <option>Returns</option>
+                            </select></div>
+                        <div class="form-group"><label class="form-label" for="message"
+                                data-i18n="message">Message</label><textarea class="form-textarea" id="message" rows="5"
+                                required></textarea></div>
+                        <button type="submit" class="btn btn-primary btn-lg" data-i18n="send_btn">Send Message</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-grid">
+                <div class="footer-brand">
+                    <div class="logo"><a href="index.html"><span class="logo-text"><span class="main">ARTÉVA</span><span
+                                    class="sub">MAISON</span></span></a></div>
+                    <p>Discover the art of luxury living with our exquisite collection of handcrafted home décor.</p>
+                </div>
+                <div class="footer-links-section">
+                    <h4 class="footer-title">Quick Links</h4>
+                    <div class="footer-links">
+                        <a href="index.html">Home</a>
+                        <a href="collections.html">Collections</a>
+                        <a href="contact.html">Contact Us</a>
+                    </div>
+                </div>
+                <div class="footer-contact">
+                    <h4 class="footer-title">Contact</h4>
+                    <div class="footer-contact-item">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2">
+                            <path
+                                d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z" />
+                        </svg>
+                        <div>
+                            <p>+965 6561 1566</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p class="footer-copyright">© 2026 ARTÉVA Maison. All rights reserved.</p>
+                <!-- GCC Currency Switcher -->
+                <div class="footer-currency">
+                    <span class="currency-label">Currency:</span>
+                    <div class="currency-options">
+                        <button class="currency-btn active" data-currency="KWD">KWD</button>
+                        <button class="currency-btn" data-currency="SAR">SAR</button>
+                        <button class="currency-btn" data-currency="AED">AED</button>
+                        <button class="currency-btn" data-currency="QAR">QAR</button>
+                        <button class="currency-btn" data-currency="BHD">BHD</button>
+                        <button class="currency-btn" data-currency="OMR">OMR</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <script src="assets/js/config.js"></script>
+    <script src="assets/js/api.js"></script>
+    <script src="assets/js/i18n.js"></script>
+    <script src="assets/js/main.js"></script>
+    <script src="assets/js/cart.js"></script>
+    <script src="assets/js/currency.js"></script>
+    <script>
+        document.getElementById('contactForm').addEventListener('submit', async function (e) {
+            e.preventDefault();
+
+            const form = this;
+            const submitBtn = form.querySelector('button[type="submit"]');
+            const originalText = submitBtn.textContent;
+
+            // Disable button and show loading state
+            submitBtn.disabled = true;
+            submitBtn.textContent = 'Sending...';
+
+            try {
+                // Get form values
+                const contactData = {
+                    firstName: document.getElementById('firstName').value.trim(),
+                    lastName: document.getElementById('lastName').value.trim(),
+                    email: document.getElementById('email').value.trim(),
+                    phone: document.getElementById('phone').value.trim(),
+                    subject: document.getElementById('subject').value,
+                    message: document.getElementById('message').value.trim()
+                };
+
+                // Send contact message
+                await ContactAPI.sendMessage(contactData);
+
+                // Show success message
+                const msg = window.getTranslation ? window.getTranslation('contact_success') : 'Thank you! We will get back to you shortly.';
+                window.showNotification(msg, 'success');
+
+                // Reset form
+                form.reset();
+            } catch (error) {
+                // Show error message
+                const errorMsg = error.message || 'Failed to send message. Please try again.';
+                window.showNotification(errorMsg, 'error');
+            } finally {
+                // Re-enable button
+                submitBtn.disabled = false;
+                submitBtn.textContent = originalText;
+            }
+        });
+    </script>
+</body>
+
+</html>

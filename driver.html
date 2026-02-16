@@ -1,0 +1,366 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Driver Dashboard | ARTÉVA Maison</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:wght@400;500;600;700&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="assets/css/main.css">
+    <link rel="stylesheet" href="assets/css/components.css">
+    <link rel="icon" type="image/png" href="assets/images/favicon.png">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+        integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
+    <style>
+        :root {
+            --app-bg: #f5f5f7;
+            --card-bg: #ffffff;
+            --primary: #1a1a1a;
+            --accent: #c9a962;
+            --success: #10b981;
+            --text: #1a1a1a;
+            --text-muted: #86868b;
+        }
+
+        body {
+            background-color: var(--app-bg);
+            margin: 0;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+        }
+
+        .driver-app {
+            max-width: 600px;
+            margin: 0 auto;
+            background: var(--app-bg);
+            min-height: 100vh;
+            position: relative;
+        }
+
+        /* Header */
+        .app-header {
+            background: var(--card-bg);
+            padding: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 1px 0 rgba(0, 0, 0, 0.05);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .avatar {
+            width: 40px;
+            height: 40px;
+            background: var(--primary);
+            color: #fff;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+        }
+
+        .driver-name {
+            font-size: 16px;
+            margin: 0;
+            font-weight: 600;
+        }
+
+        .status-indicator {
+            font-size: 12px;
+            color: var(--success);
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .status-indicator::before {
+            content: '';
+            width: 6px;
+            height: 6px;
+            background: var(--success);
+            border-radius: 50%;
+        }
+
+        /* Tabs */
+        .tabs {
+            background: var(--card-bg);
+            padding: 0 20px;
+            display: flex;
+            gap: 20px;
+            border-bottom: 1px solid #eee;
+        }
+
+        .tab-btn {
+            padding: 15px 0;
+            border: none;
+            background: none;
+            font-size: 14px;
+            font-weight: 500;
+            color: var(--text-muted);
+            cursor: pointer;
+            position: relative;
+        }
+
+        .tab-btn.active {
+            color: var(--primary);
+        }
+
+        .tab-btn.active::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 2px;
+            background: var(--primary);
+        }
+
+        /* Orders List */
+        .orders-list {
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .order-card {
+            background: var(--card-bg);
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+            border: 1px solid rgba(0, 0, 0, 0.05);
+            transition: transform 0.2s;
+        }
+
+        .order-card:active {
+            transform: scale(0.98);
+        }
+
+        .order-header {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 12px;
+        }
+
+        .order-id {
+            font-weight: 700;
+            color: var(--primary);
+        }
+
+        .badge {
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: 11px;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+
+        .badge.processing {
+            background: #fff8e1;
+            color: #b7860b;
+        }
+
+        .badge.out_for_delivery {
+            background: #e3f2fd;
+            color: #1976d2;
+        }
+
+        .badge.delivered {
+            background: #e8f5e9;
+            color: #2e7d32;
+        }
+
+        .info-row {
+            display: flex;
+            align-items: flex-start;
+            gap: 10px;
+            margin-bottom: 8px;
+            font-size: 14px;
+            color: #444;
+        }
+
+        .icon {
+            opacity: 0.5;
+            min-width: 18px;
+        }
+
+        .btn-block {
+            width: 100%;
+            background: var(--primary);
+            color: white;
+            padding: 12px;
+            border-radius: 8px;
+            font-weight: 600;
+            margin-top: 15px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        /* Map View */
+        .map-view {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: var(--card-bg);
+            z-index: 200;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .map-header {
+            padding: 15px;
+            border-bottom: 1px solid #eee;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .btn-back {
+            border: none;
+            background: #f5f5f7;
+            padding: 8px 12px;
+            border-radius: 6px;
+            font-weight: 600;
+            cursor: pointer;
+        }
+
+        #map {
+            flex: 1;
+            width: 100%;
+        }
+
+        .map-controls {
+            padding: 20px;
+            background: var(--card-bg);
+            border-top: 1px solid #eee;
+            display: grid;
+            gap: 10px;
+        }
+
+        .action-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+        }
+
+        .btn-action {
+            padding: 15px;
+            border-radius: 10px;
+            border: 1px solid #eee;
+            background: #f9f9f9;
+            font-weight: 600;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 5px;
+            font-size: 13px;
+        }
+
+        .btn-main {
+            background: var(--primary);
+            color: white;
+            width: 100%;
+            padding: 16px;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: 600;
+            margin-top: 10px;
+        }
+
+        .btn-main.finish {
+            background: var(--success);
+        }
+
+        .hidden {
+            display: none !important;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="driver-app">
+        <!-- Header -->
+        <header class="app-header">
+            <div class="user-info">
+                <div class="avatar" id="driverAvatar">D</div>
+                <div>
+                    <h1 class="driver-name" id="driverName">Driver</h1>
+                    <span class="status-indicator">Online</span>
+                </div>
+            </div>
+            <button id="logoutBtn" class="btn-icon">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4"></path>
+                    <polyline points="16 17 21 12 16 7"></polyline>
+                    <line x1="21" y1="12" x2="9" y2="12"></line>
+                </svg>
+            </button>
+        </header>
+
+        <!-- Tabs -->
+        <div class="tabs">
+            <button class="tab-btn active" onclick="switchTab('active')">Active Orders</button>
+            <button class="tab-btn" onclick="switchTab('history')">History</button>
+        </div>
+
+        <!-- Content -->
+        <div class="tab-content">
+            <!-- Active Orders Tab -->
+            <div id="activeOrders" class="orders-list">
+                <!-- Populated by JS -->
+                <div class="loading-spinner"></div>
+            </div>
+
+            <!-- History Tab -->
+            <div id="historyOrders" class="orders-list hidden">
+                <!-- Populated by JS -->
+            </div>
+        </div>
+
+        <!-- Map Modal (Hidden by default, shown when viewing details) -->
+        <div id="mapView" class="map-view hidden">
+            <div class="map-header">
+                <button class="btn-back" onclick="closeMap()">← Back</button>
+                <h3>Route & Details</h3>
+            </div>
+            <div id="map"></div>
+            <div class="map-controls" id="activeOrderControls">
+                <!-- Controls injected by JS -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+        integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+    <script src="/socket.io/socket.io.js"></script>
+    <script src="assets/js/config.js"></script>
+    <script src="assets/js/api.js"></script>
+    <script src="assets/js/driver.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const user = window.AuthAPI.getUser();
+            if (user) {
+                document.getElementById('driverName').textContent = user.name;
+            }
+        });
+    </script>
+</body>
+
+</html>

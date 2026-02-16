@@ -1,0 +1,465 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Account - ARTEVA Maison">
+    <title data-i18n="account">Account | ARTEVA Maison</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:wght@400;500;600;700&family=Noto+Sans+Arabic:wght@300;400;500;600;700&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="assets/css/main.css">
+    <link rel="stylesheet" href="assets/css/components.css">
+    <link rel="stylesheet" href="assets/css/pages.css">
+
+    <!-- Flag Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flag-icons@7.2.3/css/flag-icons.min.css">
+    <link rel="icon" type="image/png" href="assets/images/favicon.png">
+</head>
+
+<body>
+    <!-- Header -->
+    <header class="header" id="header">
+        <div class="header-inner">
+            <div class="header-left">
+                <button class="menu-toggle" id="menuToggle" aria-label="Toggle Menu">
+                    <span></span><span></span><span></span>
+                </button>
+                <nav class="main-nav" id="mainNav">
+                    <div class="nav-item"><a href="index.html" class="nav-link">Home</a></div>
+                    <div class="nav-item">
+                        <a href="#" class="nav-link"><span data-i18n="categories">Categories</span><svg
+                                xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                stroke-width="2">
+                                <path d="M6 9l6 6 6-6" />
+                            </svg></a>
+                        <div class="dropdown-menu">
+                            <a href="collection.html?cat=crystals" class="dropdown-item">Crystals<span
+                                    class="ar">كريستال</span></a>
+                            <a href="collection.html?cat=glassware" class="dropdown-item">Glassware<span
+                                    class="ar">الأواني الزجاجية</span></a>
+                            <a href="collection.html?cat=vases" class="dropdown-item">Vases<span
+                                    class="ar">المزهريات</span></a>
+                            <a href="collections.html" class="dropdown-item">View All<span class="ar">عرض
+                                    الكل</span></a>
+                        </div>
+                    </div>
+                    <div class="nav-item"><a href="collections.html" class="nav-link">Collections</a></div>
+                    <div class="nav-item"><a href="contact.html" class="nav-link">Contact</a></div>
+                </nav>
+            </div>
+            <div class="logo">
+                <a href="index.html"><span class="logo-text"><span class="main">ARTÉVA</span><span
+                            class="sub">MAISON</span></span></a>
+            </div>
+            <div class="header-right">
+                <div class="lang-switcher">
+                    <button id="lang-en" class="lang-btn active">EN</button>
+                    <span class="lang-separator">|</span>
+                    <button id="lang-ar" class="lang-btn">AR</button>
+                </div>
+                <div class="header-currency">
+                    <div class="currency-selector">
+                        <button class="currency-trigger" aria-label="Select Currency">
+                            <span class="currency-flag fi fi-kw"></span>
+                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
+                                stroke="currentColor" stroke-width="2"
+                                style="width: 12px; height: 12px; margin-left: 2px;">
+                                <path d="M6 9l6 6 6-6" />
+                            </svg>
+                        </button>
+                        <div class="currency-dropdown">
+                            <div class="currency-option active" data-currency="KWD">
+                                <span class="currency-option-flag fi fi-kw" aria-label="Kuwait"></span>
+                                <div class="currency-option-info">
+                                    <div class="currency-option-code" style="display: none;">KWD</div>
+                                    <div class="currency-option-name">Kuwaiti Dinar</div>
+                                </div>
+                            </div>
+                            <div class="currency-option" data-currency="SAR">
+                                <span class="currency-option-flag fi fi-sa" aria-label="Saudi Arabia"></span>
+                                <div class="currency-option-info">
+                                    <div class="currency-option-code" style="display: none;">SAR</div>
+                                    <div class="currency-option-name">Saudi Riyal</div>
+                                </div>
+                            </div>
+                            <div class="currency-option" data-currency="AED">
+                                <span class="currency-option-flag fi fi-ae" aria-label="UAE"></span>
+                                <div class="currency-option-info">
+                                    <div class="currency-option-code" style="display: none;">AED</div>
+                                    <div class="currency-option-name">UAE Dirham</div>
+                                </div>
+                            </div>
+                            <div class="currency-option" data-currency="QAR">
+                                <span class="currency-option-flag fi fi-qa" aria-label="Qatar"></span>
+                                <div class="currency-option-info">
+                                    <div class="currency-option-code" style="display: none;">QAR</div>
+                                    <div class="currency-option-name">Qatari Riyal</div>
+                                </div>
+                            </div>
+                            <div class="currency-option" data-currency="BHD">
+                                <span class="currency-option-flag fi fi-bh" aria-label="Bahrain"></span>
+                                <div class="currency-option-info">
+                                    <div class="currency-option-code" style="display: none;">BHD</div>
+                                    <div class="currency-option-name">Bahraini Dinar</div>
+                                </div>
+                            </div>
+                            <div class="currency-option" data-currency="OMR">
+                                <span class="currency-option-flag fi fi-om" aria-label="Oman"></span>
+                                <div class="currency-option-info">
+                                    <div class="currency-option-code" style="display: none;">OMR</div>
+                                    <div class="currency-option-name">Omani Rial</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <button class="header-icon" id="searchToggle" aria-label="Search">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                        stroke-width="2">
+                        <circle cx="11" cy="11" r="8" />
+                        <path d="M21 21l-4.35-4.35" />
+                    </svg>
+                </button>
+                <a href="account.html" class="header-icon" aria-label="Account">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                        stroke-width="2">
+                        <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
+                        <circle cx="12" cy="7" r="4" />
+                    </svg>
+                </a>
+                <button class="header-icon cart-icon" id="cartToggle" aria-label="Cart">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                        stroke-width="2">
+                        <path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z" />
+                        <line x1="3" y1="6" x2="21" y2="6" />
+                        <path d="M16 10a4 4 0 0 1-8 0" />
+                    </svg>
+                    <span class="cart-count" id="cartCount">0</span>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Mobile Menu -->
+    <div class="mobile-menu" id="mobileMenu">
+        <div class="mobile-menu-header">
+            <div class="logo"><a href="index.html"><span class="logo-text"><span class="main">ARTÉVA</span><span
+                            class="sub">MAISON</span></span></a></div>
+            <button class="mobile-menu-close" id="mobileMenuClose" aria-label="Close Menu">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                    stroke-width="2">
+                    <line x1="18" y1="6" x2="6" y2="18" />
+                    <line x1="6" y1="6" x2="18" y2="18" />
+                </svg>
+            </button>
+        </div>
+        <nav class="mobile-nav">
+            <div class="mobile-nav-item"><a href="index.html" class="mobile-nav-link">Home</a></div>
+            <div class="mobile-nav-item"><a href="collections.html" class="mobile-nav-link">Collections</a></div>
+            <div class="mobile-nav-item"><a href="contact.html" class="mobile-nav-link">Contact</a></div>
+        </nav>
+    </div>
+
+    <!-- Search Modal -->
+    <div class="search-modal" id="searchModal">
+        <button class="search-close" id="searchClose" aria-label="Close Search">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                stroke-width="2">
+                <line x1="18" y1="6" x2="6" y2="18" />
+                <line x1="6" y1="6" x2="18" y2="18" />
+            </svg>
+        </button>
+        <div class="search-modal-content">
+            <div class="search-input-wrapper">
+                <span class="search-input-icon"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
+                        stroke="currentColor" stroke-width="2">
+                        <circle cx="11" cy="11" r="8" />
+                        <path d="M21 21l-4.35-4.35" />
+                    </svg></span>
+                <input type="text" class="search-input" id="searchInput" placeholder="Search for products..."
+                    autocomplete="off">
+            </div>
+        </div>
+    </div>
+
+    <!-- Cart Drawer -->
+    <div class="cart-drawer" id="cartDrawer">
+        <div class="cart-header">
+            <h3 class="cart-title">Your Cart</h3>
+            <button class="cart-close" id="cartClose" aria-label="Close Cart">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                    stroke-width="2">
+                    <line x1="18" y1="6" x2="6" y2="18" />
+                    <line x1="6" y1="6" x2="18" y2="18" />
+                </svg>
+            </button>
+        </div>
+        <div class="cart-items" id="cartItems">
+            <div class="cart-empty" id="cartEmpty">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                    stroke-width="2">
+                    <path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z" />
+                    <line x1="3" y1="6" x2="21" y2="6" />
+                    <path d="M16 10a4 4 0 0 1-8 0" />
+                </svg>
+                <p>Your cart is empty</p>
+                <a href="collections.html" class="btn btn-primary">Continue Shopping</a>
+            </div>
+        </div>
+        <div class="cart-footer" id="cartFooter" style="display: none;">
+            <div class="cart-subtotal"><span>Subtotal</span><strong id="cartSubtotal">0.000 KWD</strong></div>
+            <a href="cart.html" class="btn btn-primary cart-checkout-btn">View Cart</a>
+        </div>
+    </div>
+
+    <div class="overlay" id="overlay"></div>
+
+    <main class="account-page">
+        <div class="container">
+            <div class="auth-container">
+                <div class="auth-tabs">
+                    <button class="auth-tab active" data-tab="login" data-i18n="login">Login</button>
+                    <button class="auth-tab" data-tab="register" data-i18n="register">Register</button>
+                </div>
+
+                <div class="auth-form" id="loginForm">
+                    <h2 class="auth-title" data-i18n="welcome_back">Welcome Back</h2>
+                    <form id="loginFormElement">
+                        <div class="form-group">
+                            <label class="form-label" for="loginEmail" data-i18n="email_address">Email Address</label>
+                            <input type="email" class="form-input" id="loginEmail" required>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label" for="loginPassword" data-i18n="password">Password</label>
+                            <input type="password" class="form-input" id="loginPassword" required>
+                        </div>
+                        <button type="submit" class="btn btn-primary" data-i18n="sign_in">Sign In</button>
+                    </form>
+                    <div class="auth-links">
+                        <a href="forgot-password.html" data-i18n="forgot_password">Forgot your password?</a>
+                    </div>
+                </div>
+
+                <div class="auth-form" id="registerForm" style="display: none;">
+                    <h2 class="auth-title" data-i18n="create_account">Create Account</h2>
+                    <form id="registerFormElement">
+                        <div class="form-group">
+                            <label class="form-label" for="regName" data-i18n="full_name">Full Name</label>
+                            <input type="text" class="form-input" id="regName" required>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label" for="regEmail" data-i18n="email_address">Email Address</label>
+                            <input type="email" class="form-input" id="regEmail" required>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label" for="regPhone" data-i18n="phone_number">Phone Number</label>
+                            <input type="tel" class="form-input" id="regPhone" placeholder="+965 XXXX XXXX">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label" for="regPassword" data-i18n="password">Password</label>
+                            <input type="password" class="form-input" id="regPassword" required>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label" for="regConfirm" data-i18n="confirm_password">Confirm
+                                Password</label>
+                            <input type="password" class="form-input" id="regConfirm" required>
+                        </div>
+                        <button type="submit" class="btn btn-primary" data-i18n="create_account">Create Account</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-grid">
+                <div class="footer-brand">
+                    <div class="logo"><a href="index.html"><span class="logo-text"><span class="main">ARTÉVA</span><span
+                                    class="sub">MAISON</span></span></a></div>
+                    <p>Discover the art of luxury living with our exquisite collection of handcrafted home décor.</p>
+                </div>
+                <div class="footer-links-section">
+                    <h4 class="footer-title">Quick Links</h4>
+                    <div class="footer-links">
+                        <a href="index.html">Home</a>
+                        <a href="collections.html">Collections</a>
+                        <a href="contact.html">Contact Us</a>
+                    </div>
+                </div>
+                <div class="footer-contact">
+                    <h4 class="footer-title">Contact</h4>
+                    <div class="footer-contact-item">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2">
+                            <path
+                                d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z" />
+                        </svg>
+                        <div>
+                            <p>+965 6561 1566</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p class="footer-copyright">© 2026 ARTÉVA Maison. All rights reserved.</p>
+                <!-- GCC Currency Switcher -->
+                <div class="footer-currency">
+                    <span class="currency-label">Currency:</span>
+                    <div class="currency-options">
+                        <button class="currency-btn active" data-currency="KWD">KWD</button>
+                        <button class="currency-btn" data-currency="SAR">SAR</button>
+                        <button class="currency-btn" data-currency="AED">AED</button>
+                        <button class="currency-btn" data-currency="QAR">QAR</button>
+                        <button class="currency-btn" data-currency="BHD">BHD</button>
+                        <button class="currency-btn" data-currency="OMR">OMR</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <script src="assets/js/config.js"></script>
+    <script src="assets/js/api.js"></script>
+    <script src="assets/js/i18n.js"></script>
+    <script src="assets/js/main.js"></script>
+    <script src="assets/js/cart.js"></script>
+    <script src="assets/js/currency.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const tabs = document.querySelectorAll('.auth-tab');
+            const loginForm = document.getElementById('loginForm');
+            const registerForm = document.getElementById('registerForm');
+            const authContainer = document.querySelector('.auth-container');
+
+            // Check if already logged in
+            if (window.AuthAPI && window.AuthAPI.isLoggedIn()) {
+                showDashboard();
+            }
+
+            tabs.forEach(tab => {
+                tab.addEventListener('click', () => {
+                    tabs.forEach(t => t.classList.remove('active'));
+                    tab.classList.add('active');
+                    if (tab.dataset.tab === 'login') {
+                        loginForm.style.display = 'block';
+                        registerForm.style.display = 'none';
+                    } else {
+                        loginForm.style.display = 'none';
+                        registerForm.style.display = 'block';
+                    }
+                });
+            });
+
+            // Register form submission
+            document.getElementById('registerFormElement').addEventListener('submit', async function (e) {
+                e.preventDefault();
+                const name = document.getElementById('regName').value;
+                const email = document.getElementById('regEmail').value;
+                const phone = document.getElementById('regPhone').value;
+                const pass = document.getElementById('regPassword').value;
+                const confirm = document.getElementById('regConfirm').value;
+                const btn = this.querySelector('button[type="submit"]');
+
+                if (pass !== confirm) {
+                    window.showNotification(window.getTranslation ? window.getTranslation('passwords_mismatch') : 'Passwords do not match', 'error');
+                    return;
+                }
+
+                btn.disabled = true;
+                btn.textContent = window.getTranslation ? window.getTranslation('creating_account') : 'Creating account...';
+
+                try {
+                    await window.AuthAPI.register(name, email, pass, phone);
+                    window.showNotification(window.getTranslation ? window.getTranslation('account_created') : 'Account created successfully!', 'success');
+                    handleRedirect();
+                } catch (error) {
+                    window.showNotification(error.message || (window.getTranslation ? window.getTranslation('registration_failed') : 'Registration failed'), 'error');
+                    btn.disabled = false;
+                    btn.textContent = window.getTranslation ? window.getTranslation('create_account') : 'Create Account';
+                }
+            });
+
+            // Login form submission
+            document.getElementById('loginFormElement').addEventListener('submit', async function (e) {
+                e.preventDefault();
+                const email = document.getElementById('loginEmail').value;
+                const password = document.getElementById('loginPassword').value;
+                const btn = this.querySelector('button[type="submit"]');
+
+                btn.disabled = true;
+                btn.textContent = window.getTranslation ? window.getTranslation('signing_in') : 'Signing in...';
+
+                try {
+                    await window.AuthAPI.login(email, password);
+                    window.showNotification(window.getTranslation ? window.getTranslation('login_success') : 'Login successful! Welcome back.', 'success');
+                    handleRedirect();
+                } catch (error) {
+                    window.showNotification(error.message || (window.getTranslation ? window.getTranslation('login_failed') : 'Login failed'), 'error');
+                    btn.disabled = false;
+                    btn.textContent = window.getTranslation ? window.getTranslation('sign_in') : 'Sign In';
+                }
+            });
+
+            // Handle post-auth redirect
+            function handleRedirect() {
+                const urlParams = new URLSearchParams(window.location.search);
+                const redirectUrl = urlParams.get('redirect');
+
+                if (redirectUrl) {
+                    // Validate redirect URL to be internal only (simple check)
+                    if (redirectUrl === 'checkout') {
+                        window.location.href = 'checkout.html';
+                        return;
+                    }
+                }
+
+                showDashboard();
+            }
+
+            // Check URL params for initial state
+            const urlParams = new URLSearchParams(window.location.search);
+            if (urlParams.get('action') === 'register') {
+                document.querySelector('[data-tab="register"]').click();
+            }
+
+            function showDashboard() {
+                const user = window.AuthAPI.getUser();
+                const welcomeUser = window.getTranslation ? window.getTranslation('welcome_user') : 'Welcome';
+                const dashboardDesc = window.getTranslation ? window.getTranslation('dashboard_desc') : 'Manage your account, orders, and preferences.';
+                const checkoutText = window.getTranslation ? window.getTranslation('checkout') : 'Checkout';
+                const viewOrdersText = window.getTranslation ? window.getTranslation('view_orders') : 'View My Orders';
+                const manageAddressesText = window.getTranslation ? window.getTranslation('manage_addresses') : 'Manage Addresses';
+                const logoutText = window.getTranslation ? window.getTranslation('logout') : 'Logout';
+
+                authContainer.innerHTML = `
+                    <div class="dashboard-welcome">
+                        <h2 class="auth-title">${welcomeUser}, ${user?.name || 'User'}!</h2>
+                        <p style="color: var(--text-muted); margin-bottom: var(--space-6);">${dashboardDesc}</p>
+                        
+                        <div class="dashboard-grid" style="display: grid; gap: var(--space-4); margin-bottom: var(--space-6);">
+                            ${user?.role === 'admin' ? `<a href="admin.html" class="btn btn-primary" style="text-align: center; background-color: var(--color-gold); border-color: var(--color-gold);">Admin Dashboard</a>` : ''}
+                            ${user?.role === 'driver' ? `<a href="driver.html" class="btn btn-primary" style="text-align: center; background-color: #004085; border-color: #004085;">Driver Dashboard</a>` : ''}
+                            <a href="checkout.html" class="btn btn-primary" style="text-align: center;">${checkoutText}</a>
+                            <a href="orders.html" class="btn btn-secondary" style="width: 100%; display:inline-block; text-align:center; padding:10px;">${viewOrdersText}</a>
+                            <a href="addresses.html" class="btn btn-secondary" style="width: 100%; display:inline-block; text-align:center; padding:10px; border: 1px solid var(--border-light); background: transparent; color: var(--color-text);">${manageAddressesText}</a>
+                            <button id="logoutBtn" class="btn btn-outline" style="width: 100%; border: 1px solid var(--border-light);">${logoutText}</button>
+                        </div>
+                    </div>
+                `;
+
+                document.getElementById('logoutBtn').addEventListener('click', () => {
+                    window.AuthAPI.logout();
+                    window.location.reload();
+                });
+            }
+        });
+    </script>
+</body>
+
+</html>

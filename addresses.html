@@ -1,0 +1,482 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Addresses - ARTEVA Maison</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:wght@400;500;600;700&family=Noto+Sans+Arabic:wght@300;400;500;600;700&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="assets/css/main.css">
+    <link rel="stylesheet" href="assets/css/components.css">
+    <link rel="stylesheet" href="assets/css/pages.css">
+
+    <!-- Flag Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flag-icons@7.2.3/css/flag-icons.min.css">
+    <link rel="icon" type="image/png" href="assets/images/icons/favicon.png">
+    <style>
+        .address-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: var(--space-4);
+        }
+
+        .address-card {
+            background: var(--bg-primary);
+            border: 1px solid var(--border-light);
+            border-radius: var(--radius-md);
+            padding: var(--space-4);
+            position: relative;
+            transition: border-color var(--transition-fast);
+        }
+
+        .address-card:hover {
+            border-color: var(--color-gold);
+        }
+
+        .address-card.default {
+            border-color: var(--color-gold);
+            background-color: rgba(201, 169, 98, 0.05);
+        }
+
+        .address-label {
+            font-weight: var(--fw-bold);
+            margin-bottom: var(--space-2);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .default-badge {
+            font-size: 10px;
+            background: var(--color-gold);
+            color: #fff;
+            padding: 2px 6px;
+            border-radius: 4px;
+            text-transform: uppercase;
+        }
+
+        .address-details {
+            color: var(--text-secondary);
+            font-size: var(--fs-sm);
+            line-height: 1.6;
+            margin-bottom: var(--space-4);
+        }
+
+        .address-actions {
+            display: flex;
+            gap: var(--space-2);
+            border-top: 1px solid var(--border-light);
+            padding-top: var(--space-2);
+        }
+
+        .btn-text-sm {
+            font-size: var(--fs-xs);
+            font-weight: var(--fw-medium);
+            cursor: pointer;
+            transition: color var(--transition-fast);
+        }
+
+        .btn-text-sm:hover {
+            text-decoration: underline;
+        }
+
+        .text-danger {
+            color: #dc3545;
+        }
+
+        .add-address-card {
+            border: 2px dashed var(--border-light);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 200px;
+            cursor: pointer;
+            transition: all var(--transition-fast);
+        }
+
+        .add-address-card:hover {
+            border-color: var(--color-gold);
+            background-color: var(--bg-secondary);
+        }
+
+        .add-icon {
+            font-size: 24px;
+            margin-bottom: var(--space-2);
+            color: var(--color-gold);
+        }
+
+        /* Modal Styles */
+        .address-modal-overlay {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            /* Reset any transforms from conflicting classes */
+            transform: none;
+        }
+
+        .modal-content {
+            background-color: var(--bg-primary);
+            margin: 10% auto;
+            padding: var(--space-6);
+            border-radius: var(--radius-lg);
+            max-width: 500px;
+            width: 90%;
+            position: relative;
+        }
+
+        .close-modal {
+            position: absolute;
+            top: var(--space-4);
+            right: var(--space-4);
+            font-size: 24px;
+            cursor: pointer;
+        }
+    </style>
+</head>
+
+<body>
+    <!-- Header -->
+    <header class="header" id="header">
+        <div class="header-inner">
+            <div class="header-left">
+                <button class="menu-toggle" id="menuToggle" aria-label="Toggle Menu">
+                    <span></span><span></span><span></span>
+                </button>
+                <nav class="main-nav" id="mainNav">
+                    <div class="nav-item"><a href="index.html" class="nav-link" data-i18n="home">Home</a></div>
+                    <div class="nav-item">
+                        <a href="#" class="nav-link"><span data-i18n="categories">Categories</span><svg
+                                xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                stroke-width="2">
+                                <path d="M6 9l6 6 6-6" />
+                            </svg></a>
+                        <div class="dropdown-menu">
+                            <a href="collection.html?cat=crystals" class="dropdown-item"
+                                data-i18n="crystals">Crystals</a>
+                            <a href="collection.html?cat=glassware" class="dropdown-item"
+                                data-i18n="glassware">Glassware</a>
+                            <a href="collection.html?cat=vases" class="dropdown-item" data-i18n="vases_bowls">Vases</a>
+                            <a href="collections.html" class="dropdown-item" data-i18n="view_all">View All</a>
+                        </div>
+                    </div>
+                    <div class="nav-item"><a href="collections.html" class="nav-link"
+                            data-i18n="collections">Collections</a></div>
+                    <div class="nav-item"><a href="contact.html" class="nav-link" data-i18n="contact">Contact</a></div>
+                </nav>
+            </div>
+            <div class="logo">
+                <a href="index.html"><span class="logo-text"><span class="main">ARTÉVA</span><span
+                            class="sub">MAISON</span></span></a>
+            </div>
+            <div class="header-right">
+                <div class="lang-switcher">
+                    <button id="lang-en" class="lang-btn active">EN</button>
+                    <span class="lang-separator">|</span>
+                    <button id="lang-ar" class="lang-btn">AR</button>
+                </div>
+                <div class="header-currency">
+                    <div class="currency-selector">
+                        <button class="currency-trigger" aria-label="Select Currency">
+                            <span class="currency-flag fi fi-kw"></span>
+                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
+                                stroke="currentColor" stroke-width="2"
+                                style="width: 12px; height: 12px; margin-left: 2px;">
+                                <path d="M6 9l6 6 6-6" />
+                            </svg>
+                        </button>
+                        <div class="currency-dropdown">
+                            <div class="currency-option active" data-currency="KWD">
+                                <span class="currency-option-flag fi fi-kw" aria-label="Kuwait"></span>
+                                <div class="currency-option-info">
+                                    <div class="currency-option-code" style="display: none;">KWD</div>
+                                    <div class="currency-option-name">Kuwaiti Dinar</div>
+                                </div>
+                            </div>
+                            <div class="currency-option" data-currency="SAR">
+                                <span class="currency-option-flag fi fi-sa" aria-label="Saudi Arabia"></span>
+                                <div class="currency-option-info">
+                                    <div class="currency-option-code" style="display: none;">SAR</div>
+                                    <div class="currency-option-name">Saudi Riyal</div>
+                                </div>
+                            </div>
+                            <div class="currency-option" data-currency="AED">
+                                <span class="currency-option-flag fi fi-ae" aria-label="UAE"></span>
+                                <div class="currency-option-info">
+                                    <div class="currency-option-code" style="display: none;">AED</div>
+                                    <div class="currency-option-name">UAE Dirham</div>
+                                </div>
+                            </div>
+                            <div class="currency-option" data-currency="QAR">
+                                <span class="currency-option-flag fi fi-qa" aria-label="Qatar"></span>
+                                <div class="currency-option-info">
+                                    <div class="currency-option-code" style="display: none;">QAR</div>
+                                    <div class="currency-option-name">Qatari Riyal</div>
+                                </div>
+                            </div>
+                            <div class="currency-option" data-currency="BHD">
+                                <span class="currency-option-flag fi fi-bh" aria-label="Bahrain"></span>
+                                <div class="currency-option-info">
+                                    <div class="currency-option-code" style="display: none;">BHD</div>
+                                    <div class="currency-option-name">Bahraini Dinar</div>
+                                </div>
+                            </div>
+                            <div class="currency-option" data-currency="OMR">
+                                <span class="currency-option-flag fi fi-om" aria-label="Oman"></span>
+                                <div class="currency-option-info">
+                                    <div class="currency-option-code" style="display: none;">OMR</div>
+                                    <div class="currency-option-name">Omani Rial</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <button class="header-icon" id="searchToggle" aria-label="Search">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                        stroke-width="2">
+                        <circle cx="11" cy="11" r="8" />
+                        <path d="M21 21l-4.35-4.35" />
+                    </svg>
+                </button>
+                <a href="account.html" class="header-icon" aria-label="Account">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                        stroke-width="2">
+                        <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
+                        <circle cx="12" cy="7" r="4" />
+                    </svg>
+                </a>
+                <button class="header-icon cart-icon" id="cartToggle" aria-label="Cart">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                        stroke-width="2">
+                        <path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z" />
+                        <line x1="3" y1="6" x2="21" y2="6" />
+                        <path d="M16 10a4 4 0 0 1-8 0" />
+                    </svg>
+                    <span class="cart-count" id="cartCount">0</span>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Mobile Menu -->
+    <div class="mobile-menu" id="mobileMenu">
+        <div class="mobile-menu-header">
+            <div class="logo"><a href="index.html"><span class="logo-text"><span class="main">ARTÉVA</span><span
+                            class="sub">MAISON</span></span></a></div>
+            <button class="mobile-menu-close" id="mobileMenuClose" aria-label="Close Menu">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                    stroke-width="2">
+                    <line x1="18" y1="6" x2="6" y2="18" />
+                    <line x1="6" y1="6" x2="18" y2="18" />
+                </svg>
+            </button>
+        </div>
+        <nav class="mobile-nav">
+            <div class="mobile-nav-item"><a href="index.html" class="mobile-nav-link" data-i18n="home">Home</a></div>
+            <div class="mobile-nav-item"><a href="collections.html" class="mobile-nav-link"
+                    data-i18n="collections">Collections</a></div>
+            <div class="mobile-nav-item"><a href="contact.html" class="mobile-nav-link" data-i18n="contact">Contact</a>
+            </div>
+        </nav>
+    </div>
+
+    <!-- Search Modal -->
+    <div class="search-modal" id="searchModal">
+        <button class="search-close" id="searchClose" aria-label="Close Search">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                stroke-width="2">
+                <line x1="18" y1="6" x2="6" y2="18" />
+                <line x1="6" y1="6" x2="18" y2="18" />
+            </svg>
+        </button>
+        <div class="search-modal-content">
+            <div class="search-input-wrapper">
+                <span class="search-input-icon"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
+                        stroke="currentColor" stroke-width="2">
+                        <circle cx="11" cy="11" r="8" />
+                        <path d="M21 21l-4.35-4.35" />
+                    </svg></span>
+                <input type="text" class="search-input" id="searchInput" placeholder="Search for products..."
+                    autocomplete="off">
+            </div>
+        </div>
+    </div>
+
+    <!-- Cart Drawer -->
+    <div class="cart-drawer" id="cartDrawer">
+        <div class="cart-header">
+            <h3 class="cart-title" data-i18n="your_cart">Your Cart</h3>
+            <button class="cart-close" id="cartClose" aria-label="Close Cart">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                    stroke-width="2">
+                    <line x1="18" y1="6" x2="6" y2="18" />
+                    <line x1="6" y1="6" x2="18" y2="18" />
+                </svg>
+            </button>
+        </div>
+        <div class="cart-items" id="cartItems">
+            <!-- Items injected by cart.js -->
+        </div>
+        <div class="cart-footer" id="cartFooter">
+            <div class="cart-subtotal"><span data-i18n="subtotal">Subtotal</span><strong id="cartSubtotal">0.000
+                    KWD</strong></div>
+            <a href="cart.html" class="btn btn-primary cart-checkout-btn" data-i18n="view_cart">View Cart</a>
+        </div>
+    </div>
+    <div class="overlay" id="overlay"></div>
+
+    <main class="orders-page">
+        <div class="container">
+            <div class="orders-layout">
+                <!-- Sidebar -->
+                <aside class="account-sidebar">
+                    <ul class="account-menu">
+                        <li><a href="account.html" data-i18n="dashboard">Dashboard</a></li>
+                        <li><a href="orders.html" data-i18n="my_orders">My Orders</a></li>
+                        <li><a href="addresses.html" class="active" data-i18n="addresses">Addresses</a></li>
+                        <li><a href="#" id="logoutBtn" data-i18n="logout">Logout</a></li>
+                    </ul>
+                </aside>
+
+                <!-- Content -->
+                <section class="orders-content">
+                    <h1 data-i18n="my_addresses">My Addresses</h1>
+                    <div id="addressesList" class="address-grid">
+                        <!-- Addresses will be injected here -->
+                    </div>
+                </section>
+            </div>
+        </div>
+    </main>
+
+    <!-- Add Address Modal - Renamed class to avoid conflict -->
+    <div id="addressModal" class="address-modal-overlay">
+        <div class="modal-content">
+            <span class="close-modal">&times;</span>
+            <h2 class="auth-title" style="margin-bottom: var(--space-4);">Add New Address</h2>
+            <form id="addAddressForm" class="auth-form">
+                <div class="form-group">
+                    <label class="form-label">Label (e.g. Home, Work)</label>
+                    <input type="text" name="label" class="form-input" required placeholder="Home">
+                </div>
+
+                <!-- Map Section -->
+                <div class="form-group">
+                    <label class="form-label">Location</label>
+                    <div id="addressMap"
+                        style="height: 250px; width: 100%; border-radius: var(--radius-sm); margin-bottom: var(--space-2); z-index: 1;">
+                    </div>
+                    <button type="button" id="locateBtn" class="btn btn-secondary"
+                        style="width: 100%; font-size: 0.8rem; padding: 5px;">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
+                            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                            style="margin-right: 5px;">
+                            <polygon points="3 11 22 2 13 21 11 13 3 11"></polygon>
+                        </svg>
+                        Use My Current Location
+                    </button>
+                    <input type="hidden" name="lat" id="lat">
+                    <input type="hidden" name="lng" id="lng">
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Street Address</label>
+                    <input type="text" name="street" class="form-input" required>
+                </div>
+                <div class="grid grid-cols-2 gap-4">
+                    <div class="form-group">
+                        <label class="form-label">City</label>
+                        <input type="text" name="city" class="form-input" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Postal Code</label>
+                        <input type="text" name="zipCode" class="form-input" required>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Phone Number</label>
+                    <input type="tel" name="phone" class="form-input" placeholder="+965 XXXXXXXX" required>
+                </div>
+                <div class="form-group checkbox-group">
+                    <input type="checkbox" name="isDefault" id="isDefault">
+                    <label for="isDefault">Set as default address</label>
+                </div>
+                <button type="submit" class="btn btn-primary btn-block">Save Address</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-grid">
+                <div class="footer-brand">
+                    <div class="logo"><a href="index.html"><span class="logo-text"><span class="main">ARTÉVA</span><span
+                                    class="sub">MAISON</span></span></a></div>
+                    <p>Discover the art of luxury living with our exquisite collection of handcrafted home décor.</p>
+                </div>
+                <div class="footer-links-section">
+                    <h4 class="footer-title" data-i18n="quick_links">Quick Links</h4>
+                    <div class="footer-links">
+                        <a href="index.html" data-i18n="home">Home</a>
+                        <a href="collections.html" data-i18n="collections">Collections</a>
+                        <a href="contact.html" data-i18n="contact">Contact Us</a>
+                    </div>
+                </div>
+                <div class="footer-contact">
+                    <h4 class="footer-title" data-i18n="contact">Contact</h4>
+                    <div class="footer-contact-item">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2">
+                            <path
+                                d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z" />
+                        </svg>
+                        <div>
+                            <p>+965 6561 1566</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p class="footer-copyright">© 2026 ARTÉVA Maison. All rights reserved.</p>
+                <div class="footer-currency">
+                    <span class="currency-label">Currency:</span>
+                    <div class="currency-options">
+                        <button class="currency-btn active" data-currency="KWD">KWD</button>
+                        <button class="currency-btn" data-currency="SAR">SAR</button>
+                        <button class="currency-btn" data-currency="AED">AED</button>
+                        <button class="currency-btn" data-currency="QAR">QAR</button>
+                        <button class="currency-btn" data-currency="BHD">BHD</button>
+                        <button class="currency-btn" data-currency="OMR">OMR</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Scripts -->
+    <!-- Leaflet CSS & JS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+        integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+        integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+
+    <script src="assets/js/currency.js"></script>
+    <script src="assets/js/i18n.js"></script>
+    <script src="assets/js/main.js"></script>
+    <script src="assets/js/cart.js"></script>
+    <script src="assets/js/config.js"></script>
+    <script src="assets/js/api.js"></script>
+    <script src="assets/js/addresses.js"></script>
+</body>
+
+</html>
