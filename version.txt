@@ -1,5 +1,8 @@
-Version: 2.4
-Last Updated: 2026-02-17 14:35 (Force Deploy Placeholder)
-Commit: b2bc3b6
-Status: Placeholder images confirmed in repo, triggering fresh Vercel deployment
-Note: If 404 persists, clear browser cache and wait 2-3 minutes for Vercel CDN propagation
+Version: 2.5
+Last Updated: 2026-02-17 15:00 (USD Currency + Image Fixes)
+Commit: 50d8b46
+Changes:
+- Added USD (US Dollar) to currency dropdown on all pages
+- Fixed favicon.png location (now in /assets/images/icons/)
+- Rate: 1 KWD = 3.25 USD
+Status: Deployed - Clear cache if needed
