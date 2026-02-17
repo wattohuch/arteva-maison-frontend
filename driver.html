@@ -12,6 +12,8 @@
         rel="stylesheet">
     <link rel="stylesheet" href="assets/css/main.css">
     <link rel="stylesheet" href="assets/css/components.css">
+    <!-- Flag Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flag-icons@7.2.3/css/flag-icons.min.css">
     <link rel="icon" type="image/png" href="assets/images/favicon.png">
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
         integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
@@ -344,6 +346,65 @@
                 <!-- Controls injected by JS -->
             </div>
         </div>
+
+        <!-- Footer with Currency Selector (Mobile Only) -->
+        <footer style="background: #1a1a1a; padding: 20px; text-align: center; margin-top: 40px;">
+            <div class="footer-currency-selector">
+                <div class="currency-selector">
+                    <button class="currency-trigger" aria-label="Select Currency">
+                        <span class="currency-flag fi fi-kw"></span>
+                        <span class="currency-code">KWD</span>
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width: 16px; height: 16px;">
+                            <path d="M18 15l-6-6-6 6" />
+                        </svg>
+                    </button>
+                    <div class="currency-dropdown">
+                        <div class="currency-option active" data-currency="KWD">
+                            <span class="currency-option-flag fi fi-kw"></span>
+                            <div>
+                                <div class="currency-option-code">KWD</div>
+                                <div class="currency-option-name">Kuwaiti Dinar</div>
+                            </div>
+                        </div>
+                        <div class="currency-option" data-currency="SAR">
+                            <span class="currency-option-flag fi fi-sa"></span>
+                            <div>
+                                <div class="currency-option-code">SAR</div>
+                                <div class="currency-option-name">Saudi Riyal</div>
+                            </div>
+                        </div>
+                        <div class="currency-option" data-currency="AED">
+                            <span class="currency-option-flag fi fi-ae"></span>
+                            <div>
+                                <div class="currency-option-code">AED</div>
+                                <div class="currency-option-name">UAE Dirham</div>
+                            </div>
+                        </div>
+                        <div class="currency-option" data-currency="QAR">
+                            <span class="currency-option-flag fi fi-qa"></span>
+                            <div>
+                                <div class="currency-option-code">QAR</div>
+                                <div class="currency-option-name">Qatari Riyal</div>
+                            </div>
+                        </div>
+                        <div class="currency-option" data-currency="BHD">
+                            <span class="currency-option-flag fi fi-bh"></span>
+                            <div>
+                                <div class="currency-option-code">BHD</div>
+                                <div class="currency-option-name">Bahraini Dinar</div>
+                            </div>
+                        </div>
+                        <div class="currency-option" data-currency="OMR">
+                            <span class="currency-option-flag fi fi-om"></span>
+                            <div>
+                                <div class="currency-option-code">OMR</div>
+                                <div class="currency-option-name">Omani Rial</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </footer>
     </div>
 
     <!-- Scripts -->
@@ -352,6 +413,7 @@
     <script src="/socket.io/socket.io.js"></script>
     <script src="assets/js/config.js"></script>
     <script src="assets/js/api.js"></script>
+    <script src="assets/js/currency.js"></script>
     <script src="assets/js/driver.js"></script>
     <script>
         document.addEventListener('DOMContentLoaded', () => {
