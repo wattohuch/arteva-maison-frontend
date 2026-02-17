@@ -361,7 +361,10 @@ const translations = {
         admin_no_orders: "No orders found",
         admin_no_products: "No products found",
         admin_no_users: "No users found",
+        admin_no_drivers: "No drivers found",
         admin_coming_soon: "Coming Soon",
+        admin_save_address: "Save Address",
+        admin_print_receipt: "Print Receipt",
     },
     ar: {
         // Navigation
@@ -597,6 +600,17 @@ const translations = {
         view_details: "عرض التفاصيل",
         reorder: "إعادة الطلب",
 
+        // Tracking Statuses (Specific)
+        status_pending: "قيد الانتظار",
+        status_confirmed: "تم التأكيد",
+        status_processing: "جاري المعالجة",
+        status_packed: "تم التجهيز",
+        status_handed_over: "تم التسليم للسائق",
+        status_out_for_delivery: "خرج للتوصيل",
+        status_on_the_way: "في الطريق",
+        status_delivered: "تم التوصيل",
+        status_cancelled: "ملغي",
+
         // Newsletter
         newsletter_title: "اشترك في نشرتنا البريدية",
         newsletter_subtitle: "كن أول من يعرف عن المنتجات الجديدة والعروض الحصرية",
@@ -717,6 +731,8 @@ const translations = {
         admin_no_users: "لا يوجد مستخدمون",
         admin_no_drivers: "لا يوجد سائقون",
         admin_coming_soon: "قريباً",
+        admin_save_address: "حفظ العنوان",
+        admin_print_receipt: "طباعة الإيصال",
     }
 };
 

@@ -491,7 +491,8 @@
         <p class="newsletter-subtitle" data-i18n="newsletter_subtitle">Be the first to know about new arrivals and
           exclusive offers</p>
         <form class="newsletter-form" id="newsletterForm">
-          <input type="email" class="newsletter-input" placeholder="Enter your email address"
+          <input type="email" id="newsletter-email" name="email" class="newsletter-input" 
+            placeholder="Enter your email address" autocomplete="email"
             data-i18n-placeholder="newsletter_placeholder" required>
           <button type="submit" class="btn btn-primary" data-i18n="subscribe">Subscribe</button>
         </form>
