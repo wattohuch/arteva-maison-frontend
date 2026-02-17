@@ -1002,6 +1002,28 @@ select {
     .header-currency {
         display: none !important;
     }
+    
+    /* Ensure header-right is visible and properly spaced on mobile */
+    .header-right {
+        gap: var(--space-2) !important;
+        min-width: auto !important;
+    }
+    
+    /* Ensure cart icon is visible */
+    .cart-icon {
+        display: flex !important;
+    }
+    
+    /* Reduce header icon size slightly on mobile for better fit */
+    .header-icon {
+        width: 36px !important;
+        height: 36px !important;
+    }
+    
+    .header-icon svg {
+        width: 20px !important;
+        height: 20px !important;
+    }
 }
 
 /* Footer Currency Selector (Mobile Only) */
