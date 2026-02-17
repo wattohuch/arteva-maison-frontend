@@ -1,4 +1,5 @@
-Version: 2.3
-Last Updated: 2026-02-17 (Image Update + Admin Fix)
-Commit: Latest
-Status: Fixed admin currency selector, added placeholder images, all enhanced images deployed
+Version: 2.4
+Last Updated: 2026-02-17 14:35 (Force Deploy Placeholder)
+Commit: b2bc3b6
+Status: Placeholder images confirmed in repo, triggering fresh Vercel deployment
+Note: If 404 persists, clear browser cache and wait 2-3 minutes for Vercel CDN propagation
