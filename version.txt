@@ -1,4 +1,4 @@
-Version: 2.2
-Last Updated: 2026-02-17 (Mobile Currency Footer)
+Version: 2.3
+Last Updated: 2026-02-17 (Image Update + Admin Fix)
 Commit: Latest
-Status: Added footer currency selector to all pages for mobile
+Status: Fixed admin currency selector, added placeholder images, all enhanced images deployed
