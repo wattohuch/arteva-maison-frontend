@@ -11,7 +11,8 @@ const CurrencyAPI = {
         'AED': 12.00,
         'QAR': 12.00,
         'BHD': 1.23,
-        'OMR': 1.26
+        'OMR': 1.26,
+        'USD': 3.25
     },
 
     symbols: {
@@ -20,7 +21,8 @@ const CurrencyAPI = {
         'AED': 'AED',
         'QAR': 'QAR',
         'BHD': 'BHD',
-        'OMR': 'OMR'
+        'OMR': 'OMR',
+        'USD': 'USD'
     },
 
     flags: {
@@ -29,7 +31,8 @@ const CurrencyAPI = {
         'AED': 'ae',
         'QAR': 'qa',
         'BHD': 'bh',
-        'OMR': 'om'
+        'OMR': 'om',
+        'USD': 'us'
     },
 
     names: {
@@ -38,7 +41,8 @@ const CurrencyAPI = {
         'AED': 'UAE Dirham',
         'QAR': 'Qatari Riyal',
         'BHD': 'Bahraini Dinar',
-        'OMR': 'Omani Rial'
+        'OMR': 'Omani Rial',
+        'USD': 'US Dollar'
     },
 
     // Decimals for formatting
@@ -48,6 +52,8 @@ const CurrencyAPI = {
         'AED': 2,
         'QAR': 2,
         'BHD': 3,
+        'OMR': 3,
+        'USD': 2,
         'OMR': 3
     },
 
