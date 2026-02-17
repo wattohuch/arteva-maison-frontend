@@ -991,3 +991,145 @@ select {
         min-width: 180px;
     }
 }
+
+
+/* ============================================
+   MOBILE CURRENCY IN FOOTER
+   ============================================ */
+
+/* Hide currency selector in header on mobile */
+@media (max-width: 768px) {
+    .header-currency {
+        display: none !important;
+    }
+}
+
+/* Footer Currency Selector (Mobile Only) */
+.footer-currency-selector {
+    display: none; /* Hidden by default (desktop) */
+}
+
+@media (max-width: 768px) {
+    .footer-currency-selector {
+        display: block;
+        margin-top: 20px;
+        padding-top: 20px;
+        border-top: 1px solid rgba(255, 255, 255, 0.1);
+    }
+    
+    .footer-currency-selector .currency-selector {
+        position: relative;
+        display: inline-block;
+    }
+    
+    .footer-currency-selector .currency-trigger {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        padding: 8px 12px;
+        background: rgba(255, 255, 255, 0.05);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        border-radius: var(--radius-sm);
+        color: rgba(255, 255, 255, 0.9);
+        font-size: var(--fs-sm);
+        font-weight: var(--fw-medium);
+        cursor: pointer;
+        transition: all var(--transition-fast);
+        min-width: 120px;
+        justify-content: space-between;
+    }
+    
+    .footer-currency-selector .currency-trigger:hover {
+        border-color: var(--color-gold);
+        background: rgba(212, 175, 55, 0.1);
+    }
+    
+    .footer-currency-selector .currency-trigger.active {
+        border-color: var(--color-gold);
+        background: rgba(212, 175, 55, 0.15);
+    }
+    
+    .footer-currency-selector .currency-flag {
+        width: 24px;
+        height: 18px;
+        display: inline-block;
+        border-radius: 2px;
+        flex-shrink: 0;
+    }
+    
+    .footer-currency-selector .currency-code {
+        display: inline-block;
+        color: rgba(255, 255, 255, 0.9);
+    }
+    
+    /* Dropdown opens UPWARD in footer */
+    .footer-currency-selector .currency-dropdown {
+        position: absolute;
+        bottom: calc(100% + 8px); /* Open upward */
+        top: auto;
+        left: 0;
+        right: auto;
+        min-width: 220px;
+        background: var(--bg-dark);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        border-radius: var(--radius-md);
+        box-shadow: 0 -10px 25px rgba(0, 0, 0, 0.3);
+        padding: 8px;
+        opacity: 0;
+        visibility: hidden;
+        transform: translateY(10px); /* Reverse transform for upward */
+        transition: all var(--transition-base);
+        z-index: var(--z-dropdown);
+        max-height: 300px;
+        overflow-y: auto;
+        pointer-events: none;
+    }
+    
+    .footer-currency-selector .currency-selector.open .currency-dropdown {
+        opacity: 1;
+        visibility: visible;
+        transform: translateY(0);
+        pointer-events: auto;
+    }
+    
+    .footer-currency-selector .currency-option {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 10px 12px;
+        border-radius: var(--radius-sm);
+        cursor: pointer;
+        transition: background-color var(--transition-fast);
+        font-size: var(--fs-sm);
+        color: rgba(255, 255, 255, 0.9);
+    }
+    
+    .footer-currency-selector .currency-option:hover {
+        background: rgba(255, 255, 255, 0.1);
+    }
+    
+    .footer-currency-selector .currency-option.active {
+        background: rgba(212, 175, 55, 0.2);
+        color: var(--color-gold);
+    }
+    
+    .footer-currency-selector .currency-option-flag {
+        width: 32px;
+        height: 24px;
+        display: block !important;
+        flex-shrink: 0;
+        border-radius: 3px;
+    }
+    
+    .footer-currency-selector .currency-option-code {
+        display: inline-block !important;
+        font-weight: var(--fw-semibold);
+        color: rgba(255, 255, 255, 0.9);
+    }
+    
+    .footer-currency-selector .currency-option-name {
+        font-size: var(--fs-xs);
+        color: rgba(255, 255, 255, 0.6);
+        font-weight: var(--fw-normal);
+    }
+}

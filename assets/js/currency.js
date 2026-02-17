@@ -122,25 +122,33 @@ const CurrencyAPI = {
             }
         });
 
-        // Update header currency selector - ensure flag is displayed
-        const trigger = document.querySelector('.currency-trigger');
-        if (trigger) {
+        // Update ALL currency selectors (header and footer)
+        const triggers = document.querySelectorAll('.currency-trigger');
+        triggers.forEach(trigger => {
             const flag = trigger.querySelector('.currency-flag');
+            const codeElement = trigger.querySelector('.currency-code');
+            
             if (flag) {
-                // Update flag icon class
                 const flagCode = this.flags[current] || 'kw';
                 flag.className = 'currency-flag fi fi-' + flagCode;
                 flag.style.display = 'block';
             }
-            // Ensure no currency code text is visible
-            const codeElement = trigger.querySelector('.currency-code');
+            
+            // Show code in footer, hide in header
             if (codeElement) {
-                codeElement.style.display = 'none';
+                const isFooter = trigger.closest('.footer-currency-selector');
+                if (isFooter) {
+                    codeElement.textContent = current;
+                    codeElement.style.display = 'inline-block';
+                } else {
+                    codeElement.style.display = 'none';
+                }
             }
+            
             trigger.classList.add('active');
-        }
+        });
 
-        // Update dropdown options - ensure flags are visible and codes are hidden
+        // Update ALL dropdown options
         const options = document.querySelectorAll('.currency-option');
         options.forEach(option => {
             const currencyCode = option.dataset.currency;
@@ -150,23 +158,26 @@ const CurrencyAPI = {
                 option.classList.remove('active');
             }
 
-            // Ensure flag is displayed and code is hidden
             const flagElement = option.querySelector('.currency-option-flag');
             const codeElement = option.querySelector('.currency-option-code');
+            const isFooter = option.closest('.footer-currency-selector');
 
             if (flagElement && this.flags[currencyCode]) {
-                // Update flag icon class
                 const flagCode = this.flags[currencyCode];
                 flagElement.className = 'currency-option-flag fi fi-' + flagCode;
                 flagElement.style.display = 'block';
             }
 
+            // Show code in footer, hide in header
             if (codeElement) {
-                codeElement.style.display = 'none';
+                if (isFooter) {
+                    codeElement.style.display = 'inline-block';
+                } else {
+                    codeElement.style.display = 'none';
+                }
             }
         });
 
-        // Update display text if any
         const display = document.getElementById('currentCurrencyDisplay');
         if (display) display.textContent = current;
     },
@@ -220,13 +231,7 @@ const CurrencyAPI = {
                 return;
             }
 
-            // Header currency dropdown
-            const trigger = document.querySelector('.currency-trigger');
-            const selector = document.querySelector('.currency-selector');
-
-            if (!trigger || !selector) return;
-
-            // Check if clicking on currency option
+            // Currency dropdown options (works for both header and footer)
             const option = e.target.closest('.currency-option');
             if (option) {
                 e.preventDefault();
@@ -234,29 +239,37 @@ const CurrencyAPI = {
                 const code = option.dataset.currency;
                 if (code) {
                     this.setCurrent(code);
-                    selector.classList.remove('open');
+                    // Close the dropdown
+                    const selector = option.closest('.currency-selector');
+                    if (selector) selector.classList.remove('open');
                 }
                 return;
             }
 
-            // Check if clicking on trigger button
-            if (trigger.contains(e.target) || trigger === e.target) {
+            // Currency trigger button (works for both header and footer)
+            const trigger = e.target.closest('.currency-trigger');
+            if (trigger) {
                 e.preventDefault();
                 e.stopPropagation();
-                // Toggle dropdown
-                const isOpen = selector.classList.contains('open');
-                // Close all other dropdowns first
-                document.querySelectorAll('.currency-selector.open').forEach(s => {
-                    if (s !== selector) s.classList.remove('open');
-                });
-                selector.classList.toggle('open', !isOpen);
+                const selector = trigger.closest('.currency-selector');
+                if (selector) {
+                    const isOpen = selector.classList.contains('open');
+                    // Close all other dropdowns first
+                    document.querySelectorAll('.currency-selector.open').forEach(s => {
+                        if (s !== selector) s.classList.remove('open');
+                    });
+                    selector.classList.toggle('open', !isOpen);
+                }
                 return;
             }
 
             // Close dropdown when clicking outside
-            if (selector.classList.contains('open') && !selector.contains(e.target)) {
-                selector.classList.remove('open');
-            }
+            const openSelectors = document.querySelectorAll('.currency-selector.open');
+            openSelectors.forEach(selector => {
+                if (!selector.contains(e.target)) {
+                    selector.classList.remove('open');
+                }
+            });
         });
 
         // Close dropdown on escape key
