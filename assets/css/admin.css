@@ -1250,3 +1250,8 @@ body.admin-body {
         font-size: 11px;
     }
 }
+
+/* Hide footer currency selector in admin panel */
+.admin-body .footer-currency-selector {
+    display: none !important;
+}
