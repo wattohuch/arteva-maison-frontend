@@ -1,0 +1,5 @@
+# Vercel ignore file
+backend/
+node_modules/
+.git/
+*.md
