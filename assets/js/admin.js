@@ -8,9 +8,19 @@
 // ==========================================
 document.addEventListener('DOMContentLoaded', async () => {
     const user = AuthAPI.getUser();
-    if (!AuthAPI.isLoggedIn() || !user || user.role !== 'admin') {
+    if (!AuthAPI.isLoggedIn() || !user || (user.role !== 'admin' && user.role !== 'owner')) {
         window.location.href = 'account.html';
         return;
+    }
+
+    // If owner, hide all sidebar links except dashboard and logout
+    if (user.role === 'owner') {
+        document.querySelectorAll('.sidebar-link').forEach(link => {
+            const href = link.getAttribute('href');
+            if (href !== '#dashboard' && link.id !== 'logoutBtn') {
+                link.parentElement.style.display = 'none';
+            }
+        });
     }
 
     try {
@@ -1121,15 +1131,19 @@ function renderUsersTable(users, isFiltered = false) {
         return;
     }
 
+    const currentUser = AuthAPI.getUser();
+    const isOwner = currentUser && currentUser.role === 'owner';
+
     tbody.innerHTML = users.map(user => `
         <tr>
             <td><strong>${user.name}</strong></td>
             <td>${user.email}</td>
             <td>
-                <select onchange="updateUserRole('${user._id}', this.value)" class="admin-select">
+                <select onchange="updateUserRole('${user._id}', this.value)" class="admin-select" ${user.role === 'owner' && !isOwner ? 'disabled' : ''}>
                     <option value="user" ${user.role === 'user' ? 'selected' : ''}>User</option>
                     <option value="admin" ${user.role === 'admin' ? 'selected' : ''}>Admin</option>
                     <option value="driver" ${user.role === 'driver' ? 'selected' : ''}>Driver</option>
+                    ${isOwner ? `<option value="owner" ${user.role === 'owner' ? 'selected' : ''}>Owner</option>` : ''}
                 </select>
             </td>
             <td>${new Date(user.createdAt).toLocaleDateString()}</td>
