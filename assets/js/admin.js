@@ -485,7 +485,7 @@ function renderProductsTable(products, isFiltered = false) {
 
     tbody.innerHTML = products.map(p => `
         <tr onclick="window.viewProductDetails('${p._id}')">
-            <td><img src="${p.images[0]?.url || 'assets/images/placeholder.png'}" class="product-thumb" alt="${p.name}" onerror="if(typeof handleImageError==='function') handleImageError(this); else this.src='assets/images/placeholder.png';"></td>
+            <td><img src="${p.images[0]?.url || 'assets/images/products/placeholder.png'}" class="product-thumb" alt="${p.name}" onerror="if(typeof handleImageError==='function') handleImageError(this); else this.src='assets/images/products/placeholder.png';"></td>
             <td><strong>${p.name}</strong></td>
             <td>${p.category?.name || '-'}</td>
             <td>${p.price.toFixed(3)}</td>
@@ -621,16 +621,16 @@ window.viewProductDetails = (id) => {
     if (!product) return;
 
     const modal = document.getElementById('productViewModal');
-    const mainImg = product.images[0]?.url || 'assets/images/placeholder.png';
+    const mainImg = product.images[0]?.url || 'assets/images/products/placeholder.png';
     const viewProductImage = document.getElementById('viewProductImage');
     viewProductImage.src = mainImg;
     viewProductImage.onerror = function () {
         if (typeof handleImageError === 'function') handleImageError(this);
-        else this.src = 'assets/images/placeholder.png';
+        else this.src = 'assets/images/products/placeholder.png';
     };
 
     document.getElementById('viewProductGallery').innerHTML = product.images.map(img => `
-        <img src="${img.url}" onclick="document.getElementById('viewProductImage').src='${img.url}'" alt="Gallery" onerror="if(typeof handleImageError==='function') handleImageError(this); else this.src='assets/images/placeholder.png';">
+        <img src="${img.url}" onclick="document.getElementById('viewProductImage').src='${img.url}'" alt="Gallery" onerror="if(typeof handleImageError==='function') handleImageError(this); else this.src='assets/images/products/placeholder.png';">
     `).join('');
 
     document.getElementById('viewProductName').textContent = product.name;
@@ -759,7 +759,7 @@ window.viewOrder = (orderId) => {
     document.getElementById('modalOrderItems').innerHTML = order.items.map(item => `
         <tr>
             <td style="display: flex; align-items: center; gap: 10px;">
-                <img src="${item.image || 'assets/images/placeholder.png'}" class="product-thumb" style="width: 36px; height: 36px;" onerror="if(typeof handleImageError==='function') handleImageError(this); else this.src='assets/images/placeholder.png';">
+                <img src="${item.image || 'assets/images/products/placeholder.png'}" class="product-thumb" style="width: 36px; height: 36px;" onerror="if(typeof handleImageError==='function') handleImageError(this); else this.src='assets/images/products/placeholder.png';">
                 <span>${item.name}</span>
             </td>
             <td style="text-align: center;">${item.price.toFixed(3)}</td>

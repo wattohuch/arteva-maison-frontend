@@ -133,13 +133,13 @@ const CurrencyAPI = {
         triggers.forEach(trigger => {
             const flag = trigger.querySelector('.currency-flag');
             const codeElement = trigger.querySelector('.currency-code');
-            
+
             if (flag) {
                 const flagCode = this.flags[current] || 'kw';
                 flag.className = 'currency-flag fi fi-' + flagCode;
                 flag.style.display = 'block';
             }
-            
+
             // Show code in footer, hide in header
             if (codeElement) {
                 const isFooter = trigger.closest('.footer-currency-selector');
@@ -150,7 +150,7 @@ const CurrencyAPI = {
                     codeElement.style.display = 'none';
                 }
             }
-            
+
             trigger.classList.add('active');
         });
 
@@ -286,6 +286,35 @@ const CurrencyAPI = {
                 });
             }
         });
+
+        // MutationObserver: auto-apply currency when new price elements appear
+        const priceObserver = new MutationObserver((mutations) => {
+            let hasNewPrices = false;
+            mutations.forEach((mutation) => {
+                mutation.addedNodes.forEach((node) => {
+                    if (node.nodeType === 1) {
+                        if (node.matches && (node.matches('.current-price, .price-display') || node.querySelector('.current-price, .price-display'))) {
+                            hasNewPrices = true;
+                        }
+                    }
+                });
+            });
+            if (hasNewPrices) {
+                this.updatePagePrices();
+                this.updateSwitcherUI();
+            }
+        });
+
+        priceObserver.observe(document.body, {
+            childList: true,
+            subtree: true
+        });
+    },
+
+    // Convenience method for other scripts to call after dynamically loading content
+    reapply() {
+        this.updatePagePrices();
+        this.updateSwitcherUI();
     }
 };
 

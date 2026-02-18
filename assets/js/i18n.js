@@ -828,6 +828,7 @@ function setLanguage(lang) {
 
 // Expose translations globally
 window.translations = translations;
+window.setLanguage = setLanguage;
 window.getTranslation = function (key) {
     const lang = localStorage.getItem('site_lang') || 'en';
     if (translations[lang] && translations[lang][key]) {
