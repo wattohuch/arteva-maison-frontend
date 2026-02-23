@@ -83,12 +83,11 @@ const CurrencyAPI = {
         if (window.AuthAPI && window.AuthAPI.isLoggedIn()) {
             window.AuthAPI.updateProfile({ currency: code })
                 .then(updatedUser => {
-                    // Update local user object
                     if (updatedUser && updatedUser.data) {
                         localStorage.setItem('arteva_user', JSON.stringify(updatedUser.data));
                     }
                 })
-                .catch(err => console.error('Failed to sync currency preference:', err));
+                .catch(() => {}); // Silent fail
         }
     },
 
@@ -103,14 +102,11 @@ const CurrencyAPI = {
     // Update all price elements on the page
     updatePagePrices() {
         const currentCode = this.getCurrent();
-        const priceElements = document.querySelectorAll('.product-price .current-price, .price-display');
+        const priceElements = document.querySelectorAll('.current-price, .price-display, .product-current-price');
 
         priceElements.forEach(el => {
-            // Ensure we have the base price
             let basePrice = el.getAttribute('data-base-price');
 
-            // If not set, try to parse from text (only works if text is currently KWD)
-            // Better to rely on data-base-price. If missing, we skip or try to parse once.
             if (!basePrice) {
                 const text = el.textContent.trim().split(' ')[0];
                 const val = parseFloat(text);
@@ -122,8 +118,6 @@ const CurrencyAPI = {
 
             if (basePrice) {
                 const val = parseFloat(basePrice);
-                // Update text
-                // We reconstruct the HTML: value + <span class="price-currency">CODE</span>
                 const rate = this.rates[currentCode];
                 const converted = val * rate;
                 const decimals = this.decimals[currentCode];

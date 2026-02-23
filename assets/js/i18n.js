@@ -816,7 +816,7 @@ function setLanguage(lang) {
                     localStorage.setItem('arteva_user', JSON.stringify(updatedUser.data));
                 }
             })
-            .catch(err => console.error('Failed to sync language preference:', err));
+            .catch(() => {}); // Silent fail
     }
 
     // Apply language to document
@@ -848,8 +848,13 @@ function setLanguage(lang) {
     document.querySelectorAll('[data-i18n]').forEach(element => {
         const key = element.getAttribute('data-i18n');
         if (translations[lang] && translations[lang][key]) {
-            // Use innerHTML to support tags like <br>
-            element.innerHTML = translations[lang][key];
+            // Special handling for currency names - use textContent to preserve structure
+            if (key.startsWith('currency_')) {
+                element.textContent = translations[lang][key];
+            } else {
+                // Use innerHTML to support tags like <br>
+                element.innerHTML = translations[lang][key];
+            }
         }
     });
 
