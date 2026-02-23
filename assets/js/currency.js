@@ -74,11 +74,17 @@ const CurrencyAPI = {
         // Save to localStorage FIRST
         localStorage.setItem('arteva_currency', code);
 
-        // Force immediate UI update with requestAnimationFrame
-        requestAnimationFrame(() => {
-            this.updatePagePrices();
-            this.updateSwitcherUI();
-        });
+        // Force immediate UI update - no delay
+        this.updatePagePrices();
+        this.updateSwitcherUI();
+
+        // Also trigger cart and checkout updates if available
+        if (window.CartAPI && typeof window.CartAPI.updateCartDisplay === 'function') {
+            window.CartAPI.updateCartDisplay();
+        }
+        if (window.updateOrderSummary && typeof window.updateOrderSummary === 'function') {
+            window.updateOrderSummary();
+        }
 
         // Sync with backend if logged in (async, don't wait)
         if (window.AuthAPI && window.AuthAPI.isLoggedIn()) {
@@ -104,12 +110,12 @@ const CurrencyAPI = {
     updatePagePrices() {
         const currentCode = this.getCurrent();
         // Expanded selector to catch all price elements including checkout
-        const priceElements = document.querySelectorAll('.current-price, .price-display, .product-current-price, #checkoutSubtotal, #checkoutTotal, .checkout-item-price');
+        const priceElements = document.querySelectorAll('.current-price, .price-display, .product-current-price, #checkoutSubtotal, #checkoutTotal, .checkout-item-price, .cart-item-price');
 
-        let updated = 0;
         priceElements.forEach(el => {
             let basePrice = el.getAttribute('data-base-price');
 
+            // If no base price stored, extract it (assuming it's in KWD)
             if (!basePrice) {
                 const text = el.textContent.trim().replace(/[^\d.]/g, '');
                 const val = parseFloat(text);
@@ -125,15 +131,12 @@ const CurrencyAPI = {
                 const converted = val * rate;
                 const decimals = this.decimals[currentCode];
 
+                // Update the element with new currency
                 el.innerHTML = `${converted.toFixed(decimals)} <span class="price-currency">${this.symbols[currentCode]}</span>`;
-                updated++;
             }
         });
 
-        // Also trigger cart update if available
-        if (window.CartAPI && typeof window.CartAPI.updateCartDisplay === 'function') {
-            window.CartAPI.updateCartDisplay();
-        }
+        // Don't trigger cart update here to avoid recursion - cart will call this
     },
 
     updateSwitcherUI() {

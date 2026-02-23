@@ -401,6 +401,9 @@ function updateCartPage() {
 // ============================================
 // Export Functions
 // ============================================
+window.CartAPI = {
+    updateCartDisplay: updateCartDisplay
+};
 window.addToCart = addToCart;
 window.removeFromCart = removeFromCart;
 window.updateQuantity = updateQuantity;
