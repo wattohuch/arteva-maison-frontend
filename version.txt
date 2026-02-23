@@ -1,8 +1,28 @@
-Version: 2.5
-Last Updated: 2026-02-17 15:00 (USD Currency + Image Fixes)
-Commit: 50d8b46
-Changes:
-- Added USD (US Dollar) to currency dropdown on all pages
-- Fixed favicon.png location (now in /assets/images/icons/)
-- Rate: 1 KWD = 3.25 USD
-Status: Deployed - Clear cache if needed
+Version: 2.6
+Last Updated: 2026-02-17 16:00 (Owner Role + Final Fixes)
+Commit: bd7f024
+Status: Production Ready
+
+Changes in v2.6:
+✅ USD Currency added to all dropdowns (1 KWD = 3.25 USD)
+✅ Favicon updated to arteva_maison_email_logo.png
+✅ Duplicate USD entries removed and fixed
+✅ Owner role implemented with restricted dashboard access
+✅ Mobile footer currency selector on all pages
+✅ Cart icon visibility fixed on mobile
+✅ Admin panel currency selector hidden
+✅ All placeholder images deployed
+
+Backend Status:
+✅ Owner role with permission restrictions
+✅ USD currency support in User model
+✅ admin@arteva.com set as owner (run seed to apply)
+✅ No syntax errors - verified
+
+Code Quality:
+✅ No trailing whitespace
+✅ Consistent inline styles
+✅ All files syntax-checked
+✅ Ready for production deployment
+
+Deployment: www.artevamaisonkw.com
