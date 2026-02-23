@@ -1255,3 +1255,113 @@ body.admin-body {
 .admin-body .footer-currency-selector {
     display: none !important;
 }
+
+
+/* ==========================================
+   Image Management Styles
+   ========================================== */
+
+.existing-image-item {
+    position: relative;
+    width: 100px;
+    height: 100px;
+    border: 2px solid #ddd;
+    border-radius: 8px;
+    overflow: hidden;
+    background: #f5f5f5;
+    transition: all 0.2s;
+}
+
+.existing-image-item:hover {
+    border-color: #999;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+.existing-image-item img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.existing-image-item.primary {
+    border-color: var(--admin-gold);
+    box-shadow: 0 0 0 2px rgba(201, 169, 98, 0.2);
+}
+
+.existing-image-item .primary-badge {
+    position: absolute;
+    top: 4px;
+    left: 4px;
+    background: var(--admin-gold);
+    color: white;
+    font-size: 10px;
+    padding: 2px 6px;
+    border-radius: 3px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.existing-image-item .delete-image-btn {
+    position: absolute;
+    top: 4px;
+    right: 4px;
+    background: rgba(220, 53, 69, 0.9);
+    color: white;
+    border: none;
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 14px;
+    transition: all 0.2s;
+    z-index: 10;
+    opacity: 0;
+}
+
+.existing-image-item:hover .delete-image-btn {
+    opacity: 1;
+}
+
+.existing-image-item .delete-image-btn:hover {
+    background: rgba(220, 53, 69, 1);
+    transform: scale(1.1);
+}
+
+.existing-image-item .set-primary-btn {
+    position: absolute;
+    bottom: 4px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(0, 0, 0, 0.7);
+    color: white;
+    border: none;
+    font-size: 10px;
+    padding: 3px 8px;
+    border-radius: 3px;
+    cursor: pointer;
+    transition: all 0.2s;
+    white-space: nowrap;
+    opacity: 0;
+}
+
+.existing-image-item:hover .set-primary-btn {
+    opacity: 1;
+}
+
+.existing-image-item .set-primary-btn:hover {
+    background: rgba(0, 0, 0, 0.9);
+}
+
+.existing-image-item.primary .set-primary-btn {
+    display: none;
+}
+
+/* Category Image Styles */
+.existing-image-item.category-image {
+    width: 200px;
+    height: 200px;
+}

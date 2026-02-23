@@ -342,7 +342,14 @@
 
                     <div class="admin-form-group">
                         <label data-i18n="admin_images">Images</label>
-                        <input type="file" name="images" multiple accept="image/*">
+                        
+                        <!-- Existing Images Display -->
+                        <div id="existingProductImages" style="display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 10px;">
+                            <!-- Existing images will be populated here by JavaScript -->
+                        </div>
+                        
+                        <!-- Upload New Images -->
+                        <input type="file" name="images" id="productImagesInput" multiple accept="image/*">
                         <small style="color: var(--admin-text-muted); font-size: 11px; margin-top: 4px; display: block;"
                             data-i18n="admin_first_image_primary">First image will be the primary image</small>
                     </div>

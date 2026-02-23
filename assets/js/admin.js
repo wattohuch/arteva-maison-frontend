@@ -519,6 +519,18 @@ function initUI() {
             formData.set('isNewArrival', productForm.isNewArrival.checked);
             formData.set('isComingSoon', productForm.isComingSoon.checked);
 
+            // Add images to delete
+            if (productImagesToDelete.length > 0) {
+                formData.append('imagesToDelete', JSON.stringify(productImagesToDelete));
+            }
+            
+            // Get primary image URL
+            const primaryImageItem = document.querySelector('.existing-image-item.primary');
+            if (primaryImageItem) {
+                const primaryImageUrl = primaryImageItem.getAttribute('data-image-url');
+                formData.append('primaryImageUrl', primaryImageUrl);
+            }
+
             try {
                 if (id) {
                     await AdminAPI.updateProduct(id, formData);
@@ -529,6 +541,7 @@ function initUI() {
                 }
                 closeProductModal();
                 loadProducts();
+                productImagesToDelete = []; // Reset
             } catch (err) {
                 showToast('Error', err.message || 'Operation failed', 'error');
             }
@@ -575,6 +588,11 @@ async function loadCategories() {
     }
 }
 
+// ==========================================
+// Product Image Management
+// ==========================================
+let productImagesToDelete = []; // Track images to delete
+
 window.editProduct = async (id) => {
     try {
         const response = await ProductsAPI.getById(id);
@@ -601,11 +619,83 @@ window.editProduct = async (id) => {
             if (productForm.isNewArrival) productForm.isNewArrival.checked = !!p.isNewArrival;
             if (productForm.isComingSoon) productForm.isComingSoon.checked = !!p.isComingSoon;
 
+            // Display existing images with delete buttons
+            displayExistingProductImages(p.images || []);
+            
+            // Reset images to delete array
+            productImagesToDelete = [];
+
             productModal.classList.remove('hidden');
         }
     } catch (err) {
         showToast('Error', 'Could not load product', 'error');
     }
+};
+
+function displayExistingProductImages(images) {
+    const container = document.getElementById('existingProductImages');
+    if (!container) return;
+
+    if (!images || images.length === 0) {
+        container.innerHTML = '<p style="color: #999; font-size: 14px;">No images uploaded yet</p>';
+        return;
+    }
+
+    container.innerHTML = images.map((img, index) => `
+        <div class="existing-image-item ${img.isPrimary ? 'primary' : ''}" data-image-url="${img.url}">
+            <img src="${img.url}" alt="Product image ${index + 1}" onerror="this.src='assets/images/products/placeholder.png'">
+            ${img.isPrimary ? '<span class="primary-badge">Primary</span>' : ''}
+            <button type="button" class="delete-image-btn" onclick="deleteProductImage('${img.url}')" title="Delete image">
+                ✕
+            </button>
+            ${!img.isPrimary ? `<button type="button" class="set-primary-btn" onclick="setPrimaryProductImage('${img.url}')">Set Primary</button>` : ''}
+        </div>
+    `).join('');
+}
+
+window.deleteProductImage = (imageUrl) => {
+    if (!confirm('Delete this image?')) return;
+    
+    // Add to delete list
+    if (!productImagesToDelete.includes(imageUrl)) {
+        productImagesToDelete.push(imageUrl);
+    }
+    
+    // Remove from display
+    const imageItem = document.querySelector(`.existing-image-item[data-image-url="${imageUrl}"]`);
+    if (imageItem) {
+        imageItem.remove();
+    }
+    
+    // Check if container is empty
+    const container = document.getElementById('existingProductImages');
+    if (container && container.children.length === 0) {
+        container.innerHTML = '<p style="color: #999; font-size: 14px;">No images remaining</p>';
+    }
+    
+    showToast('Info', 'Image will be deleted when you save', 'info');
+};
+
+window.setPrimaryProductImage = (imageUrl) => {
+    // Update UI to show new primary
+    document.querySelectorAll('.existing-image-item').forEach(item => {
+        item.classList.remove('primary');
+        const badge = item.querySelector('.primary-badge');
+        if (badge) badge.remove();
+        
+        const setPrimaryBtn = item.querySelector('.set-primary-btn');
+        if (setPrimaryBtn) setPrimaryBtn.style.display = 'block';
+    });
+    
+    const selectedItem = document.querySelector(`.existing-image-item[data-image-url="${imageUrl}"]`);
+    if (selectedItem) {
+        selectedItem.classList.add('primary');
+        selectedItem.insertAdjacentHTML('afterbegin', '<span class="primary-badge">Primary</span>');
+        const setPrimaryBtn = selectedItem.querySelector('.set-primary-btn');
+        if (setPrimaryBtn) setPrimaryBtn.style.display = 'none';
+    }
+    
+    showToast('Info', 'Primary image updated', 'info');
 };
 
 window.deleteProduct = async (id) => {
