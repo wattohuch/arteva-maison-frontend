@@ -13,15 +13,8 @@ document.addEventListener('DOMContentLoaded', async () => {
         return;
     }
 
-    // If owner, hide all sidebar links except dashboard and logout
-    if (user.role === 'owner') {
-        document.querySelectorAll('.sidebar-link').forEach(link => {
-            const href = link.getAttribute('href');
-            if (href !== '#dashboard' && link.id !== 'logoutBtn') {
-                link.parentElement.style.display = 'none';
-            }
-        });
-    }
+    // Owner has full access to all sections (highest privilege)
+    // No restrictions on sidebar for owner
 
     try {
         // Initialize language
@@ -419,11 +412,21 @@ async function loadDashboard() {
         const response = await AdminAPI.getStats();
         if (response.success) {
             const { totalUsers, totalProducts, totalOrders, totalRevenue, recentOrders } = response.data;
+            const user = AuthAPI.getUser();
 
             document.getElementById('statMembers').textContent = totalUsers;
             document.getElementById('statProducts').textContent = totalProducts;
             document.getElementById('statOrders').textContent = totalOrders;
-            document.getElementById('statRevenue').textContent = totalRevenue.toFixed(3) + ' KWD';
+            
+            // Only owner can see revenue
+            const revenueCard = document.querySelector('.stat-card:has(#statRevenue)');
+            if (user.role === 'owner') {
+                document.getElementById('statRevenue').textContent = totalRevenue.toFixed(3) + ' KWD';
+                if (revenueCard) revenueCard.style.display = '';
+            } else {
+                // Hide revenue for non-owners
+                if (revenueCard) revenueCard.style.display = 'none';
+            }
 
             window.dashboardOrders = recentOrders;
             renderRecentOrders(recentOrders);
