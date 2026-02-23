@@ -27,3 +27,7 @@ const Config = {
 
 // Export to window for global access
 window.Config = Config;
+
+// CRITICAL: Also export API_BASE_URL directly for backward compatibility
+window.API_BASE_URL = Config.API_BASE_URL;
+var API_BASE_URL = Config.API_BASE_URL;

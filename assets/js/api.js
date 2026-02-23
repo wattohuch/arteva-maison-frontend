@@ -3,11 +3,12 @@
  * Handles all communication with the backend API
  */
 
-// API_BASE_URL is defined in config.js - just ensure it's on window
-if (typeof API_BASE_URL !== 'undefined') {
-    window.API_BASE_URL = API_BASE_URL;
-}
-
+// Ensure API_BASE_URL is available - fallback chain
+const getApiBaseUrl = () => {
+    return window.API_BASE_URL || 
+           (window.Config && window.Config.API_BASE_URL) || 
+           'https://arteva-maison-backend-gy1x.onrender.com/api';
+};
 
 // ============================================
 // Auth State
@@ -19,7 +20,7 @@ let currentUser = JSON.parse(localStorage.getItem('arteva_user') || 'null');
 // HTTP Client
 // ============================================
 async function apiRequest(endpoint, options = {}) {
-    const url = `${window.API_BASE_URL || API_BASE_URL}${endpoint}`;
+    const url = `${getApiBaseUrl()}${endpoint}`;
 
     const config = {
         headers: {
