@@ -16,6 +16,7 @@
 
     <!-- Stylesheets -->
     <link rel="stylesheet" href="assets/css/main.css">
+    <link rel="stylesheet" href="assets/css/pages.css">
 
     <!-- Flag Icons -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flag-icons@7.2.3/css/flag-icons.min.css">
@@ -333,42 +334,42 @@
                                 <span class="currency-option-flag fi fi-kw" aria-label="Kuwait"></span>
                                 <div class="currency-option-info">
                                     <div class="currency-option-code" style="display: none;">KWD</div>
-                                    <div class="currency-option-name">Kuwaiti Dinar</div>
+                                    <div class="currency-option-name" data-i18n="currency_kwd">Kuwaiti Dinar</div>
                                 </div>
                             </div>
                             <div class="currency-option" data-currency="SAR">
                                 <span class="currency-option-flag fi fi-sa" aria-label="Saudi Arabia"></span>
                                 <div class="currency-option-info">
                                     <div class="currency-option-code" style="display: none;">SAR</div>
-                                    <div class="currency-option-name">Saudi Riyal</div>
+                                    <div class="currency-option-name" data-i18n="currency_sar">Saudi Riyal</div>
                                 </div>
                             </div>
                             <div class="currency-option" data-currency="AED">
                                 <span class="currency-option-flag fi fi-ae" aria-label="UAE"></span>
                                 <div class="currency-option-info">
                                     <div class="currency-option-code" style="display: none;">AED</div>
-                                    <div class="currency-option-name">UAE Dirham</div>
+                                    <div class="currency-option-name" data-i18n="currency_aed">UAE Dirham</div>
                                 </div>
                             </div>
                             <div class="currency-option" data-currency="QAR">
                                 <span class="currency-option-flag fi fi-qa" aria-label="Qatar"></span>
                                 <div class="currency-option-info">
                                     <div class="currency-option-code" style="display: none;">QAR</div>
-                                    <div class="currency-option-name">Qatari Riyal</div>
+                                    <div class="currency-option-name" data-i18n="currency_qar">Qatari Riyal</div>
                                 </div>
                             </div>
                             <div class="currency-option" data-currency="BHD">
                                 <span class="currency-option-flag fi fi-bh" aria-label="Bahrain"></span>
                                 <div class="currency-option-info">
                                     <div class="currency-option-code" style="display: none;">BHD</div>
-                                    <div class="currency-option-name">Bahraini Dinar</div>
+                                    <div class="currency-option-name" data-i18n="currency_bhd">Bahraini Dinar</div>
                                 </div>
                             </div>
                             <div class="currency-option" data-currency="OMR">
                                 <span class="currency-option-flag fi fi-om" aria-label="Oman"></span>
                                 <div class="currency-option-info">
                                     <div class="currency-option-code" style="display: none;">OMR</div>
-                                    <div class="currency-option-name">Omani Rial</div>
+                                    <div class="currency-option-name" data-i18n="currency_omr">Omani Rial</div>
                                 </div>
                             </div>
                         </div>
@@ -474,7 +475,7 @@
                                 <input type="radio" name="paymentMethod" value="card">
                                 <div class="payment-method-info">
                                     <div class="payment-method-name" data-i18n="credit_card">Credit / Debit Card</div>
-                                    <div class="payment-method-desc" data-i18n="secure_stripe">Secure payment via Stripe
+                                    <div class="payment-method-desc" data-i18n="secure_payment">Secure online payment
                                     </div>
                                 </div>
                                 <div class="payment-method-icons">
@@ -539,7 +540,7 @@
                         <button type="submit" class="checkout-btn" data-i18n="place_order">Place Order</button>
                         <div class="secure-badge">
                             <span>🔒</span>
-                            <span data-i18n="secure_checkout_stripe">Secure checkout powered by Stripe</span>
+                            <span data-i18n="secure_checkout">Secure checkout with encrypted payment</span>
                         </div>
                     </div>
                 </div>

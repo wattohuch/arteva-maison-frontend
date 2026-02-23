@@ -45,6 +45,15 @@ const translations = {
         add_to_cart: "Add to Cart",
         currency: "KWD",
 
+        // Currency Names
+        currency_kwd: "Kuwaiti Dinar",
+        currency_sar: "Saudi Riyal",
+        currency_aed: "UAE Dirham",
+        currency_qar: "Qatari Riyal",
+        currency_bhd: "Bahraini Dinar",
+        currency_omr: "Omani Rial",
+        currency_usd: "US Dollar",
+
         // Collection Pages
         all_collections: "All Collections",
         browse_collections: "Browse our curated collections of luxury home décor",
@@ -87,16 +96,20 @@ const translations = {
         country: "Country",
         postal_code: "Postal Code",
         phone_number: "Phone Number *",
+        delivery_location: "Delivery Location (Pin your address)",
+        use_current_location: "Use Current Location",
+        drag_pin_hint: "Drag the pin to your exact delivery location.",
+        saved_addresses: "Saved Addresses",
         payment_method: "Payment Method",
         credit_card: "Credit / Debit Card",
-        secure_stripe: "Secure payment via Stripe",
+        secure_payment: "Secure online payment",
         knet: "KNET",
         knet_desc: "Kuwait local payment",
         cod: "Cash on Delivery",
         cod_desc: "Pay when you receive",
         order_notes: "Order Notes (Optional)",
         place_order: "Place Order",
-        secure_checkout_stripe: "Secure checkout powered by Stripe",
+        secure_checkout: "Secure checkout with encrypted payment",
 
         // Alerts/Messages
         confirm_clear_cart: "Are you sure you want to clear your cart?",
@@ -412,6 +425,15 @@ const translations = {
         add_to_cart: "أضف للسلة",
         currency: "د.ك",
 
+        // Currency Names
+        currency_kwd: "دينار كويتي",
+        currency_sar: "ريال سعودي",
+        currency_aed: "درهم إماراتي",
+        currency_qar: "ريال قطري",
+        currency_bhd: "دينار بحريني",
+        currency_omr: "ريال عماني",
+        currency_usd: "دولار أمريكي",
+
         // Collection Pages
         all_collections: "كل المجموعات",
         browse_collections: "تصفح مجموعاتنا المختارة من الديكور المنزلي الفاخر",
@@ -454,16 +476,20 @@ const translations = {
         country: "الدولة",
         postal_code: "الرمز البريدي",
         phone_number: "رقم الهاتف *",
+        delivery_location: "موقع التوصيل (حدد عنوانك)",
+        use_current_location: "استخدم موقعي الحالي",
+        drag_pin_hint: "اسحب الدبوس إلى موقع التوصيل الدقيق.",
+        saved_addresses: "العناوين المحفوظة",
         payment_method: "طريقة الدفع",
         credit_card: "بطاقة ائتمان / خصم",
-        secure_stripe: "دفع آمن عبر Stripe",
+        secure_payment: "دفع آمن عبر الإنترنت",
         knet: "كي نت",
         knet_desc: "دفع محلي (الكويت)",
         cod: "الدفع عند الاستلام",
         cod_desc: "ادفع عند استلام طلبك",
         order_notes: "ملاحظات الطلب (اختياري)",
         place_order: "تأكيد الطلب",
-        secure_checkout_stripe: "دفع آمن مدعوم من Stripe",
+        secure_checkout: "دفع آمن مع تشفير المعاملات",
 
         // Alerts/Messages
         confirm_clear_cart: "هل أنت متأكد أنك تريد إفراغ سلة التسوق؟",
