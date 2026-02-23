@@ -510,7 +510,7 @@ function updateOrderSummary() {
 
     // Calculate totals
     let subtotal = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
-    let shipping = subtotal >= 50 ? 0 : 2.5;
+    let shipping = 2.0; // Fixed 2 KD shipping for all orders
     let total = subtotal + shipping;
 
     // Render items
