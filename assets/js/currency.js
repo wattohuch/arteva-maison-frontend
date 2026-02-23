@@ -74,9 +74,11 @@ const CurrencyAPI = {
         // Save to localStorage FIRST
         localStorage.setItem('arteva_currency', code);
 
-        // Update UI immediately
-        this.updatePagePrices();
-        this.updateSwitcherUI();
+        // Force immediate UI update with requestAnimationFrame
+        requestAnimationFrame(() => {
+            this.updatePagePrices();
+            this.updateSwitcherUI();
+        });
 
         // Sync with backend if logged in (async, don't wait)
         if (window.AuthAPI && window.AuthAPI.isLoggedIn()) {
@@ -101,16 +103,17 @@ const CurrencyAPI = {
     // Update all price elements on the page
     updatePagePrices() {
         const currentCode = this.getCurrent();
-        const priceElements = document.querySelectorAll('.current-price, .price-display, .product-current-price');
+        // Expanded selector to catch all price elements including checkout
+        const priceElements = document.querySelectorAll('.current-price, .price-display, .product-current-price, #checkoutSubtotal, #checkoutTotal, .checkout-item-price');
 
         let updated = 0;
         priceElements.forEach(el => {
             let basePrice = el.getAttribute('data-base-price');
 
             if (!basePrice) {
-                const text = el.textContent.trim().split(' ')[0];
+                const text = el.textContent.trim().replace(/[^\d.]/g, '');
                 const val = parseFloat(text);
-                if (!isNaN(val)) {
+                if (!isNaN(val) && val > 0) {
                     basePrice = val;
                     el.setAttribute('data-base-price', basePrice);
                 }
@@ -126,6 +129,11 @@ const CurrencyAPI = {
                 updated++;
             }
         });
+
+        // Also trigger cart update if available
+        if (window.CartAPI && typeof window.CartAPI.updateCartDisplay === 'function') {
+            window.CartAPI.updateCartDisplay();
+        }
     },
 
     updateSwitcherUI() {
