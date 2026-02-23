@@ -53,8 +53,7 @@ const CurrencyAPI = {
         'QAR': 2,
         'BHD': 3,
         'OMR': 3,
-        'USD': 2,
-        'OMR': 3
+        'USD': 2
     },
 
     getCurrent() {
@@ -71,10 +70,10 @@ const CurrencyAPI = {
 
     setCurrent(code) {
         if (!this.rates[code]) return;
-        
+
         // Save to localStorage FIRST
         localStorage.setItem('arteva_currency', code);
-        
+
         // Update UI immediately
         this.updatePagePrices();
         this.updateSwitcherUI();
@@ -87,7 +86,7 @@ const CurrencyAPI = {
                         localStorage.setItem('arteva_user', JSON.stringify(updatedUser.data));
                     }
                 })
-                .catch(() => {}); // Silent fail
+                .catch(() => { }); // Silent fail
         }
     },
 
@@ -127,11 +126,6 @@ const CurrencyAPI = {
                 updated++;
             }
         });
-
-        // Debug: Show alert if no prices updated
-        if (updated === 0 && priceElements.length === 0) {
-            alert('Currency changed to ' + currentCode + '\nPrices will update on next page load.\n\n(No price elements found on this page)');
-        }
     },
 
     updateSwitcherUI() {
@@ -318,7 +312,7 @@ const CurrencyAPI = {
             mutations.forEach((mutation) => {
                 mutation.addedNodes.forEach((node) => {
                     if (node.nodeType === 1) {
-                        if (node.matches && (node.matches('.current-price, .price-display') || node.querySelector('.current-price, .price-display'))) {
+                        if (node.matches && (node.matches('.current-price, .price-display, .product-current-price') || node.querySelector('.current-price, .price-display, .product-current-price'))) {
                             hasNewPrices = true;
                         }
                     }

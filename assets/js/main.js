@@ -25,12 +25,12 @@ document.addEventListener('DOMContentLoaded', function () {
 // ============================================
 function initImageErrorHandling() {
   // Global image error handler - tries .png if .jpeg fails, then placeholder
-  window.handleImageError = function(img) {
+  window.handleImageError = function (img) {
     if (!img || img.dataset.fallbackAttempted) return;
-    
+
     const src = img.src || img.getAttribute('src');
     if (!src) return;
-    
+
     // Try .png if it's .jpeg
     if (src.includes('.jpeg') || src.includes('.jpg')) {
       img.dataset.fallbackAttempted = 'true';
@@ -38,29 +38,29 @@ function initImageErrorHandling() {
       img.src = pngSrc;
       return;
     }
-    
+
     // If already tried or not a jpeg, use placeholder
     img.dataset.fallbackAttempted = 'true';
     img.src = 'assets/images/products/placeholder.png';
   };
-  
+
   // Add error handlers to all existing images
   document.querySelectorAll('img').forEach(img => {
     if (!img.onerror) {
-      img.onerror = function() {
+      img.onerror = function () {
         window.handleImageError(this);
       };
     }
   });
-  
+
   // Use MutationObserver to handle dynamically added images
-  const observer = new MutationObserver(function(mutations) {
-    mutations.forEach(function(mutation) {
-      mutation.addedNodes.forEach(function(node) {
+  const observer = new MutationObserver(function (mutations) {
+    mutations.forEach(function (mutation) {
+      mutation.addedNodes.forEach(function (node) {
         if (node.nodeType === 1) { // Element node
           if (node.tagName === 'IMG') {
             if (!node.onerror) {
-              node.onerror = function() {
+              node.onerror = function () {
                 window.handleImageError(this);
               };
             }
@@ -68,9 +68,9 @@ function initImageErrorHandling() {
           // Also check for images within added nodes
           const images = node.querySelectorAll && node.querySelectorAll('img');
           if (images) {
-            images.forEach(function(img) {
+            images.forEach(function (img) {
               if (!img.onerror) {
-                img.onerror = function() {
+                img.onerror = function () {
                   window.handleImageError(this);
                 };
               }
@@ -80,7 +80,7 @@ function initImageErrorHandling() {
       });
     });
   });
-  
+
   observer.observe(document.body, {
     childList: true,
     subtree: true
@@ -581,12 +581,14 @@ function debounce(func, wait) {
   };
 }
 
-// Format price
+// Format price using CurrencyAPI if available
 function formatPrice(price) {
-  const lang = localStorage.getItem('site_lang') || 'en';
-  const currency = lang === 'ar' ? 'د.ك' : 'KWD';
+  if (window.CurrencyAPI) {
+    const code = window.CurrencyAPI.getCurrent();
+    return window.CurrencyAPI.format(parseFloat(price), code);
+  }
   const formattedPrice = parseFloat(price).toFixed(3);
-  return lang === 'ar' ? `${formattedPrice} ${currency}` : `${formattedPrice} ${currency}`;
+  return `${formattedPrice} KWD`;
 }
 
 // Get URL parameter
