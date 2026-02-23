@@ -104,6 +104,7 @@ const CurrencyAPI = {
         const currentCode = this.getCurrent();
         const priceElements = document.querySelectorAll('.current-price, .price-display, .product-current-price');
 
+        let updated = 0;
         priceElements.forEach(el => {
             let basePrice = el.getAttribute('data-base-price');
 
@@ -123,8 +124,14 @@ const CurrencyAPI = {
                 const decimals = this.decimals[currentCode];
 
                 el.innerHTML = `${converted.toFixed(decimals)} <span class="price-currency">${this.symbols[currentCode]}</span>`;
+                updated++;
             }
         });
+
+        // Debug: Show alert if no prices updated
+        if (updated === 0 && priceElements.length === 0) {
+            alert('Currency changed to ' + currentCode + '\nPrices will update on next page load.\n\n(No price elements found on this page)');
+        }
     },
 
     updateSwitcherUI() {
