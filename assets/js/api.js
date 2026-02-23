@@ -3,13 +3,10 @@
  * Handles all communication with the backend API
  */
 
-// Use Config module if available, otherwise fallback to auto-detection
-var API_BASE_URL = (window.Config && window.Config.API_BASE_URL) || 
-    (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
-        ? 'http://localhost:5000/api'
-        : 'https://arteva-maison-backend-gy1x.onrender.com/api');
-
-window.API_BASE_URL = API_BASE_URL;
+// API_BASE_URL is defined in config.js - just ensure it's on window
+if (typeof API_BASE_URL !== 'undefined') {
+    window.API_BASE_URL = API_BASE_URL;
+}
 
 
 // ============================================
@@ -22,7 +19,7 @@ let currentUser = JSON.parse(localStorage.getItem('arteva_user') || 'null');
 // HTTP Client
 // ============================================
 async function apiRequest(endpoint, options = {}) {
-    const url = `${API_BASE_URL}${endpoint}`;
+    const url = `${window.API_BASE_URL || API_BASE_URL}${endpoint}`;
 
     const config = {
         headers: {
@@ -402,16 +399,40 @@ const ReviewsAPI = {
 };
 
 // ============================================
-// Payments API
+// Payments API (MyFatoorah Integration)
 // ============================================
 const PaymentsAPI = {
-    async createCheckoutSession(shippingAddress, paymentMethod) {
-        return apiRequest('/payments/create-checkout-session', {
-            method: 'POST',
-            body: JSON.stringify({ shippingAddress, paymentMethod })
+    // Get available payment methods (KNET, Cards, Apple Pay)
+    async getPaymentMethods(amount = 1) {
+        return apiRequest(`/payments/methods?amount=${amount}`, {
+            method: 'GET'
         });
     },
 
+    // Create payment session (general)
+    async createPaymentSession(shippingAddress) {
+        return apiRequest('/payments/create-session', {
+            method: 'POST',
+            body: JSON.stringify({ shippingAddress })
+        });
+    },
+
+    // Execute payment with specific method
+    async executePayment(paymentMethodId, shippingAddress) {
+        return apiRequest('/payments/execute', {
+            method: 'POST',
+            body: JSON.stringify({ paymentMethodId, shippingAddress })
+        });
+    },
+
+    // Verify payment status
+    async verifyPayment(paymentId) {
+        return apiRequest(`/payments/verify/${paymentId}`, {
+            method: 'GET'
+        });
+    },
+
+    // Process Cash on Delivery
     async processCOD(shippingAddress, notes) {
         return apiRequest('/payments/cod', {
             method: 'POST',

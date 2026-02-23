@@ -1,0 +1,145 @@
+<!-- ========== STANDARDIZED HEADER - Copy this to all pages ========== -->
+<header class="header" id="header">
+  <div class="header-inner">
+    <!-- Left Side -->
+    <div class="header-left">
+      <button class="menu-toggle" id="menuToggle" aria-label="Toggle Menu">
+        <span></span>
+        <span></span>
+        <span></span>
+      </button>
+
+      <!-- Main Navigation -->
+      <nav class="main-nav" id="mainNav">
+        <div class="nav-item">
+          <a href="index.html" class="nav-link" data-i18n="home">Home</a>
+        </div>
+        <div class="nav-item">
+          <a href="#" class="nav-link">
+            <span data-i18n="categories">Categories</span>
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+              stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M6 9l6 6 6-6" />
+            </svg>
+          </a>
+          <div class="dropdown-menu">
+            <a href="collection.html?cat=new" class="dropdown-item" data-i18n="new_arrivals">New Arrivals</a>
+            <a href="collection.html?cat=crystals" class="dropdown-item" data-i18n="crystals">Crystals</a>
+            <a href="collection.html?cat=lighting" class="dropdown-item" data-i18n="lighting">Lighting</a>
+            <a href="collection.html?cat=vases" class="dropdown-item" data-i18n="vases_bowls">Vases & Bowls</a>
+            <a href="collections.html" class="dropdown-item" data-i18n="view_all">View All</a>
+          </div>
+        </div>
+        <div class="nav-item">
+          <a href="collections.html" class="nav-link" data-i18n="collections">Collections</a>
+        </div>
+        <div class="nav-item">
+          <a href="contact.html" class="nav-link" data-i18n="contact">Contact</a>
+        </div>
+      </nav>
+    </div>
+
+    <!-- Logo (Center) -->
+    <div class="logo">
+      <a href="index.html">
+        <span class="logo-text">
+          <span class="main">ARTÉVA</span>
+          <span class="sub">MAISON</span>
+        </span>
+      </a>
+    </div>
+
+    <!-- Right Side -->
+    <div class="header-right">
+      <!-- Language Switcher -->
+      <div class="lang-switcher">
+        <button id="lang-en" class="lang-btn active">EN</button>
+        <span class="lang-separator">|</span>
+        <button id="lang-ar" class="lang-btn">AR</button>
+      </div>
+
+      <!-- Currency Selector -->
+      <div class="header-currency">
+        <div class="currency-selector">
+          <button class="currency-trigger" aria-label="Select Currency">
+            <span class="currency-flag fi fi-kw"></span>
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+              stroke-width="2" style="width: 12px; height: 12px; margin-left: 2px;">
+              <path d="M6 9l6 6 6-6" />
+            </svg>
+          </button>
+          <div class="currency-dropdown">
+            <div class="currency-option active" data-currency="KWD">
+              <span class="currency-option-flag fi fi-kw"></span>
+              <div class="currency-option-info">
+                <div class="currency-option-code" style="display: none;">KWD</div>
+                <div class="currency-option-name">Kuwaiti Dinar</div>
+              </div>
+            </div>
+            <div class="currency-option" data-currency="SAR">
+              <span class="currency-option-flag fi fi-sa"></span>
+              <div class="currency-option-info">
+                <div class="currency-option-code" style="display: none;">SAR</div>
+                <div class="currency-option-name">Saudi Riyal</div>
+              </div>
+            </div>
+            <div class="currency-option" data-currency="AED">
+              <span class="currency-option-flag fi fi-ae"></span>
+              <div class="currency-option-info">
+                <div class="currency-option-code" style="display: none;">AED</div>
+                <div class="currency-option-name">UAE Dirham</div>
+              </div>
+            </div>
+            <div class="currency-option" data-currency="QAR">
+              <span class="currency-option-flag fi fi-qa"></span>
+              <div class="currency-option-info">
+                <div class="currency-option-code" style="display: none;">QAR</div>
+                <div class="currency-option-name">Qatari Riyal</div>
+              </div>
+            </div>
+            <div class="currency-option" data-currency="BHD">
+              <span class="currency-option-flag fi fi-bh"></span>
+              <div class="currency-option-info">
+                <div class="currency-option-code" style="display: none;">BHD</div>
+                <div class="currency-option-name">Bahraini Dinar</div>
+              </div>
+            </div>
+            <div class="currency-option" data-currency="OMR">
+              <span class="currency-option-flag fi fi-om"></span>
+              <div class="currency-option-info">
+                <div class="currency-option-code" style="display: none;">OMR</div>
+                <div class="currency-option-name">Omani Rial</div>
+              </div>
+            </div>
+            <div class="currency-option" data-currency="USD">
+              <span class="currency-option-flag fi fi-us"></span>
+              <div class="currency-option-info">
+                <div class="currency-option-code" style="display: none;">USD</div>
+                <div class="currency-option-name">US Dollar</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Account Icon -->
+      <a href="account.html" class="header-icon" aria-label="Account">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+          <circle cx="12" cy="7" r="4"></circle>
+        </svg>
+      </a>
+
+      <!-- Cart Icon -->
+      <button class="header-icon cart-icon" id="cartToggle" aria-label="Shopping Cart">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="9" cy="21" r="1"></circle>
+          <circle cx="20" cy="21" r="1"></circle>
+          <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path>
+        </svg>
+        <span class="cart-count" id="cartCount">0</span>
+      </button>
+    </div>
+  </div>
+</header>
+<!-- ========== END STANDARDIZED HEADER ========== -->

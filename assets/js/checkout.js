@@ -1,15 +1,10 @@
 /**
  * ARTEVA Maison - Checkout & Payment Integration
- * Handles checkout flow and payment processing
+ * MyFatoorah Payment Gateway (KNET, Cards, Apple Pay)
  */
 
-var API_BASE_URL = window.API_BASE_URL || (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
-    ? 'http://localhost:5000/api'
-    : 'https://arteva-maison-backend-gy1x.onrender.com/api');
-
-// Stripe public key (loaded from backend or config)
-
-let stripePublicKey = null;
+// Payment methods available
+let availablePaymentMethods = [];
 
 // ============================================
 // Initialize Checkout
@@ -29,8 +24,8 @@ document.addEventListener('DOMContentLoaded', async function () {
         if (window.map) window.map.invalidateSize();
     }, 100);
 
-    // 3. Load configurations
-    await loadStripeConfig();
+    // 3. Load payment methods from MyFatoorah
+    await loadPaymentMethods();
 
     // 4. Initialize saved addresses (will use the map)
     await initSavedAddresses();
@@ -239,16 +234,18 @@ function updateCoordinates(lat, lng) {
 }
 
 // ============================================
-// Load Stripe Config
+// Load Payment Methods from MyFatoorah
 // ============================================
-async function loadStripeConfig() {
+async function loadPaymentMethods() {
     try {
-        // In production, fetch this from your backend
-        // For now, we'll use the publishable key from environment
-        stripePublicKey = 'pk_test_your_stripe_publishable_key_here';
-        // Stripe.js is loaded via script tag in checkout.html
+        const response = await window.PaymentsAPI.getPaymentMethods(1);
+        if (response.success) {
+            availablePaymentMethods = response.data;
+            console.log('Available payment methods:', availablePaymentMethods);
+        }
     } catch (error) {
-        console.error('Failed to load Stripe config:', error);
+        console.error('Failed to load payment methods:', error);
+        // Continue with default methods (COD, KNET, Card)
     }
 }
 
@@ -335,11 +332,13 @@ function initCheckoutForm() {
             await syncCartToServer();
 
             if (paymentMethod === 'card') {
-                await processStripePayment(shippingAddress);
+                await processCardPayment(shippingAddress);
             } else if (paymentMethod === 'cod') {
                 await processCODPayment(shippingAddress);
             } else if (paymentMethod === 'knet') {
                 await processKNETPayment(shippingAddress);
+            } else if (paymentMethod === 'applepay') {
+                await processApplePayPayment(shippingAddress);
             }
         } catch (error) {
             showCheckoutNotification(error.message || (window.getTranslation ? window.getTranslation('payment_failed') : 'Payment failed'), 'error');
@@ -352,41 +351,79 @@ function initCheckoutForm() {
 }
 
 // ============================================
-// Process Stripe Payment
+// Process Card Payment (MyFatoorah)
 // ============================================
-async function processStripePayment(shippingAddress) {
+async function processCardPayment(shippingAddress) {
     if (!window.AuthAPI?.isLoggedIn()) {
         showCheckoutNotification(window.getTranslation ? window.getTranslation('login_required') : 'Please login to checkout', 'error');
         window.location.href = '/account.html?redirect=checkout';
         return;
     }
 
-    // Check if Stripe is enabled
-    if (window.Config && !window.Config.FEATURES.STRIPE_ENABLED) {
-        showCheckoutNotification(
-            window.getTranslation ? window.getTranslation('stripe_unavailable') : 'Card payment is temporarily unavailable. Please use Cash on Delivery.',
-            'warning'
-        );
-        const submitBtn = document.querySelector('button[type="submit"]');
-        if (submitBtn) {
-            submitBtn.disabled = false;
-            submitBtn.textContent = window.getTranslation ? window.getTranslation('place_order') : 'Place Order';
+    try {
+        // Payment Method ID: 2 = VISA/MasterCard
+        const data = await window.PaymentsAPI.executePayment(2, shippingAddress);
+
+        // Redirect to MyFatoorah payment page
+        if (data.success && data.data.paymentUrl) {
+            window.location.href = data.data.paymentUrl;
+        } else {
+            throw new Error('Failed to initiate payment');
         }
+    } catch (error) {
+        console.error('Card payment error:', error);
+        throw error;
+    }
+}
+
+// ============================================
+// Process KNET Payment (MyFatoorah)
+// ============================================
+async function processKNETPayment(shippingAddress) {
+    if (!window.AuthAPI?.isLoggedIn()) {
+        showCheckoutNotification(window.getTranslation ? window.getTranslation('login_required') : 'Please login to checkout', 'error');
+        window.location.href = '/account.html?redirect=checkout';
         return;
     }
 
     try {
-        const data = await window.PaymentsAPI.createCheckoutSession(shippingAddress, 'card');
+        // Payment Method ID: 1 = KNET
+        const data = await window.PaymentsAPI.executePayment(1, shippingAddress);
 
-        // Redirect to Stripe Checkout
-        if (data.url) {
-            window.location.href = data.url;
-        } else if (data.sessionId && window.Stripe) {
-            const stripe = window.Stripe(stripePublicKey);
-            await stripe.redirectToCheckout({ sessionId: data.sessionId });
+        // Redirect to MyFatoorah KNET payment page
+        if (data.success && data.data.paymentUrl) {
+            window.location.href = data.data.paymentUrl;
+        } else {
+            throw new Error('Failed to initiate KNET payment');
         }
     } catch (error) {
-        console.error('Stripe payment error:', error);
+        console.error('KNET payment error:', error);
+        throw error;
+    }
+}
+
+// ============================================
+// Process Apple Pay Payment (MyFatoorah)
+// ============================================
+async function processApplePayPayment(shippingAddress) {
+    if (!window.AuthAPI?.isLoggedIn()) {
+        showCheckoutNotification(window.getTranslation ? window.getTranslation('login_required') : 'Please login to checkout', 'error');
+        window.location.href = '/account.html?redirect=checkout';
+        return;
+    }
+
+    try {
+        // Payment Method ID: 20 = Apple Pay
+        const data = await window.PaymentsAPI.executePayment(20, shippingAddress);
+
+        // Redirect to MyFatoorah Apple Pay page
+        if (data.success && data.data.paymentUrl) {
+            window.location.href = data.data.paymentUrl;
+        } else {
+            throw new Error('Failed to initiate Apple Pay');
+        }
+    } catch (error) {
+        console.error('Apple Pay error:', error);
         throw error;
     }
 }
@@ -420,36 +457,9 @@ async function processCODPayment(shippingAddress) {
 }
 
 // ============================================
-// Process KNET Payment
+// Process KNET Payment (MyFatoorah) - Deprecated, use processKNETPayment above
 // ============================================
-async function processKNETPayment(shippingAddress) {
-    // Check if KNET is enabled
-    if (window.Config && !window.Config.FEATURES.KNET_ENABLED) {
-        showCheckoutNotification(
-            window.getTranslation ? window.getTranslation('knet_unavailable') : 'KNET payment requires merchant setup. Please choose another payment method or contact support.',
-            'warning'
-        );
-
-        const submitBtn = document.querySelector('button[type="submit"]');
-        if (submitBtn) {
-            submitBtn.disabled = false;
-            submitBtn.textContent = window.getTranslation ? window.getTranslation('place_order') : 'Place Order';
-        }
-        return;
-    }
-
-    // KNET implementation would go here when merchant account is ready
-    showCheckoutNotification(
-        window.getTranslation ? window.getTranslation('knet_unavailable') : 'KNET payment requires merchant setup. Please choose another payment method or contact support.',
-        'warning'
-    );
-
-    const submitBtn = document.querySelector('button[type="submit"]');
-    if (submitBtn) {
-        submitBtn.disabled = false;
-        submitBtn.textContent = window.getTranslation ? window.getTranslation('place_order') : 'Place Order';
-    }
-}
+// This function is kept for backward compatibility but redirects to new implementation
 
 // ============================================
 // Initialize Payment Method Selection
@@ -552,7 +562,9 @@ function showCheckoutNotification(message, type = 'info') {
 // ============================================
 // Export Functions
 // ============================================
-window.processStripePayment = processStripePayment;
+window.processCardPayment = processCardPayment;
+window.processKNETPayment = processKNETPayment;
+window.processApplePayPayment = processApplePayPayment;
 window.processCODPayment = processCODPayment;
 window.updateOrderSummary = updateOrderSummary;
 window.syncCartToServer = syncCartToServer;

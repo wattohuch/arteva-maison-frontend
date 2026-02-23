@@ -737,18 +737,26 @@ const translations = {
 };
 
 document.addEventListener('DOMContentLoaded', () => {
-    // Check local storage for language preference
-    // Check local storage or user profile for language preference
-    let currentLang = localStorage.getItem('site_lang') || 'en';
-
+    // CRITICAL: Load language preference IMMEDIATELY
+    // Priority: 1. User profile (if logged in), 2. localStorage, 3. Default 'en'
+    let currentLang = 'en';
+    
+    // Check if user is logged in and has a saved preference
     if (window.AuthAPI && window.AuthAPI.isLoggedIn()) {
         const user = window.AuthAPI.getUser();
         if (user && user.language) {
             currentLang = user.language;
             localStorage.setItem('site_lang', currentLang);
+        } else {
+            // Fall back to localStorage
+            currentLang = localStorage.getItem('site_lang') || 'en';
         }
+    } else {
+        // Not logged in, use localStorage
+        currentLang = localStorage.getItem('site_lang') || 'en';
     }
 
+    // Apply language IMMEDIATELY
     setLanguage(currentLang);
 
     // Attach event listeners to language toggles if they exist
@@ -770,24 +778,31 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 function setLanguage(lang) {
+    // Save to localStorage FIRST
     localStorage.setItem('site_lang', lang);
 
-    // Sync with backend if logged in
+    // Sync with backend if logged in (async, don't wait)
     if (window.AuthAPI && window.AuthAPI.isLoggedIn()) {
-        const user = window.AuthAPI.getUser();
-        if (user && user.language !== lang) {
-            window.AuthAPI.updateProfile({ language: lang })
-                .then(updatedUser => {
-                    // Update local user object
-                    const currentUser = window.AuthAPI.getUser();
-                    currentUser.language = lang;
-                    localStorage.setItem('arteva_user', JSON.stringify(currentUser));
-                })
-                .catch(err => console.error('Failed to sync language preference', err));
-        }
+        window.AuthAPI.updateProfile({ language: lang })
+            .then(updatedUser => {
+                // Update local user object
+                if (updatedUser && updatedUser.data) {
+                    localStorage.setItem('arteva_user', JSON.stringify(updatedUser.data));
+                }
+            })
+            .catch(err => console.error('Failed to sync language preference:', err));
     }
+
+    // Apply language to document
     document.documentElement.lang = lang;
     document.documentElement.dir = lang === 'ar' ? 'rtl' : 'ltr';
+
+    // Add/remove RTL class to body for additional styling
+    if (lang === 'ar') {
+        document.body.classList.add('rtl');
+    } else {
+        document.body.classList.remove('rtl');
+    }
 
     // Toggle active class on buttons
     const langBtnEn = document.getElementById('lang-en');
@@ -803,11 +818,11 @@ function setLanguage(lang) {
         }
     }
 
-    // Apply translations
+    // Apply translations to all elements with data-i18n
     document.querySelectorAll('[data-i18n]').forEach(element => {
         const key = element.getAttribute('data-i18n');
         if (translations[lang] && translations[lang][key]) {
-            // Use innerHTML instead of textContent to support tags like <br>
+            // Use innerHTML to support tags like <br>
             element.innerHTML = translations[lang][key];
         }
     });
@@ -820,10 +835,10 @@ function setLanguage(lang) {
         }
     });
 
-    // Special handling for elements with both English and Arabic text spans (if any exist)
-    // This part is for the specific request to toggle visibility if using the existing structure
-    // But since we are replacing the structure with data-i18n, this might be less relevant for now
-    // unless we keep the dual-span approach.
+    // Update currency display after language change
+    if (window.CurrencyAPI) {
+        window.CurrencyAPI.updatePagePrices();
+    }
 }
 
 // Expose translations globally

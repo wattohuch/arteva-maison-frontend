@@ -58,19 +58,37 @@ const CurrencyAPI = {
     },
 
     getCurrent() {
+        // Priority: 1. User profile (if logged in), 2. localStorage, 3. Default 'KWD'
+        if (window.AuthAPI && window.AuthAPI.isLoggedIn()) {
+            const user = window.AuthAPI.getUser();
+            if (user && user.currency && this.rates[user.currency]) {
+                localStorage.setItem('arteva_currency', user.currency);
+                return user.currency;
+            }
+        }
         return localStorage.getItem('arteva_currency') || 'KWD';
     },
 
     setCurrent(code) {
         if (!this.rates[code]) return;
+        
+        // Save to localStorage FIRST
         localStorage.setItem('arteva_currency', code);
+        
+        // Update UI immediately
         this.updatePagePrices();
         this.updateSwitcherUI();
 
-        // Sync with backend if logged in
+        // Sync with backend if logged in (async, don't wait)
         if (window.AuthAPI && window.AuthAPI.isLoggedIn()) {
             window.AuthAPI.updateProfile({ currency: code })
-                .catch(err => console.error('Failed to sync currency preference', err));
+                .then(updatedUser => {
+                    // Update local user object
+                    if (updatedUser && updatedUser.data) {
+                        localStorage.setItem('arteva_user', JSON.stringify(updatedUser.data));
+                    }
+                })
+                .catch(err => console.error('Failed to sync currency preference:', err));
         }
     },
 
@@ -189,8 +207,9 @@ const CurrencyAPI = {
     },
 
     init() {
-        // Load saved preferences
-        let savedCurrency = localStorage.getItem('arteva_currency');
+        // CRITICAL: Load currency preference IMMEDIATELY
+        // Priority: 1. User profile (if logged in), 2. localStorage, 3. Default 'KWD'
+        let savedCurrency = 'KWD';
 
         // Check if user has a saved preference in their profile
         if (window.AuthAPI && window.AuthAPI.isLoggedIn()) {
@@ -198,15 +217,19 @@ const CurrencyAPI = {
             if (user && user.currency && this.rates[user.currency]) {
                 savedCurrency = user.currency;
                 localStorage.setItem('arteva_currency', savedCurrency);
+            } else {
+                // Fall back to localStorage
+                savedCurrency = localStorage.getItem('arteva_currency') || 'KWD';
             }
+        } else {
+            // Not logged in, use localStorage
+            savedCurrency = localStorage.getItem('arteva_currency') || 'KWD';
         }
-
-        if (!savedCurrency) savedCurrency = 'KWD';
 
         // Immediately hide all currency codes and ensure flags are visible
         document.querySelectorAll('.currency-option-code').forEach(codeEl => {
             codeEl.style.display = 'none';
-            codeEl.textContent = ''; // Clear any text content
+            codeEl.textContent = '';
         });
 
         // Ensure all flags are visible and properly set
@@ -221,10 +244,11 @@ const CurrencyAPI = {
             }
         });
 
+        // Apply currency immediately
         this.updatePagePrices();
         this.updateSwitcherUI();
 
-        // Attach event listeners to switchers - use event delegation with better handling
+        // Attach event listeners to switchers - use event delegation
         document.addEventListener('click', (e) => {
             // Footer currency buttons
             if (e.target.matches('.currency-btn')) {
