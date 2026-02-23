@@ -875,7 +875,7 @@ window.trackDriver = async (orderId, orderNumber) => {
 
     // Initialize socket connection for real-time updates
     if (!trackDriverSocket) {
-        trackDriverSocket = io();
+        trackDriverSocket = io(Config.SOCKET_URL());
     }
 
     // Join order room for location updates

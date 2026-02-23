@@ -242,7 +242,7 @@ function initMap() {
 
 // Init Socket
 function initSocket() {
-    socket = io();
+    socket = io(Config.SOCKET_URL());
     socket.on('connect', () => { if (driverId) socket.emit('join_pilot_room', driverId); });
 }
 
