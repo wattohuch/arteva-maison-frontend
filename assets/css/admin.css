@@ -58,6 +58,14 @@ body.admin-body {
     gap: 14px;
 }
 
+.sidebar-header a {
+    transition: opacity 0.3s ease;
+}
+
+.sidebar-header a:hover {
+    opacity: 0.7;
+}
+
 .sidebar-logo {
     color: var(--admin-gold);
     font-family: 'Playfair Display', serif;
