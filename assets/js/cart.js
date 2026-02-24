@@ -394,8 +394,12 @@ function updateCartPage() {
     const subtotalEl = document.getElementById('cartPageSubtotal');
     const totalEl = document.getElementById('cartPageTotal');
 
-    if (subtotalEl) subtotalEl.innerHTML = formatPrice(getCartTotal());
-    if (totalEl) totalEl.innerHTML = formatPrice(getCartTotal());
+    const subtotal = getCartTotal();
+    const shipping = 2.0; // Fixed 2 KD shipping for all orders in Kuwait
+    const total = subtotal + shipping;
+
+    if (subtotalEl) subtotalEl.innerHTML = formatPrice(subtotal);
+    if (totalEl) totalEl.innerHTML = formatPrice(total);
 }
 
 // ============================================

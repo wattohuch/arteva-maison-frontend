@@ -494,7 +494,7 @@ function updateOrderSummary() {
 
     // Calculate totals
     let subtotal = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
-    let shipping = 2.0; // Fixed 2 KD shipping for all orders
+    let shipping = 2.0; // Fixed 2 KD shipping for all orders in Kuwait
     let total = subtotal + shipping;
 
     // Render items
@@ -514,7 +514,7 @@ function updateOrderSummary() {
 
     // Update totals
     if (subtotalEl) subtotalEl.innerHTML = formatPrice(subtotal);
-    if (shippingEl) shippingEl.innerHTML = shipping > 0 ? formatPrice(shipping) : (window.getTranslation ? window.getTranslation('free') : 'FREE');
+    if (shippingEl) shippingEl.innerHTML = formatPrice(shipping); // Always show 2 KD
     if (totalEl) totalEl.innerHTML = formatPrice(total);
 
     // Trigger currency update

@@ -243,6 +243,10 @@ const translations = {
         view_cart: "View Cart",
         checkout: "Checkout",
 
+        // Delivery
+        delivery_fee: "2 KD delivery in Kuwait",
+        store_pickup: "Store pickup available",
+
         // Product Names
         product_1: "Amber Crystal Candle Holder",
         product_2: "Murano Wave Glass Bowls Set",
@@ -665,6 +669,10 @@ const translations = {
         subtotal: "المجموع الفرعي",
         view_cart: "عرض السلة",
         checkout: "إتمام الشراء",
+
+        // Delivery
+        delivery_fee: "توصيل بـ 2 د.ك في الكويت",
+        store_pickup: "الاستلام من المتجر متاح",
 
         // Product Names
         product_1: "حامل شموع كريستال العنبر",
