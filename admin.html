@@ -41,6 +41,8 @@
                         class="icon">📊</span> <span class="nav-text">Dashboard</span></a></li>
             <li><a href="#products" class="sidebar-link" data-i18n="admin_products"><span class="icon">📦</span> <span
                         class="nav-text">Products</span></a></li>
+            <li><a href="#categories" class="sidebar-link"><span class="icon">📁</span> <span
+                        class="nav-text">Categories</span></a></li>
             <li><a href="#orders" class="sidebar-link" data-i18n="admin_orders"><span class="icon">🛍️</span> <span
                         class="nav-text">Orders</span> <span class="badge hidden" id="newOrderBadge">0</span></a></li>
             <li><a href="#users" class="sidebar-link" data-i18n="admin_users"><span class="icon">👥</span> <span
@@ -151,6 +153,39 @@
                         </thead>
                         <tbody id="productsTableBody">
                             <!-- Populated by JS -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- ========== CATEGORIES ========== -->
+        <div id="categories" class="admin-section hidden">
+            <div class="admin-page-header">
+                <h1 class="admin-page-title">Categories</h1>
+                <button class="admin-btn admin-btn-primary" onclick="openAddCategoryModal()">+ Add Category</button>
+            </div>
+
+            <div class="admin-search-wrap">
+                <span class="admin-search-icon">🔍</span>
+                <input type="text" class="admin-search" id="categorySearch" placeholder="Search categories...">
+            </div>
+
+            <div class="admin-table-wrap">
+                <div class="admin-table-scroll">
+                    <table class="admin-table">
+                        <thead>
+                            <tr>
+                                <th>Image</th>
+                                <th>Name (EN)</th>
+                                <th>Name (AR)</th>
+                                <th>Slug</th>
+                                <th>Status</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="categoriesTableBody">
+                            <tr><td colspan="6" style="text-align: center; padding: 32px;">Loading categories...</td></tr>
                         </tbody>
                     </table>
                 </div>
@@ -538,6 +573,74 @@
             <div class="admin-modal-footer">
                 <button class="admin-btn" onclick="closeTrackDriverModal()" data-i18n="admin_close">Close</button>
             </div>
+        </div>
+    </div>
+
+    <!-- ========== CATEGORY MODAL ========== -->
+    <div id="categoryModal" class="admin-modal hidden">
+        <div class="admin-modal-content" style="max-width: 600px;">
+            <div class="admin-modal-header">
+                <h2 id="categoryModalTitle">Add Category</h2>
+                <button class="admin-btn-icon" onclick="closeCategoryModal()">✕</button>
+            </div>
+            <form id="categoryForm" enctype="multipart/form-data">
+                <input type="hidden" id="categoryId">
+                
+                <div class="admin-form-row">
+                    <div class="admin-form-group">
+                        <label>Name (English) *</label>
+                        <input type="text" name="name" class="admin-input" required placeholder="e.g., Crystals">
+                    </div>
+                </div>
+                
+                <div class="admin-form-row">
+                    <div class="admin-form-group">
+                        <label>Name (Arabic)</label>
+                        <input type="text" name="nameAr" class="admin-input" placeholder="مثال: كريستال" dir="rtl">
+                    </div>
+                </div>
+                
+                <div class="admin-form-row">
+                    <div class="admin-form-group">
+                        <label>Description</label>
+                        <textarea name="description" class="admin-input" rows="3" placeholder="Optional description..."></textarea>
+                    </div>
+                </div>
+                
+                <div class="admin-form-row">
+                    <div class="admin-form-group">
+                        <label>Category Image</label>
+                        
+                        <!-- Existing Image Display -->
+                        <div id="existingCategoryImage" style="margin-bottom: 10px;">
+                            <!-- Existing image will be populated here -->
+                        </div>
+                        
+                        <!-- Upload New Image -->
+                        <input type="file" name="image" id="categoryImageInput" accept="image/*" class="admin-input" onchange="previewCategoryImage(event)">
+                        <small style="color: #666; display: block; margin-top: 4px;">
+                            Recommended: 400x400px, JPG or PNG
+                        </small>
+                        
+                        <!-- Preview for new upload -->
+                        <img id="categoryImagePreview" style="max-width: 200px; margin-top: 10px; display: none; border-radius: 8px; border: 1px solid #ddd;">
+                    </div>
+                </div>
+                
+                <div class="admin-form-row">
+                    <div class="admin-form-group">
+                        <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
+                            <input type="checkbox" name="isActive" checked style="width: auto;">
+                            <span>Active (visible to customers)</span>
+                        </label>
+                    </div>
+                </div>
+                
+                <div class="admin-form-actions">
+                    <button type="button" class="admin-btn-cancel" onclick="closeCategoryModal()">Cancel</button>
+                    <button type="submit" class="admin-btn admin-btn-primary">Save Category</button>
+                </div>
+            </form>
         </div>
     </div>
 

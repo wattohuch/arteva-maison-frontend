@@ -27,7 +27,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     document.addEventListener('click', (e) => {
         const addCard = e.target.closest('.add-address-card');
         if (addCard) {
-            console.log('Add Address clicked');
+            // console.log('Add Address clicked');
             if (modal) {
                 modal.style.display = 'block';
                 // Initialize map after modal is visible

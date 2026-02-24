@@ -421,6 +421,12 @@ async function syncCartWithServer() {
     }
 
     try {
+        // Ensure CartAPI is available
+        if (!window.CartAPI || typeof window.CartAPI.get !== 'function') {
+            console.warn('CartAPI not available yet, skipping sync');
+            return;
+        }
+        
         // Get server cart
         const response = await window.CartAPI.get();
         if (response.success && response.data && response.data.items) {

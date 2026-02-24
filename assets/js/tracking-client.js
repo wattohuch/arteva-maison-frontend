@@ -110,12 +110,12 @@ function initSocket(orderId) {
     socket = io(backendUrl);
 
     socket.on('connect', () => {
-        console.log('Connected to tracking server');
+        // console.log('Connected to tracking server');
         socket.emit('join_order_room', orderId);
     });
 
     socket.on('pilot_location_update', (data) => {
-        console.log('Pilot location update:', data);
+        // console.log('Pilot location update:', data);
         updatePilotMarker(data.lat, data.lng);
     });
 }

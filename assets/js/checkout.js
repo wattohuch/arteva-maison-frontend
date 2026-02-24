@@ -78,14 +78,15 @@ async function initSavedAddresses() {
         });
 
     } catch (error) {
-        console.error('Failed to load saved addresses:', error);
+        // Silently fail - saved addresses are optional
+        // User can still enter address manually
     }
 }
 
 function fillAddressForm(addr) {
     if (!addr) return;
 
-    console.log('Filling address form with:', addr);
+    // console.log('Filling address form with:', addr);
 
     const setVal = (id, val) => {
         const el = document.getElementById(id);
@@ -101,13 +102,13 @@ function fillAddressForm(addr) {
 
     // Map coordinates - Update pin if coordinates exist
     if (addr.coordinates) {
-        console.log('Address has coordinates:', addr.coordinates);
+        // console.log('Address has coordinates:', addr.coordinates);
 
         const lat = parseFloat(addr.coordinates.lat || addr.coordinates.latitude);
         const lng = parseFloat(addr.coordinates.lng || addr.coordinates.longitude);
 
-        console.log('Parsed coordinates:', { lat, lng });
-        console.log('Map exists:', !!window.map, 'Marker exists:', !!window.marker);
+        // console.log('Parsed coordinates:', { lat, lng });
+        // console.log('Map exists:', !!window.map, 'Marker exists:', !!window.marker);
 
         if (!isNaN(lat) && !isNaN(lng) && lat !== 0 && lng !== 0) {
             if (window.map && window.marker) {
@@ -120,7 +121,7 @@ function fillAddressForm(addr) {
                 setTimeout(() => {
                     if (window.map) {
                         window.map.invalidateSize();
-                        console.log('Map updated to:', lat, lng);
+                        // console.log('Map updated to:', lat, lng);
                     }
                 }, 100);
             } else {
@@ -133,7 +134,7 @@ function fillAddressForm(addr) {
                         window.map.setView(newLatLng, 15);
                         updateCoordinates(lat, lng);
                         window.map.invalidateSize();
-                        console.log('Map updated to (retry):', lat, lng);
+                        // console.log('Map updated to (retry):', lat, lng);
                     }
                 }, 500);
             }
@@ -175,7 +176,7 @@ function initMap() {
         draggable: true
     }).addTo(window.map);
 
-    console.log('Map initialized:', !!window.map, 'Marker initialized:', !!window.marker);
+    // console.log('Map initialized:', !!window.map, 'Marker initialized:', !!window.marker);
 
     // Update hidden inputs on drag
     window.marker.on('dragend', function (e) {
@@ -205,8 +206,17 @@ function initMap() {
                         }, 2000);
                     },
                     (error) => {
-                        console.error('Geolocation error:', error);
-                        alert('Could not get your location. Please check browser permissions.');
+                        let errorMessage = 'Could not get your location. ';
+                        if (error.code === error.PERMISSION_DENIED) {
+                            errorMessage += 'Please enable location permissions in your browser settings.';
+                        } else if (error.code === error.POSITION_UNAVAILABLE) {
+                            errorMessage += 'Location information is unavailable.';
+                        } else if (error.code === error.TIMEOUT) {
+                            errorMessage += 'Location request timed out.';
+                        } else {
+                            errorMessage += 'Please check browser permissions.';
+                        }
+                        alert(errorMessage);
                         locateBtn.disabled = false;
                         locateBtn.innerHTML = '<span style="margin-right: 4px;">📍</span> Use Current Location';
                     }
@@ -241,11 +251,10 @@ async function loadPaymentMethods() {
         const response = await window.PaymentsAPI.getPaymentMethods(1);
         if (response.success) {
             availablePaymentMethods = response.data;
-            console.log('Available payment methods:', availablePaymentMethods);
         }
     } catch (error) {
-        console.error('Failed to load payment methods:', error);
-        // Continue with default methods (COD, KNET, Card)
+        // Continue with default methods (COD, KNET, Card) if API fails
+        availablePaymentMethods = [];
     }
 }
 
@@ -268,17 +277,12 @@ async function syncCartToServer() {
         throw new Error('Your cart is empty');
     }
 
-    try {
-        // Clear server cart first using CartAPI
-        await window.CartAPI.clear();
+    // Clear server cart first using CartAPI
+    await window.CartAPI.clear();
 
-        // Add each item to server cart
-        for (const item of localCart) {
-            await window.CartAPI.add(item.id || item._id, item.quantity);
-        }
-    } catch (error) {
-        console.error('Failed to sync cart:', error);
-        throw new Error(error.message || 'Failed to sync cart with server');
+    // Add each item to server cart
+    for (const item of localCart) {
+        await window.CartAPI.add(item.id || item._id, item.quantity);
     }
 }
 
@@ -360,19 +364,14 @@ async function processCardPayment(shippingAddress) {
         return;
     }
 
-    try {
-        // Payment Method ID: 2 = VISA/MasterCard
-        const data = await window.PaymentsAPI.executePayment(2, shippingAddress);
+    // Payment Method ID: 2 = VISA/MasterCard
+    const data = await window.PaymentsAPI.executePayment(2, shippingAddress);
 
-        // Redirect to MyFatoorah payment page
-        if (data.success && data.data.paymentUrl) {
-            window.location.href = data.data.paymentUrl;
-        } else {
-            throw new Error('Failed to initiate payment');
-        }
-    } catch (error) {
-        console.error('Card payment error:', error);
-        throw error;
+    // Redirect to MyFatoorah payment page
+    if (data.success && data.data.paymentUrl) {
+        window.location.href = data.data.paymentUrl;
+    } else {
+        throw new Error('Failed to initiate payment');
     }
 }
 
@@ -386,19 +385,14 @@ async function processKNETPayment(shippingAddress) {
         return;
     }
 
-    try {
-        // Payment Method ID: 1 = KNET
-        const data = await window.PaymentsAPI.executePayment(1, shippingAddress);
+    // Payment Method ID: 1 = KNET
+    const data = await window.PaymentsAPI.executePayment(1, shippingAddress);
 
-        // Redirect to MyFatoorah KNET payment page
-        if (data.success && data.data.paymentUrl) {
-            window.location.href = data.data.paymentUrl;
-        } else {
-            throw new Error('Failed to initiate KNET payment');
-        }
-    } catch (error) {
-        console.error('KNET payment error:', error);
-        throw error;
+    // Redirect to MyFatoorah KNET payment page
+    if (data.success && data.data.paymentUrl) {
+        window.location.href = data.data.paymentUrl;
+    } else {
+        throw new Error('Failed to initiate KNET payment');
     }
 }
 
@@ -412,19 +406,14 @@ async function processApplePayPayment(shippingAddress) {
         return;
     }
 
-    try {
-        // Payment Method ID: 20 = Apple Pay
-        const data = await window.PaymentsAPI.executePayment(20, shippingAddress);
+    // Payment Method ID: 20 = Apple Pay
+    const data = await window.PaymentsAPI.executePayment(20, shippingAddress);
 
-        // Redirect to MyFatoorah Apple Pay page
-        if (data.success && data.data.paymentUrl) {
-            window.location.href = data.data.paymentUrl;
-        } else {
-            throw new Error('Failed to initiate Apple Pay');
-        }
-    } catch (error) {
-        console.error('Apple Pay error:', error);
-        throw error;
+    // Redirect to MyFatoorah Apple Pay page
+    if (data.success && data.data.paymentUrl) {
+        window.location.href = data.data.paymentUrl;
+    } else {
+        throw new Error('Failed to initiate Apple Pay');
     }
 }
 
@@ -438,22 +427,17 @@ async function processCODPayment(shippingAddress) {
         return;
     }
 
-    try {
-        const notes = document.getElementById('orderNotes')?.value || '';
+    const notes = document.getElementById('orderNotes')?.value || '';
 
-        const data = await window.PaymentsAPI.processCOD(shippingAddress, notes);
+    const data = await window.PaymentsAPI.processCOD(shippingAddress, notes);
 
-        // Clear local cart
-        if (window.clearCart) {
-            window.clearCart();
-        }
-
-        // Redirect to success page
-        window.location.href = `/order-success.html?order=${data.data.orderNumber}`;
-    } catch (error) {
-        console.error('COD payment error:', error);
-        throw error;
+    // Clear local cart
+    if (window.clearCart) {
+        window.clearCart();
     }
+
+    // Redirect to success page
+    window.location.href = `/order-success.html?order=${data.data.orderNumber}`;
 }
 
 // ============================================

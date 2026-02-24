@@ -44,7 +44,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             }
         }, 30000);
 
-        console.log('Admin Dashboard v4 Initialized');
+        // console.log('Admin Dashboard v4 Initialized');
     } catch (err) {
         console.error('Initialization error:', err);
         showToast('Error', 'Dashboard initialization failed', 'error');
@@ -208,7 +208,7 @@ function initSocket() {
     const baseUrl = window.API_BASE_URL || (typeof API_BASE_URL !== 'undefined' ? API_BASE_URL : 'https://arteva-maison-backend-gy1x.onrender.com/api');
     const backendUrl = baseUrl.replace('/api', '');
 
-    console.log('🔌 Initializing Socket.io connection to:', backendUrl);
+    // console.log('🔌 Initializing Socket.io connection to:', backendUrl);
 
     socket = io(backendUrl, {
         transports: ['websocket', 'polling'],
@@ -216,18 +216,18 @@ function initSocket() {
     });
 
     socket.on('connect', () => {
-        console.log('🔌 Connected to real-time updates');
+        // console.log('🔌 Connected to real-time updates');
         socket.emit('join_admin_room');
     });
 
     socket.on('order_status_update', (data) => {
-        console.log('Order update:', data);
+        // console.log('Order update:', data);
         refreshActiveSection();
     });
 
     // Listen for admin-specific order status updates
     socket.on('admin_order_status_update', (data) => {
-        console.log('📦 Admin order status update:', data);
+        // console.log('📦 Admin order status update:', data);
 
         // If orders section is visible, update the specific order row
         const ordersSection = document.getElementById('orders');
@@ -241,8 +241,15 @@ function initSocket() {
     });
 
     socket.on('new_order', (data) => {
-        console.log('🆕 New order received:', data);
-        playNotificationSound();
+        // console.log('🆕 New order received:', data);
+        
+        // Use new notification system if available
+        if (typeof handleNewOrderNotification === 'function') {
+            handleNewOrderNotification(data);
+        } else {
+            // Fallback to old method
+            playNotificationSound();
+        }
         showToast('New Order!', `Order #${data.orderNumber || 'Unknown'} received`, 'order');
 
         // Update badge
@@ -323,6 +330,11 @@ function initNavigation() {
             switch (targetId) {
                 case 'dashboard': loadDashboard(); break;
                 case 'products': loadProducts(); break;
+                case 'categories': 
+                    if (typeof initCategoriesManagement === 'function') {
+                        initCategoriesManagement();
+                    }
+                    break;
                 case 'orders':
                     loadOrders();
                     // Clear badge
@@ -418,11 +430,28 @@ async function loadDashboard() {
             document.getElementById('statProducts').textContent = totalProducts;
             document.getElementById('statOrders').textContent = totalOrders;
             
-            // Only owner can see revenue
+            // Revenue handling
             const revenueCard = document.querySelector('.stat-card:has(#statRevenue)');
+            const revenueValue = document.getElementById('statRevenue');
+            
             if (user.role === 'owner') {
-                document.getElementById('statRevenue').textContent = totalRevenue.toFixed(3) + ' KWD';
+                // Show revenue card for owner
                 if (revenueCard) revenueCard.style.display = '';
+                
+                // Check if revenue is unlocked
+                if (typeof isRevenueUnlocked === 'function' && isRevenueUnlocked()) {
+                    // Show actual revenue
+                    if (revenueValue) {
+                        revenueValue.textContent = totalRevenue.toFixed(3) + ' KWD';
+                        revenueValue.style.filter = 'none';
+                    }
+                } else {
+                    // Keep blurred
+                    if (revenueValue) {
+                        revenueValue.textContent = '•••••';
+                        revenueValue.style.filter = 'blur(8px)';
+                    }
+                }
             } else {
                 // Hide revenue for non-owners
                 if (revenueCard) revenueCard.style.display = 'none';
@@ -430,6 +459,11 @@ async function loadDashboard() {
 
             window.dashboardOrders = recentOrders;
             renderRecentOrders(recentOrders);
+            
+            // Initialize revenue protection after dashboard loads
+            if (user.role === 'owner' && typeof initRevenueProtection === 'function') {
+                setTimeout(() => initRevenueProtection(), 100);
+            }
         }
     } catch (err) {
         console.error('Failed to load stats:', err);
@@ -1073,7 +1107,9 @@ async function populateDriverSelects() {
                 select.innerHTML = `<option value="">Select Driver</option>` + options;
             });
         }
-    } catch (err) { /* quiet fail */ }
+    } catch (err) {
+        // Silently fail - driver dropdown will show "Select Driver"
+    }
 }
 
 window.updateOrderStatus = async (id, status) => {
@@ -1110,7 +1146,7 @@ function updateOrderRow(orderIdentifier, newStatus) {
 
     if (!order) {
         // If order not found in current list, reload orders
-        console.log('Order not found in current list, reloading...');
+        // console.log('Order not found in current list, reloading...');
         loadOrders();
         return;
     }
@@ -1121,7 +1157,7 @@ function updateOrderRow(orderIdentifier, newStatus) {
     // Find the row in the table
     const tbody = document.getElementById('ordersTableBody');
     if (!tbody) {
-        console.log('Table body not found');
+        // console.log('Table body not found');
         return;
     }
 
@@ -1192,7 +1228,7 @@ function updateOrderRow(orderIdentifier, newStatus) {
         }
     } else {
         // Row not found, reload the table
-        console.log('Row not found in table, reloading...');
+        // console.log('Row not found in table, reloading...');
         loadOrders();
     }
 }
@@ -1348,3 +1384,271 @@ function loadSettings() {
         });
     }
 }
+
+
+// ==========================================
+// Category Management
+// ==========================================
+let allCategories = [];
+let categoryImageToDelete = false;
+
+async function loadCategories() {
+    try {
+        const response = await fetch(`${API_BASE_URL}/categories`, {
+            headers: {
+                'Authorization': `Bearer ${localStorage.getItem('arteva_token')}`
+            }
+        });
+        const data = await response.json();
+        
+        if (data.success) {
+            allCategories = data.data;
+            renderCategoriesTable(allCategories);
+            
+            // Also update category dropdown in product form
+            updateCategoryDropdown();
+            
+            // Clear search
+            const search = document.getElementById('categorySearch');
+            if (search) search.value = '';
+        }
+    } catch (err) {
+        console.error('Failed to load categories:', err);
+        showToast('Error', 'Failed to load categories', 'error');
+    }
+}
+
+function updateCategoryDropdown() {
+    const select = document.getElementById('categorySelect');
+    if (!select) return;
+    
+    const selectedValue = select.value;
+    let options = '<option value="">Select Category</option>';
+    allCategories.forEach(cat => {
+        options += `<option value="${cat._id}">${cat.name}</option>`;
+    });
+    select.innerHTML = options;
+    if (selectedValue) select.value = selectedValue;
+}
+
+function renderCategoriesTable(categories) {
+    const tbody = document.getElementById('categoriesTableBody');
+    if (!tbody) return;
+
+    if (categories.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="6" style="text-align: center; padding: 32px; color: var(--admin-text-muted);">No categories found</td></tr>';
+        return;
+    }
+
+    tbody.innerHTML = categories.map(cat => `
+        <tr>
+            <td><img src="${cat.image || 'assets/images/products/placeholder.png'}" class="product-thumb" alt="${cat.name}" style="width: 50px; height: 50px; object-fit: cover; border-radius: 4px;" onerror="this.src='assets/images/products/placeholder.png'"></td>
+            <td><strong>${cat.name}</strong></td>
+            <td>${cat.nameAr || '-'}</td>
+            <td><code style="background: #f0f0f0; padding: 2px 6px; border-radius: 3px; font-size: 12px;">${cat.slug}</code></td>
+            <td><span class="status-badge ${cat.isActive ? 'confirmed' : 'cancelled'}">${cat.isActive ? 'Active' : 'Inactive'}</span></td>
+            <td onclick="event.stopPropagation()">
+                <button class="admin-btn-icon" onclick="editCategory('${cat._id}')" title="Edit">✏️</button>
+                <button class="admin-btn-icon delete" onclick="deleteCategory('${cat._id}')" title="Delete">🗑️</button>
+            </td>
+        </tr>
+    `).join('');
+}
+
+window.openAddCategoryModal = () => {
+    const modal = document.getElementById('categoryModal');
+    const form = document.getElementById('categoryForm');
+    if (!form) return;
+    
+    form.reset();
+    document.getElementById('categoryModalTitle').textContent = 'Add Category';
+    document.getElementById('categoryId').value = '';
+    document.getElementById('categoryImagePreview').style.display = 'none';
+    
+    // Clear existing image display
+    const existingContainer = document.getElementById('existingCategoryImage');
+    if (existingContainer) {
+        existingContainer.innerHTML = '';
+        existingContainer.style.display = 'block';
+    }
+    
+    categoryImageToDelete = false;
+    
+    modal.classList.remove('hidden');
+};
+
+window.closeCategoryModal = () => {
+    const modal = document.getElementById('categoryModal');
+    if (modal) modal.classList.add('hidden');
+};
+
+window.editCategory = async (id) => {
+    try {
+        const category = allCategories.find(c => c._id === id);
+        if (!category) return;
+
+        document.getElementById('categoryId').value = category._id;
+        document.getElementById('categoryModalTitle').textContent = 'Edit Category';
+        
+        const form = document.getElementById('categoryForm');
+        if (!form) return;
+        
+        form.name.value = category.name;
+        form.nameAr.value = category.nameAr || '';
+        form.description.value = category.description || '';
+        form.isActive.checked = category.isActive;
+        
+        // Display existing image with delete option
+        displayExistingCategoryImage(category.image);
+        
+        // Reset delete flag
+        categoryImageToDelete = false;
+        
+        // Hide preview
+        document.getElementById('categoryImagePreview').style.display = 'none';
+        
+        document.getElementById('categoryModal').classList.remove('hidden');
+    } catch (err) {
+        console.error('Edit category error:', err);
+        showToast('Error', 'Could not load category', 'error');
+    }
+};
+
+function displayExistingCategoryImage(imageUrl) {
+    const container = document.getElementById('existingCategoryImage');
+    if (!container) return;
+    
+    if (!imageUrl) {
+        container.innerHTML = '<p style="color: #999; font-size: 14px;">No image uploaded yet</p>';
+        return;
+    }
+    
+    container.innerHTML = `
+        <div class="existing-image-item category-image">
+            <img src="${imageUrl}" alt="Category image" onerror="this.src='assets/images/products/placeholder.png'">
+            <button type="button" class="delete-image-btn" onclick="deleteCategoryImage()" title="Delete image">
+                ✕
+            </button>
+        </div>
+    `;
+}
+
+window.deleteCategoryImage = () => {
+    if (!confirm('Delete this image?')) return;
+    
+    categoryImageToDelete = true;
+    
+    // Remove from display
+    const container = document.getElementById('existingCategoryImage');
+    if (container) {
+        container.innerHTML = '<p style="color: #999; font-size: 14px;">Image will be deleted when you save</p>';
+    }
+    
+    showToast('Info', 'Image will be deleted when you save', 'info');
+};
+
+window.previewCategoryImage = (event) => {
+    const file = event.target.files[0];
+    if (file) {
+        const reader = new FileReader();
+        reader.onload = (e) => {
+            const preview = document.getElementById('categoryImagePreview');
+            preview.src = e.target.result;
+            preview.style.display = 'block';
+            
+            // Hide existing image when new one is selected
+            const existingContainer = document.getElementById('existingCategoryImage');
+            if (existingContainer) {
+                existingContainer.style.display = 'none';
+            }
+        };
+        reader.readAsDataURL(file);
+    }
+};
+
+window.deleteCategory = async (id) => {
+    if (!confirm('Delete this category? Products in this category will need to be reassigned.')) return;
+    
+    try {
+        const response = await fetch(`${API_BASE_URL}/categories/${id}`, {
+            method: 'DELETE',
+            headers: {
+                'Authorization': `Bearer ${localStorage.getItem('arteva_token')}`
+            }
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+            showToast('Deleted', 'Category removed successfully', 'success');
+            loadCategories();
+        } else {
+            throw new Error(data.message || 'Failed to delete');
+        }
+    } catch (err) {
+        console.error('Delete category error:', err);
+        showToast('Error', err.message || 'Failed to delete category', 'error');
+    }
+};
+
+// Category form submit handler
+document.addEventListener('DOMContentLoaded', () => {
+    const categoryForm = document.getElementById('categoryForm');
+    if (categoryForm) {
+        categoryForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const id = document.getElementById('categoryId').value;
+            const formData = new FormData(e.target);
+            
+            formData.set('isActive', e.target.isActive.checked);
+            
+            // Add delete flag if image should be deleted
+            if (categoryImageToDelete) {
+                formData.append('deleteImage', 'true');
+            }
+            
+            try {
+                const url = id 
+                    ? `${API_BASE_URL}/categories/${id}`
+                    : `${API_BASE_URL}/categories`;
+                
+                const response = await fetch(url, {
+                    method: id ? 'PUT' : 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${localStorage.getItem('arteva_token')}`
+                    },
+                    body: formData
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    showToast('Success', id ? 'Category updated' : 'Category created', 'success');
+                    closeCategoryModal();
+                    loadCategories();
+                    categoryImageToDelete = false;
+                } else {
+                    throw new Error(data.message || 'Operation failed');
+                }
+            } catch (err) {
+                console.error('Save category error:', err);
+                showToast('Error', err.message || 'Operation failed', 'error');
+            }
+        });
+    }
+    
+    // Category search
+    const categorySearch = document.getElementById('categorySearch');
+    if (categorySearch) {
+        categorySearch.addEventListener('input', (e) => {
+            const q = e.target.value.toLowerCase();
+            const filtered = allCategories.filter(c =>
+                c.name.toLowerCase().includes(q) ||
+                (c.nameAr && c.nameAr.includes(q)) ||
+                (c.slug && c.slug.toLowerCase().includes(q))
+            );
+            renderCategoriesTable(filtered);
+        });
+    }
+});

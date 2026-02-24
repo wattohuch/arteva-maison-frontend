@@ -103,7 +103,7 @@ function initializeSocket() {
     });
 
     socket.on('connect', () => {
-        console.log('🔌 Connected to real-time updates');
+        // console.log('🔌 Connected to real-time updates');
 
         // Rejoin order room if we were tracking
         if (currentOrderNumber) {
@@ -112,12 +112,12 @@ function initializeSocket() {
     });
 
     socket.on('disconnect', () => {
-        console.log('🔌 Disconnected from real-time updates');
+        // console.log('🔌 Disconnected from real-time updates');
     });
 
     // Listen for status updates
     socket.on('order_status_update', (data) => {
-        console.log('📦 Status update received:', data);
+        // console.log('📦 Status update received:', data);
         if (data.orderNumber === currentOrderNumber) {
             updateStatusDisplay(data.status, data.statusHistory);
         }
@@ -125,7 +125,7 @@ function initializeSocket() {
 
     // Listen for location updates
     socket.on('delivery_location_update', (data) => {
-        console.log('📍 Location update received:', data);
+        // console.log('📍 Location update received:', data);
         if (data.lat && data.lng) {
             updatePilotLocation(data.lat, data.lng);
             const lastUpdateText = window.getTranslation ? window.getTranslation('last_update') : 'Last update';
@@ -136,7 +136,7 @@ function initializeSocket() {
 
     // Listen for pilot assignment
     socket.on('pilot_assigned', (data) => {
-        console.log('🚀 Pilot assigned:', data);
+        // console.log('🚀 Pilot assigned:', data);
         if (data.orderNumber === currentOrderNumber) {
             updatePilotInfo(data.pilot);
         }

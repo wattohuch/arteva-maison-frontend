@@ -20,7 +20,9 @@ async function loadNewArrivals() {
             container.innerHTML = '<p class="text-center">No new arrivals yet.</p>';
         }
     } catch (err) {
-        console.error('Failed to load new arrivals:', err);
+        // Silently fail - new arrivals section will remain empty
+        // This is acceptable as it's not critical functionality
+        container.innerHTML = '<p class="text-center">Unable to load new arrivals.</p>';
     }
 }
 

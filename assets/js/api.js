@@ -33,15 +33,26 @@ async function apiRequest(endpoint, options = {}) {
 
     try {
         const response = await fetch(url, config);
+        
+        // Handle network errors
+        if (!response) {
+            throw new Error('Network error. Please check your connection.');
+        }
+
         const data = await response.json();
 
         if (!response.ok) {
-            throw new Error(data.message || 'API request failed');
+            // Provide user-friendly error messages
+            const message = data.message || `Request failed with status ${response.status}`;
+            throw new Error(message);
         }
 
         return data;
     } catch (error) {
-        console.error('API Error:', error);
+        // Re-throw with context for better error handling upstream
+        if (error.message.includes('Failed to fetch')) {
+            throw new Error('Unable to connect to server. Please check your internet connection.');
+        }
         throw error;
     }
 }
@@ -278,15 +289,12 @@ const AdminAPI = {
             }
         };
         // Custom fetch call since apiRequest sets Content-Type to JSON by default
-        try {
-            const response = await fetch(url, options);
+        const response = await fetch(url, options);
+        if (!response.ok) {
             const data = await response.json();
-            if (!response.ok) throw new Error(data.message || 'Request failed');
-            return data;
-        } catch (error) {
-            console.error('API Error:', error);
-            throw error;
+            throw new Error(data.message || 'Failed to create product');
         }
+        return await response.json();
     },
 
     async updateProduct(id, formData) {
@@ -298,15 +306,12 @@ const AdminAPI = {
                 ...(authToken && { 'Authorization': `Bearer ${authToken}` })
             }
         };
-        try {
-            const response = await fetch(url, options);
+        const response = await fetch(url, options);
+        if (!response.ok) {
             const data = await response.json();
-            if (!response.ok) throw new Error(data.message || 'Request failed');
-            return data;
-        } catch (error) {
-            console.error('API Error:', error);
-            throw error;
+            throw new Error(data.message || 'Failed to update product');
         }
+        return await response.json();
     },
 
     async deleteProduct(id) {
