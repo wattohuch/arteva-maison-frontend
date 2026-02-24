@@ -10,6 +10,19 @@ let availablePaymentMethods = [];
 // Initialize Checkout
 // ============================================
 document.addEventListener('DOMContentLoaded', async function () {
+    // Wait for API to be fully loaded
+    if (!window.CartAPI || !window.PaymentsAPI || !window.AuthAPI) {
+        console.error('API not loaded, waiting...');
+        // Wait a bit for scripts to load
+        await new Promise(resolve => setTimeout(resolve, 500));
+        
+        // Check again
+        if (!window.CartAPI || !window.PaymentsAPI || !window.AuthAPI) {
+            alert('Failed to load required services. Please refresh the page.');
+            return;
+        }
+    }
+
     // Check if user is logged in
     if (!window.AuthAPI?.isLoggedIn()) {
         window.location.href = 'account.html?redirect=checkout&action=register';
@@ -262,7 +275,9 @@ async function loadPaymentMethods() {
 // Sync LocalStorage Cart to Server
 // ============================================
 async function syncCartToServer() {
-    if (!window.CartAPI) {
+    // Wait for CartAPI to be available
+    if (!window.CartAPI || typeof window.CartAPI.clear !== 'function') {
+        console.error('CartAPI not loaded yet');
         throw new Error('API service not loaded. Please refresh the page.');
     }
 
@@ -277,12 +292,17 @@ async function syncCartToServer() {
         throw new Error('Your cart is empty');
     }
 
-    // Clear server cart first using CartAPI
-    await window.CartAPI.clear();
+    try {
+        // Clear server cart first using CartAPI
+        await window.CartAPI.clear();
 
-    // Add each item to server cart
-    for (const item of localCart) {
-        await window.CartAPI.add(item.id || item._id, item.quantity);
+        // Add each item to server cart
+        for (const item of localCart) {
+            await window.CartAPI.add(item.id || item._id, item.quantity);
+        }
+    } catch (error) {
+        console.error('Cart sync error:', error);
+        throw new Error('Failed to sync cart. Please try again.');
     }
 }
 
