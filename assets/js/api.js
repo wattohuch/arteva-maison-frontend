@@ -356,6 +356,24 @@ const AdminAPI = {
             method: 'POST',
             body: JSON.stringify(data)
         });
+    },
+
+    async sendEmailWithImages(formData) {
+        const url = `${API_BASE_URL}/admin/send-email`;
+        const options = {
+            method: 'POST',
+            body: formData,
+            headers: {
+                ...(authToken && { 'Authorization': `Bearer ${authToken}` })
+                // Content-Type not set for FormData, browser sets it with boundary
+            }
+        };
+        const response = await fetch(url, options);
+        if (!response.ok) {
+            const data = await response.json();
+            throw new Error(data.message || 'Failed to send email');
+        }
+        return await response.json();
     }
 };
 

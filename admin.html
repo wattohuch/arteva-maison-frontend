@@ -41,7 +41,7 @@
                         class="icon">📊</span> <span class="nav-text">Dashboard</span></a></li>
             <li><a href="#products" class="sidebar-link" data-i18n="admin_products"><span class="icon">📦</span> <span
                         class="nav-text">Products</span></a></li>
-            <li><a href="#categories" class="sidebar-link"><span class="icon">📁</span> <span
+            <li><a href="#categories" class="sidebar-link" data-i18n="admin_categories"><span class="icon">📁</span> <span
                         class="nav-text">Categories</span></a></li>
             <li><a href="#orders" class="sidebar-link" data-i18n="admin_orders"><span class="icon">🛍️</span> <span
                         class="nav-text">Orders</span> <span class="badge hidden" id="newOrderBadge">0</span></a></li>
@@ -316,6 +316,12 @@
                             <label data-i18n="admin_message_content">Message Content</label>
                             <textarea name="message" rows="6" required data-i18n-placeholder="admin_write_message"
                                 placeholder="Write your campaign message..."></textarea>
+                        </div>
+                        <div class="admin-form-group">
+                            <label data-i18n="admin_attach_images">Attach Images (Optional)</label>
+                            <input type="file" name="images" id="emailImages" accept="image/*" multiple>
+                            <small data-i18n="admin_attach_images_help">You can attach multiple images to your email</small>
+                            <div id="emailImagePreview" style="display: flex; gap: 10px; margin-top: 10px; flex-wrap: wrap;"></div>
                         </div>
                         <div class="admin-form-actions" style="border: none; padding-top: 0;">
                             <button type="submit" class="admin-btn admin-btn-primary" data-i18n="admin_send_campaign">📧

@@ -1358,6 +1358,32 @@ function loadSettings() {
     settingsInitialized = true;
 
     const form = document.getElementById('emailMarketingForm');
+    const imageInput = document.getElementById('emailImages');
+    const imagePreview = document.getElementById('emailImagePreview');
+    
+    // Image preview handler
+    if (imageInput) {
+        imageInput.addEventListener('change', (e) => {
+            imagePreview.innerHTML = '';
+            const files = Array.from(e.target.files);
+            
+            files.forEach((file, index) => {
+                const reader = new FileReader();
+                reader.onload = (event) => {
+                    const img = document.createElement('img');
+                    img.src = event.target.result;
+                    img.style.width = '100px';
+                    img.style.height = '100px';
+                    img.style.objectFit = 'cover';
+                    img.style.borderRadius = '8px';
+                    img.style.border = '2px solid #ddd';
+                    imagePreview.appendChild(img);
+                };
+                reader.readAsDataURL(file);
+            });
+        });
+    }
+    
     if (form) {
         form.addEventListener('submit', async (e) => {
             e.preventDefault();
@@ -1367,14 +1393,21 @@ function loadSettings() {
             btn.disabled = true;
 
             try {
-                const data = {
-                    subject: form.subject.value,
-                    message: form.message.value,
-                    recipientType: form.recipientType.value
-                };
-                await AdminAPI.sendEmail(data);
+                const formData = new FormData();
+                formData.append('subject', form.subject.value);
+                formData.append('message', form.message.value);
+                formData.append('recipientType', form.recipientType.value);
+                
+                // Add images if any
+                const images = imageInput.files;
+                for (let i = 0; i < images.length; i++) {
+                    formData.append('images', images[i]);
+                }
+                
+                await AdminAPI.sendEmailWithImages(formData);
                 showToast('Sent', 'Campaign emails sent!', 'success');
                 form.reset();
+                imagePreview.innerHTML = '';
             } catch (err) {
                 showToast('Error', 'Failed to send emails', 'error');
             } finally {
