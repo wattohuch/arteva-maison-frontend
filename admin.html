@@ -499,7 +499,7 @@
     <div id="orderModal" class="admin-modal hidden">
         <div class="admin-modal-content" style="max-width: 800px;">
             <div class="admin-modal-header">
-                <h2 data-i18n="admin_order_details">Order <span id="modalOrderNumber"
+                <h2><span data-i18n="admin_order_details">Order</span> <span id="modalOrderNumber"
                         style="font-weight: 400; color: var(--admin-text-muted);"></span>
                 </h2>
                 <button class="admin-btn-icon" onclick="closeOrderModal()">✕</button>
@@ -549,6 +549,10 @@
                     <p class="grand-total" style="margin-top: 8px;"><span data-i18n="admin_total">Total</span>: <span
                             id="modalTotal">0.000</span> KWD</p>
                 </div>
+            </div>
+            <div class="admin-modal-footer"
+                style="display: flex; gap: 8px; justify-content: flex-end; padding: 16px 24px; border-top: 1px solid var(--admin-border);">
+                <button class="admin-btn" onclick="closeOrderModal()">Close</button>
             </div>
         </div>
     </div>

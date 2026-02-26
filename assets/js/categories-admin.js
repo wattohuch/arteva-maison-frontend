@@ -51,7 +51,7 @@ function renderCategoriesTable(categories) {
         const backendOrigin = (typeof API_BASE_URL !== 'undefined' ? API_BASE_URL : '').replace('/api', '');
         const imgSrc = cat.image
             ? (cat.image.startsWith('http') ? cat.image : backendOrigin + cat.image)
-            : 'assets/images/placeholder.png';
+            : 'assets/images/products/placeholder.png';
         return `
         <tr>
             <td>
@@ -59,7 +59,7 @@ function renderCategoriesTable(categories) {
                     src="${imgSrc}" 
                     class="product-thumb" 
                     alt="${cat.name}"
-                    onerror="this.src='assets/images/placeholder.png'"
+                    onerror="this.src='assets/images/products/placeholder.png'"
                 >
             </td>
             <td><strong>${cat.name}</strong></td>
