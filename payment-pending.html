@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Payment Pending - ARTEVA Maison">
+    <title data-i18n="payment_pending">Payment Pending | ARTEVA Maison</title>
+
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600;700&family=Montserrat:wght@300;400;500;600&display=swap"
+        rel="stylesheet">
+
+    <!-- Stylesheets -->
+    <link rel="stylesheet" href="assets/css/main.css">
+
+    <style>
+        .pending-container {
+            max-width: 600px;
+            margin: 0 auto;
+            padding: var(--space-12) var(--space-4);
+            margin-top: var(--header-height);
+            text-align: center;
+        }
+
+        .pending-icon {
+            width: 80px;
+            height: 80px;
+            background: linear-gradient(135deg, #f59e0b, #d97706);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto var(--space-6);
+            animation: pulse 2s ease-in-out infinite;
+        }
+
+        .pending-icon svg {
+            width: 40px;
+            height: 40px;
+            stroke: white;
+            stroke-width: 2;
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); opacity: 1; }
+            50% { transform: scale(1.05); opacity: 0.8; }
+        }
+
+        .pending-title {
+            font-family: var(--font-display);
+            font-size: var(--fs-3xl);
+            margin-bottom: var(--space-3);
+            color: #d97706;
+        }
+
+        .pending-message {
+            color: var(--text-muted);
+            margin-bottom: var(--space-6);
+            line-height: 1.6;
+        }
+
+        .order-info {
+            background: var(--bg-secondary);
+            padding: var(--space-4);
+            border-radius: var(--radius-md);
+            margin-bottom: var(--space-6);
+            border-left: 4px solid #f59e0b;
+        }
+
+        .order-info-label {
+            font-size: var(--fs-sm);
+            color: var(--text-muted);
+            margin-bottom: var(--space-1);
+        }
+
+        .order-info-value {
+            font-family: var(--font-display);
+            font-size: var(--fs-xl);
+            font-weight: 600;
+            color: var(--color-gold);
+        }
+
+        .pending-actions {
+            display: flex;
+            flex-direction: column;
+            gap: var(--space-3);
+        }
+
+        .pending-btn {
+            display: inline-block;
+            padding: var(--space-4) var(--space-6);
+            border-radius: var(--radius-md);
+            font-family: var(--font-body);
+            font-size: var(--fs-base);
+            font-weight: 500;
+            text-decoration: none;
+            text-align: center;
+            transition: all var(--transition-fast);
+        }
+
+        .pending-btn.primary {
+            background: var(--color-gold);
+            color: white;
+        }
+
+        .pending-btn.primary:hover {
+            background: var(--color-gold-dark);
+        }
+
+        .pending-btn.secondary {
+            background: transparent;
+            color: var(--text-primary);
+            border: 1px solid var(--border-light);
+        }
+
+        .pending-btn.secondary:hover {
+            border-color: var(--color-gold);
+            color: var(--color-gold);
+        }
+
+        .help-notice {
+            margin-top: var(--space-6);
+            padding: var(--space-4);
+            background: rgba(245, 158, 11, 0.1);
+            border-radius: var(--radius-md);
+            font-size: var(--fs-sm);
+            color: var(--text-secondary);
+        }
+    </style>
+    <link rel="icon" type="image/png" href="assets/images/favicon.png">
+</head>
+
+<body>
+    <!-- Header -->
+    <header class="header" id="header">
+        <div class="header-container">
+            <div class="header-left">
+                <a href="index.html" class="logo">ARTÉVA</a>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="pending-container">
+        <div class="pending-icon">
+            <svg viewBox="0 0 24 24" fill="none">
+                <circle cx="12" cy="12" r="10" stroke-linecap="round" stroke-linejoin="round" />
+                <path d="M12 6v6l4 2" stroke-linecap="round" stroke-linejoin="round" />
+            </svg>
+        </div>
+
+        <h1 class="pending-title" data-i18n="payment_pending_title">Payment Pending</h1>
+        <p class="pending-message" data-i18n="payment_pending_msg">
+            Your payment is being processed. This may take a few moments. Please check your order status in a few minutes.
+        </p>
+
+        <div class="order-info">
+            <div class="order-info-label" data-i18n="order_number_label">Order Number</div>
+            <div class="order-info-value" id="orderNumber">Loading...</div>
+        </div>
+
+        <div class="pending-actions">
+            <a href="account.html" class="pending-btn primary" data-i18n="view_orders_btn">View My Orders</a>
+            <a href="collections.html" class="pending-btn secondary" data-i18n="continue_shopping">Continue Shopping</a>
+        </div>
+
+        <div class="help-notice" data-i18n="payment_pending_help">
+            ⏳ Your payment is being verified. You will receive an email confirmation once the payment is complete. If you don't receive confirmation within 10 minutes, please contact support.
+        </div>
+    </main>
+
+    <!-- Scripts -->
+    <script src="assets/js/i18n.js"></script>
+    <script src="assets/js/config.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const urlParams = new URLSearchParams(window.location.search);
+            const orderNumber = urlParams.get('order');
+
+            const orderNumberEl = document.getElementById('orderNumber');
+
+            if (orderNumber) {
+                orderNumberEl.textContent = orderNumber;
+            } else {
+                orderNumberEl.textContent = 'Processing...';
+            }
+        });
+    </script>
+</body>
+
+</html>

@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Payment Failed - ARTEVA Maison">
+    <title data-i18n="payment_failed">Payment Failed | ARTEVA Maison</title>
+
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600;700&family=Montserrat:wght@300;400;500;600&display=swap"
+        rel="stylesheet">
+
+    <!-- Stylesheets -->
+    <link rel="stylesheet" href="assets/css/main.css">
+
+    <style>
+        .error-container {
+            max-width: 600px;
+            margin: 0 auto;
+            padding: var(--space-12) var(--space-4);
+            margin-top: var(--header-height);
+            text-align: center;
+        }
+
+        .error-icon {
+            width: 80px;
+            height: 80px;
+            background: linear-gradient(135deg, #ef4444, #dc2626);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto var(--space-6);
+            animation: shake 0.5s ease;
+        }
+
+        .error-icon svg {
+            width: 40px;
+            height: 40px;
+            stroke: white;
+            stroke-width: 2;
+        }
+
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-10px); }
+            75% { transform: translateX(10px); }
+        }
+
+        .error-title {
+            font-family: var(--font-display);
+            font-size: var(--fs-3xl);
+            margin-bottom: var(--space-3);
+            color: #dc2626;
+        }
+
+        .error-message {
+            color: var(--text-muted);
+            margin-bottom: var(--space-6);
+            line-height: 1.6;
+        }
+
+        .error-details {
+            background: var(--bg-secondary);
+            padding: var(--space-4);
+            border-radius: var(--radius-md);
+            margin-bottom: var(--space-6);
+            border-left: 4px solid #dc2626;
+        }
+
+        .error-details-label {
+            font-size: var(--fs-sm);
+            color: var(--text-muted);
+            margin-bottom: var(--space-2);
+        }
+
+        .error-details-value {
+            font-family: var(--font-body);
+            font-size: var(--fs-base);
+            font-weight: 500;
+            color: var(--text-primary);
+        }
+
+        .error-actions {
+            display: flex;
+            flex-direction: column;
+            gap: var(--space-3);
+        }
+
+        .error-btn {
+            display: inline-block;
+            padding: var(--space-4) var(--space-6);
+            border-radius: var(--radius-md);
+            font-family: var(--font-body);
+            font-size: var(--fs-base);
+            font-weight: 500;
+            text-decoration: none;
+            text-align: center;
+            transition: all var(--transition-fast);
+        }
+
+        .error-btn.primary {
+            background: var(--color-gold);
+            color: white;
+        }
+
+        .error-btn.primary:hover {
+            background: var(--color-gold-dark);
+        }
+
+        .error-btn.secondary {
+            background: transparent;
+            color: var(--text-primary);
+            border: 1px solid var(--border-light);
+        }
+
+        .error-btn.secondary:hover {
+            border-color: var(--color-gold);
+            color: var(--color-gold);
+        }
+
+        .help-notice {
+            margin-top: var(--space-6);
+            padding: var(--space-4);
+            background: rgba(239, 68, 68, 0.1);
+            border-radius: var(--radius-md);
+            font-size: var(--fs-sm);
+            color: var(--text-secondary);
+        }
+    </style>
+    <link rel="icon" type="image/png" href="assets/images/favicon.png">
+</head>
+
+<body>
+    <!-- Header -->
+    <header class="header" id="header">
+        <div class="header-container">
+            <div class="header-left">
+                <a href="index.html" class="logo">ARTÉVA</a>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="error-container">
+        <div class="error-icon">
+            <svg viewBox="0 0 24 24" fill="none">
+                <path d="M6 18L18 6M6 6l12 12" stroke-linecap="round" stroke-linejoin="round" />
+            </svg>
+        </div>
+
+        <h1 class="error-title" data-i18n="payment_failed_title">Payment Failed</h1>
+        <p class="error-message" id="errorMessage" data-i18n="payment_failed_msg">
+            We couldn't process your payment. Please try again or use a different payment method.
+        </p>
+
+        <div class="error-details" id="errorDetails" style="display: none;">
+            <div class="error-details-label">Error Details</div>
+            <div class="error-details-value" id="errorDetailsValue"></div>
+        </div>
+
+        <div class="error-actions">
+            <a href="checkout.html" class="error-btn primary" data-i18n="try_again_btn">Try Again</a>
+            <a href="cart.html" class="error-btn secondary" data-i18n="view_cart_btn">View Cart</a>
+            <a href="account.html" class="error-btn secondary" data-i18n="contact_support_btn">Contact Support</a>
+        </div>
+
+        <div class="help-notice" data-i18n="payment_help">
+            💡 If you continue to experience issues, please contact our support team or try a different payment method.
+        </div>
+    </main>
+
+    <!-- Scripts -->
+    <script src="assets/js/i18n.js"></script>
+    <script src="assets/js/config.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const urlParams = new URLSearchParams(window.location.search);
+            const status = urlParams.get('status');
+            const error = urlParams.get('error');
+            const orderNumber = urlParams.get('order');
+
+            const errorMessage = document.getElementById('errorMessage');
+            const errorDetails = document.getElementById('errorDetails');
+            const errorDetailsValue = document.getElementById('errorDetailsValue');
+
+            // Customize message based on error type
+            if (status === 'failed') {
+                errorMessage.textContent = 'Your payment was declined. Please check your payment details and try again.';
+            } else if (status === 'expired') {
+                errorMessage.textContent = 'Your payment session has expired. Please start a new checkout.';
+            } else if (error === 'amount_mismatch') {
+                errorMessage.textContent = 'Payment amount verification failed. Please contact support.';
+                errorDetails.style.display = 'block';
+                errorDetailsValue.textContent = 'Amount mismatch detected';
+            } else if (error === 'order_not_found') {
+                errorMessage.textContent = 'Order not found. Please contact support if you were charged.';
+            } else if (error === 'verification_failed') {
+                errorMessage.textContent = 'Payment verification failed. Please contact support.';
+            }
+
+            // Show order number if available
+            if (orderNumber) {
+                errorDetails.style.display = 'block';
+                errorDetailsValue.textContent = `Order Number: ${orderNumber}`;
+            }
+        });
+    </script>
+</body>
+
+</html>
