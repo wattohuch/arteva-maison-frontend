@@ -173,6 +173,8 @@
 
         <div class="success-actions">
             <a href="#" class="success-btn primary" id="trackOrderBtn" data-i18n="track_order_btn">Track My Order</a>
+            <a href="#" class="success-btn secondary" id="viewReceiptBtn" data-i18n="view_receipt_btn"
+                style="display: none;">📄 View Receipt</a>
             <a href="account.html" class="success-btn secondary" data-i18n="view_orders_btn">View My Orders</a>
             <a href="collections.html" class="success-btn secondary" data-i18n="continue_shopping">Continue Shopping</a>
         </div>
@@ -198,6 +200,15 @@
             const urlParams = new URLSearchParams(window.location.search);
             const orderNumber = urlParams.get('order');
             const paymentId = urlParams.get('paymentId');
+            const invoiceId = urlParams.get('Id'); // MyFatoorah callback parameter
+
+            // Log all URL parameters for debugging
+            console.log('URL Parameters:', {
+                orderNumber,
+                paymentId,
+                invoiceId,
+                allParams: Object.fromEntries(urlParams.entries())
+            });
 
             const orderNumberEl = document.getElementById('orderNumber');
             const trackOrderBtn = document.getElementById('trackOrderBtn');
@@ -206,15 +217,19 @@
             if (orderNumber) {
                 finalOrderNumber = orderNumber;
                 orderNumberEl.textContent = orderNumber;
-            } else if (paymentId) {
+            } else if (paymentId || invoiceId) {
                 // Verify payment with MyFatoorah
+                const idToVerify = paymentId || invoiceId;
                 try {
-                    const response = await fetch(`${API_BASE_URL}/payments/verify/${paymentId}`, {
+                    const response = await fetch(`${API_BASE_URL}/payments/verify/${idToVerify}`, {
                         headers: {
                             'Authorization': `Bearer ${localStorage.getItem('arteva_token')}`
                         }
                     });
                     const data = await response.json();
+
+                    console.log('Payment verification response:', data);
+
                     if (data.success && data.data.orderNumber) {
                         finalOrderNumber = data.data.orderNumber;
                         orderNumberEl.textContent = data.data.orderNumber;
@@ -222,6 +237,7 @@
                         orderNumberEl.textContent = window.getTranslation ? window.getTranslation('processing') : 'Processing...';
                     }
                 } catch (error) {
+                    console.error('Payment verification error:', error);
                     orderNumberEl.textContent = window.getTranslation ? window.getTranslation('order_received') : 'Order Received';
                 }
             } else {
@@ -231,8 +247,14 @@
             // Set track order button link
             if (finalOrderNumber) {
                 trackOrderBtn.href = `order-tracking.html?order=${finalOrderNumber}`;
+                // Show and configure receipt button
+                const receiptBtn = document.getElementById('viewReceiptBtn');
+                if (receiptBtn) {
+                    receiptBtn.href = `receipt.html?order=${finalOrderNumber}`;
+                    receiptBtn.style.display = '';
+                }
             } else {
-                trackOrderBtn.href = 'order-tracking.html';
+                trackOrderBtn.href = 'account.html'; // Redirect to orders page if no order number
             }
 
             // Clear cart

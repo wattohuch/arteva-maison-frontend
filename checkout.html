@@ -444,7 +444,7 @@
                         </div>
                         <div class="form-group">
                             <label for="phone" data-i18n="phone_number">Phone Number *</label>
-                            <input type="tel" id="phone" name="phone" required placeholder="+965 XXXX XXXX">
+                            <input type="tel" id="phone" name="phone" required placeholder="965XXXXXXXX" data-i18n-placeholder="phone_placeholder">
                         </div>
 
                         <!-- Map Section -->
@@ -492,6 +492,18 @@
                                 </div>
                                 <div class="payment-method-icons">
                                     <span>🏦</span>
+                                </div>
+                            </label>
+
+                            <!-- Apple Pay - only shown on supported devices via JS -->
+                            <label class="payment-method" id="applePayMethod" style="display: none;">
+                                <input type="radio" name="paymentMethod" value="applepay">
+                                <div class="payment-method-info">
+                                    <div class="payment-method-name" data-i18n="apple_pay">Apple Pay</div>
+                                    <div class="payment-method-desc" data-i18n="apple_pay_desc">Pay with Apple Pay</div>
+                                </div>
+                                <div class="payment-method-icons">
+                                    <span>🍎</span>
                                 </div>
                             </label>
 

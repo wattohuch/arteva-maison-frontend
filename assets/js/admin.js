@@ -4,6 +4,16 @@
  */
 
 // ==========================================
+// Image URL Resolution Helper
+// ==========================================
+function resolveImageUrl(url, fallback) {
+    if (!url) return fallback || 'assets/images/products/placeholder.png';
+    if (url.startsWith('http')) return url;
+    const backendOrigin = (typeof API_BASE_URL !== 'undefined' ? API_BASE_URL : '').replace('/api', '');
+    return backendOrigin + url;
+}
+
+// ==========================================
 // Initialization
 // ==========================================
 document.addEventListener('DOMContentLoaded', async () => {
@@ -242,7 +252,7 @@ function initSocket() {
 
     socket.on('new_order', (data) => {
         // console.log('🆕 New order received:', data);
-        
+
         // Use new notification system if available
         if (typeof handleNewOrderNotification === 'function') {
             handleNewOrderNotification(data);
@@ -261,6 +271,14 @@ function initSocket() {
         }
 
         refreshActiveSection();
+    });
+
+    // Listen for email campaign completion (background emails finished)
+    socket.on('email_campaign_complete', (data) => {
+        const sentText = window.getTranslation ? window.getTranslation('campaign_sent') : 'sent';
+        const failedText = window.getTranslation ? window.getTranslation('campaign_failed') : 'failed';
+        const completeText = window.getTranslation ? window.getTranslation('campaign_complete') : 'Campaign complete';
+        showToast(completeText, `${data.sent} ${sentText}, ${data.failed} ${failedText}`, data.failed > 0 ? 'error' : 'success');
     });
 }
 
@@ -330,7 +348,7 @@ function initNavigation() {
             switch (targetId) {
                 case 'dashboard': loadDashboard(); break;
                 case 'products': loadProducts(); break;
-                case 'categories': 
+                case 'categories':
                     if (typeof initCategoriesManagement === 'function') {
                         initCategoriesManagement();
                     }
@@ -429,15 +447,15 @@ async function loadDashboard() {
             document.getElementById('statMembers').textContent = totalUsers;
             document.getElementById('statProducts').textContent = totalProducts;
             document.getElementById('statOrders').textContent = totalOrders;
-            
+
             // Revenue handling
             const revenueCard = document.querySelector('.stat-card:has(#statRevenue)');
             const revenueValue = document.getElementById('statRevenue');
-            
+
             if (user.role === 'owner') {
                 // Show revenue card for owner
                 if (revenueCard) revenueCard.style.display = '';
-                
+
                 // Check if revenue is unlocked
                 if (typeof isRevenueUnlocked === 'function' && isRevenueUnlocked()) {
                     // Show actual revenue
@@ -459,7 +477,7 @@ async function loadDashboard() {
 
             window.dashboardOrders = recentOrders;
             renderRecentOrders(recentOrders);
-            
+
             // Initialize revenue protection after dashboard loads
             if (user.role === 'owner' && typeof initRevenueProtection === 'function') {
                 setTimeout(() => initRevenueProtection(), 100);
@@ -522,7 +540,7 @@ function renderProductsTable(products, isFiltered = false) {
 
     tbody.innerHTML = products.map(p => `
         <tr onclick="window.viewProductDetails('${p._id}')">
-            <td><img src="${p.images[0]?.url || 'assets/images/products/placeholder.png'}" class="product-thumb" alt="${p.name}" onerror="if(typeof handleImageError==='function') handleImageError(this); else this.src='assets/images/products/placeholder.png';"></td>
+            <td><img src="${resolveImageUrl(p.images[0]?.url)}" class="product-thumb" alt="${p.name}" onerror="this.src='assets/images/products/placeholder.png';"></td>
             <td><strong>${p.name}</strong></td>
             <td>${p.category?.name || '-'}</td>
             <td>${p.price.toFixed(3)}</td>
@@ -557,7 +575,7 @@ function initUI() {
             if (productImagesToDelete.length > 0) {
                 formData.append('imagesToDelete', JSON.stringify(productImagesToDelete));
             }
-            
+
             // Get primary image URL
             const primaryImageItem = document.querySelector('.existing-image-item.primary');
             if (primaryImageItem) {
@@ -655,7 +673,7 @@ window.editProduct = async (id) => {
 
             // Display existing images with delete buttons
             displayExistingProductImages(p.images || []);
-            
+
             // Reset images to delete array
             productImagesToDelete = [];
 
@@ -677,7 +695,7 @@ function displayExistingProductImages(images) {
 
     container.innerHTML = images.map((img, index) => `
         <div class="existing-image-item ${img.isPrimary ? 'primary' : ''}" data-image-url="${img.url}">
-            <img src="${img.url}" alt="Product image ${index + 1}" onerror="this.src='assets/images/products/placeholder.png'">
+            <img src="${resolveImageUrl(img.url)}" alt="Product image ${index + 1}" onerror="this.src='assets/images/products/placeholder.png'">
             ${img.isPrimary ? '<span class="primary-badge">Primary</span>' : ''}
             <button type="button" class="delete-image-btn" onclick="deleteProductImage('${img.url}')" title="Delete image">
                 ✕
@@ -689,24 +707,24 @@ function displayExistingProductImages(images) {
 
 window.deleteProductImage = (imageUrl) => {
     if (!confirm('Delete this image?')) return;
-    
+
     // Add to delete list
     if (!productImagesToDelete.includes(imageUrl)) {
         productImagesToDelete.push(imageUrl);
     }
-    
+
     // Remove from display
     const imageItem = document.querySelector(`.existing-image-item[data-image-url="${imageUrl}"]`);
     if (imageItem) {
         imageItem.remove();
     }
-    
+
     // Check if container is empty
     const container = document.getElementById('existingProductImages');
     if (container && container.children.length === 0) {
         container.innerHTML = '<p style="color: #999; font-size: 14px;">No images remaining</p>';
     }
-    
+
     showToast('Info', 'Image will be deleted when you save', 'info');
 };
 
@@ -716,11 +734,11 @@ window.setPrimaryProductImage = (imageUrl) => {
         item.classList.remove('primary');
         const badge = item.querySelector('.primary-badge');
         if (badge) badge.remove();
-        
+
         const setPrimaryBtn = item.querySelector('.set-primary-btn');
         if (setPrimaryBtn) setPrimaryBtn.style.display = 'block';
     });
-    
+
     const selectedItem = document.querySelector(`.existing-image-item[data-image-url="${imageUrl}"]`);
     if (selectedItem) {
         selectedItem.classList.add('primary');
@@ -728,7 +746,7 @@ window.setPrimaryProductImage = (imageUrl) => {
         const setPrimaryBtn = selectedItem.querySelector('.set-primary-btn');
         if (setPrimaryBtn) setPrimaryBtn.style.display = 'none';
     }
-    
+
     showToast('Info', 'Primary image updated', 'info');
 };
 
@@ -748,16 +766,15 @@ window.viewProductDetails = (id) => {
     if (!product) return;
 
     const modal = document.getElementById('productViewModal');
-    const mainImg = product.images[0]?.url || 'assets/images/products/placeholder.png';
+    const mainImg = resolveImageUrl(product.images[0]?.url);
     const viewProductImage = document.getElementById('viewProductImage');
     viewProductImage.src = mainImg;
     viewProductImage.onerror = function () {
-        if (typeof handleImageError === 'function') handleImageError(this);
-        else this.src = 'assets/images/products/placeholder.png';
+        this.src = 'assets/images/products/placeholder.png';
     };
 
     document.getElementById('viewProductGallery').innerHTML = product.images.map(img => `
-        <img src="${img.url}" onclick="document.getElementById('viewProductImage').src='${img.url}'" alt="Gallery" onerror="if(typeof handleImageError==='function') handleImageError(this); else this.src='assets/images/products/placeholder.png';">
+        <img src="${resolveImageUrl(img.url)}" onclick="document.getElementById('viewProductImage').src='${resolveImageUrl(img.url)}'" alt="Gallery" onerror="this.src='assets/images/products/placeholder.png';">
     `).join('');
 
     document.getElementById('viewProductName').textContent = product.name;
@@ -886,7 +903,7 @@ window.viewOrder = (orderId) => {
     document.getElementById('modalOrderItems').innerHTML = order.items.map(item => `
         <tr>
             <td style="display: flex; align-items: center; gap: 10px;">
-                <img src="${item.image || 'assets/images/products/placeholder.png'}" class="product-thumb" style="width: 36px; height: 36px;" onerror="if(typeof handleImageError==='function') handleImageError(this); else this.src='assets/images/products/placeholder.png';">
+                <img src="${resolveImageUrl(item.image)}" class="product-thumb" style="width: 36px; height: 36px;" onerror="this.src='assets/images/products/placeholder.png';">
                 <span>${item.name}</span>
             </td>
             <td style="text-align: center;">${item.price.toFixed(3)}</td>
@@ -1360,13 +1377,13 @@ function loadSettings() {
     const form = document.getElementById('emailMarketingForm');
     const imageInput = document.getElementById('emailImages');
     const imagePreview = document.getElementById('emailImagePreview');
-    
+
     // Image preview handler
     if (imageInput) {
         imageInput.addEventListener('change', (e) => {
             imagePreview.innerHTML = '';
             const files = Array.from(e.target.files);
-            
+
             files.forEach((file, index) => {
                 const reader = new FileReader();
                 reader.onload = (event) => {
@@ -1383,7 +1400,7 @@ function loadSettings() {
             });
         });
     }
-    
+
     if (form) {
         form.addEventListener('submit', async (e) => {
             e.preventDefault();
@@ -1397,13 +1414,13 @@ function loadSettings() {
                 formData.append('subject', form.subject.value);
                 formData.append('message', form.message.value);
                 formData.append('recipientType', form.recipientType.value);
-                
+
                 // Add images if any
                 const images = imageInput.files;
                 for (let i = 0; i < images.length; i++) {
                     formData.append('images', images[i]);
                 }
-                
+
                 await AdminAPI.sendEmailWithImages(formData);
                 showToast('Sent', 'Campaign emails sent!', 'success');
                 form.reset();
@@ -1433,14 +1450,14 @@ async function loadCategories() {
             }
         });
         const data = await response.json();
-        
+
         if (data.success) {
             allCategories = data.data;
             renderCategoriesTable(allCategories);
-            
+
             // Also update category dropdown in product form
             updateCategoryDropdown();
-            
+
             // Clear search
             const search = document.getElementById('categorySearch');
             if (search) search.value = '';
@@ -1454,7 +1471,7 @@ async function loadCategories() {
 function updateCategoryDropdown() {
     const select = document.getElementById('categorySelect');
     if (!select) return;
-    
+
     const selectedValue = select.value;
     let options = '<option value="">Select Category</option>';
     allCategories.forEach(cat => {
@@ -1492,21 +1509,21 @@ window.openAddCategoryModal = () => {
     const modal = document.getElementById('categoryModal');
     const form = document.getElementById('categoryForm');
     if (!form) return;
-    
+
     form.reset();
     document.getElementById('categoryModalTitle').textContent = 'Add Category';
     document.getElementById('categoryId').value = '';
     document.getElementById('categoryImagePreview').style.display = 'none';
-    
+
     // Clear existing image display
     const existingContainer = document.getElementById('existingCategoryImage');
     if (existingContainer) {
         existingContainer.innerHTML = '';
         existingContainer.style.display = 'block';
     }
-    
+
     categoryImageToDelete = false;
-    
+
     modal.classList.remove('hidden');
 };
 
@@ -1522,24 +1539,24 @@ window.editCategory = async (id) => {
 
         document.getElementById('categoryId').value = category._id;
         document.getElementById('categoryModalTitle').textContent = 'Edit Category';
-        
+
         const form = document.getElementById('categoryForm');
         if (!form) return;
-        
+
         form.name.value = category.name;
         form.nameAr.value = category.nameAr || '';
         form.description.value = category.description || '';
         form.isActive.checked = category.isActive;
-        
+
         // Display existing image with delete option
         displayExistingCategoryImage(category.image);
-        
+
         // Reset delete flag
         categoryImageToDelete = false;
-        
+
         // Hide preview
         document.getElementById('categoryImagePreview').style.display = 'none';
-        
+
         document.getElementById('categoryModal').classList.remove('hidden');
     } catch (err) {
         console.error('Edit category error:', err);
@@ -1550,12 +1567,12 @@ window.editCategory = async (id) => {
 function displayExistingCategoryImage(imageUrl) {
     const container = document.getElementById('existingCategoryImage');
     if (!container) return;
-    
+
     if (!imageUrl) {
         container.innerHTML = '<p style="color: #999; font-size: 14px;">No image uploaded yet</p>';
         return;
     }
-    
+
     container.innerHTML = `
         <div class="existing-image-item category-image">
             <img src="${imageUrl}" alt="Category image" onerror="this.src='assets/images/products/placeholder.png'">
@@ -1568,15 +1585,15 @@ function displayExistingCategoryImage(imageUrl) {
 
 window.deleteCategoryImage = () => {
     if (!confirm('Delete this image?')) return;
-    
+
     categoryImageToDelete = true;
-    
+
     // Remove from display
     const container = document.getElementById('existingCategoryImage');
     if (container) {
         container.innerHTML = '<p style="color: #999; font-size: 14px;">Image will be deleted when you save</p>';
     }
-    
+
     showToast('Info', 'Image will be deleted when you save', 'info');
 };
 
@@ -1588,7 +1605,7 @@ window.previewCategoryImage = (event) => {
             const preview = document.getElementById('categoryImagePreview');
             preview.src = e.target.result;
             preview.style.display = 'block';
-            
+
             // Hide existing image when new one is selected
             const existingContainer = document.getElementById('existingCategoryImage');
             if (existingContainer) {
@@ -1601,7 +1618,7 @@ window.previewCategoryImage = (event) => {
 
 window.deleteCategory = async (id) => {
     if (!confirm('Delete this category? Products in this category will need to be reassigned.')) return;
-    
+
     try {
         const response = await fetch(`${API_BASE_URL}/categories/${id}`, {
             method: 'DELETE',
@@ -1609,9 +1626,9 @@ window.deleteCategory = async (id) => {
                 'Authorization': `Bearer ${localStorage.getItem('arteva_token')}`
             }
         });
-        
+
         const data = await response.json();
-        
+
         if (data.success) {
             showToast('Deleted', 'Category removed successfully', 'success');
             loadCategories();
@@ -1630,22 +1647,22 @@ document.addEventListener('DOMContentLoaded', () => {
     if (categoryForm) {
         categoryForm.addEventListener('submit', async (e) => {
             e.preventDefault();
-            
+
             const id = document.getElementById('categoryId').value;
             const formData = new FormData(e.target);
-            
+
             formData.set('isActive', e.target.isActive.checked);
-            
+
             // Add delete flag if image should be deleted
             if (categoryImageToDelete) {
                 formData.append('deleteImage', 'true');
             }
-            
+
             try {
-                const url = id 
+                const url = id
                     ? `${API_BASE_URL}/categories/${id}`
                     : `${API_BASE_URL}/categories`;
-                
+
                 const response = await fetch(url, {
                     method: id ? 'PUT' : 'POST',
                     headers: {
@@ -1653,9 +1670,9 @@ document.addEventListener('DOMContentLoaded', () => {
                     },
                     body: formData
                 });
-                
+
                 const data = await response.json();
-                
+
                 if (data.success) {
                     showToast('Success', id ? 'Category updated' : 'Category created', 'success');
                     closeCategoryModal();
@@ -1670,7 +1687,7 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         });
     }
-    
+
     // Category search
     const categorySearch = document.getElementById('categorySearch');
     if (categorySearch) {

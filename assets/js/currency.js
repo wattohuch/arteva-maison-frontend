@@ -74,9 +74,9 @@ const CurrencyAPI = {
         // Save to localStorage FIRST
         localStorage.setItem('arteva_currency', code);
 
-        // Force immediate UI update - no delay
+        // Force immediate UI update - pass code directly to avoid stale reads
         this.updatePagePrices();
-        this.updateSwitcherUI();
+        this.updateSwitcherUI(code);
 
         // Also trigger cart and checkout updates if available
         if (window.CartAPI && typeof window.CartAPI.updateCartDisplay === 'function') {
@@ -139,8 +139,8 @@ const CurrencyAPI = {
         // Don't trigger cart update here to avoid recursion - cart will call this
     },
 
-    updateSwitcherUI() {
-        const current = this.getCurrent();
+    updateSwitcherUI(overrideCode) {
+        const current = overrideCode || this.getCurrent();
 
         // Update footer currency buttons
         const btns = document.querySelectorAll('.currency-btn');

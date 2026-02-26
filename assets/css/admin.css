@@ -1282,7 +1282,7 @@ body.admin-body {
 
 .existing-image-item:hover {
     border-color: #999;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 }
 
 .existing-image-item img {
@@ -1372,4 +1372,651 @@ body.admin-body {
 .existing-image-item.category-image {
     width: 200px;
     height: 200px;
+}
+
+/* ============================================
+   iOS / iPhone MOBILE-FIRST RESPONSIVE DESIGN
+   Primary target: iPhone (Safari, iOS 15+)
+   ============================================ */
+
+/* Tablet and below (iPad mini, iPad) */
+@media (max-width: 768px) {
+
+    /* Sidebar: off-screen by default, slides in from left */
+    .admin-sidebar {
+        transform: translateX(-100%);
+    }
+
+    .admin-sidebar.open {
+        transform: translateX(0);
+    }
+
+    /* Mobile toggle - always visible */
+    .mobile-toggle {
+        display: flex;
+    }
+
+    /* Main content: full width, room for toggle */
+    .admin-main {
+        margin-left: 0;
+        width: 100%;
+        padding: 20px 16px;
+        padding-top: 64px;
+        /* Room for mobile toggle */
+    }
+
+    /* Stats grid: 2 columns */
+    .admin-stats {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 12px;
+        margin-bottom: 24px;
+    }
+
+    .admin-stat-card {
+        padding: 16px 14px;
+    }
+
+    .stat-icon-wrap {
+        width: 42px;
+        height: 42px;
+        font-size: 20px;
+        border-radius: 10px;
+    }
+
+    .stat-content h3 {
+        font-size: 20px;
+    }
+
+    .stat-content p {
+        font-size: 10px;
+    }
+
+    /* Page header: stack vertically */
+    .admin-page-header {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 12px;
+        margin-bottom: 20px;
+    }
+
+    .admin-page-title {
+        font-size: 22px;
+    }
+
+    /* Table adjustments */
+    .admin-table {
+        min-width: 480px;
+    }
+
+    .admin-table th,
+    .admin-table td {
+        padding: 10px 12px;
+        font-size: 12px;
+    }
+
+    .admin-table .product-thumb {
+        width: 36px;
+        height: 36px;
+    }
+
+    /* Select inputs: larger touch targets */
+    .admin-select {
+        min-width: 110px;
+        font-size: 12px;
+        padding: 8px 10px;
+        min-height: 36px;
+    }
+
+    /* Modal: nearly full-screen */
+    .admin-modal {
+        padding: 12px;
+    }
+
+    .admin-modal-content {
+        max-width: 100%;
+        max-height: 88vh;
+        border-radius: 16px;
+    }
+
+    .admin-modal-header {
+        padding: 16px 20px;
+        position: sticky;
+        top: 0;
+        background: var(--admin-card);
+        z-index: 10;
+        border-radius: 16px 16px 0 0;
+    }
+
+    .admin-modal-body {
+        padding: 20px;
+    }
+
+    .admin-modal-header h2 {
+        font-size: 18px;
+    }
+
+    /* Forms: stack rows */
+    .admin-form-row {
+        grid-template-columns: 1fr;
+        gap: 12px;
+    }
+
+    .admin-checkbox-group {
+        flex-wrap: wrap;
+        gap: 10px;
+        padding: 12px 14px;
+    }
+
+    /* Toast: full width on tablet */
+    .toast-container {
+        left: 12px;
+        right: 12px;
+    }
+
+    .toast {
+        min-width: auto;
+        width: 100%;
+    }
+
+    /* Button */
+    .admin-btn {
+        padding: 10px 18px;
+        font-size: 13px;
+    }
+
+    /* Modal footer: wrap buttons */
+    .admin-modal-footer {
+        flex-wrap: wrap;
+        gap: 8px;
+        padding: 16px 20px;
+    }
+
+    /* Order detail grids */
+    .order-info-grid {
+        grid-template-columns: 1fr !important;
+        gap: 12px !important;
+    }
+
+    .track-driver-info-grid {
+        grid-template-columns: 1fr !important;
+    }
+
+    /* Track driver map */
+    #trackDriverMap {
+        height: 300px !important;
+    }
+
+    /* Product view: stack */
+    .product-view-grid {
+        grid-template-columns: 1fr !important;
+    }
+
+    .product-view-img {
+        max-height: 250px !important;
+    }
+
+    /* Marketing form */
+    .admin-table-wrap[style*="max-width: 600px"] {
+        max-width: 100% !important;
+    }
+}
+
+/* ============================================
+   iPhone (SE, Mini, Standard, Pro, Max)
+   ============================================ */
+@media (max-width: 480px) {
+
+    /* iOS safe area insets */
+    .admin-main {
+        padding: 16px 12px;
+        padding-top: 60px;
+        padding-bottom: calc(16px + env(safe-area-inset-bottom, 0px));
+    }
+
+    /* Stats grid: single column on iPhone SE/Mini, 2-col on larger */
+    .admin-stats {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 8px;
+        margin-bottom: 20px;
+    }
+
+    .admin-stat-card {
+        padding: 14px 12px;
+        gap: 10px;
+        border-radius: 10px;
+    }
+
+    .stat-icon-wrap {
+        width: 36px;
+        height: 36px;
+        font-size: 18px;
+        border-radius: 8px;
+    }
+
+    .stat-content h3 {
+        font-size: 18px;
+    }
+
+    .stat-content p {
+        font-size: 9px;
+        letter-spacing: 0.1em;
+    }
+
+    /* Page title: smaller */
+    .admin-page-title {
+        font-size: 20px;
+    }
+
+    /* Mobile toggle: iOS safe area aware */
+    .mobile-toggle {
+        top: calc(12px + env(safe-area-inset-top, 0px));
+        left: 12px;
+        width: 44px;
+        /* iOS minimum touch target */
+        height: 44px;
+        font-size: 22px;
+        border-radius: 10px;
+    }
+
+    /* Sidebar: account for safe area */
+    .admin-sidebar {
+        padding-top: env(safe-area-inset-top, 0px);
+        width: 280px;
+    }
+
+    .sidebar-header {
+        padding: 20px 18px;
+    }
+
+    .sidebar-logo {
+        font-size: 18px;
+    }
+
+    .sidebar-nav {
+        padding: 12px 8px;
+    }
+
+    .sidebar-link {
+        padding: 14px 14px;
+        /* 44px min touch height at ~14+16 visual */
+        min-height: 44px;
+        font-size: 14px;
+        border-radius: 10px;
+    }
+
+    .sidebar-link .icon {
+        font-size: 20px;
+    }
+
+    /* Tables: compact for iPhone */
+    .admin-table-scroll {
+        border-radius: 10px;
+        -webkit-overflow-scrolling: touch;
+        /* iOS smooth scroll */
+    }
+
+    .admin-table {
+        min-width: 420px;
+    }
+
+    .admin-table th {
+        padding: 10px;
+        font-size: 10px;
+        letter-spacing: 0.08em;
+    }
+
+    .admin-table td {
+        padding: 10px;
+        font-size: 12px;
+    }
+
+    .admin-table .product-thumb {
+        width: 32px;
+        height: 32px;
+        border-radius: 6px;
+    }
+
+    /* Select: iOS-friendly size */
+    .admin-select {
+        min-width: 100px;
+        font-size: 12px;
+        padding: 8px;
+        min-height: 36px;
+        border-radius: 6px;
+    }
+
+    /* Action buttons: iOS touch target */
+    .admin-btn-icon {
+        width: 36px;
+        height: 36px;
+        font-size: 16px;
+    }
+
+    /* Modal: full-screen on iPhone */
+    .admin-modal {
+        padding: 0;
+        align-items: flex-end;
+        /* Slide up from bottom like iOS sheets */
+    }
+
+    .admin-modal-content {
+        max-width: 100%;
+        max-height: 92vh;
+        border-radius: 20px 20px 0 0;
+        /* iOS sheet style */
+        box-shadow: 0 -8px 40px rgba(0, 0, 0, 0.3);
+    }
+
+    /* iOS sheet drag handle */
+    .admin-modal-content::before {
+        content: '';
+        display: block;
+        width: 36px;
+        height: 5px;
+        background: rgba(0, 0, 0, 0.15);
+        border-radius: 3px;
+        margin: 8px auto 0;
+    }
+
+    .admin-modal-header {
+        padding: 12px 16px;
+        border-radius: 0;
+    }
+
+    .admin-modal-header h2 {
+        font-size: 17px;
+        /* iOS standard title size */
+    }
+
+    .admin-modal-body {
+        padding: 16px;
+        padding-bottom: calc(16px + env(safe-area-inset-bottom, 0px));
+    }
+
+    /* Forms: iOS-style inputs */
+    .admin-form-group input,
+    .admin-form-group select,
+    .admin-form-group textarea {
+        padding: 14px 16px;
+        font-size: 16px;
+        /* CRITICAL: prevents iOS Safari zoom on focus */
+        border-radius: 10px;
+        border: 1px solid rgba(0, 0, 0, 0.1);
+        background: #f8f8f8;
+        -webkit-appearance: none;
+        appearance: none;
+    }
+
+    .admin-form-group input:focus,
+    .admin-form-group select:focus,
+    .admin-form-group textarea:focus {
+        background: #fff;
+        border-color: var(--admin-gold);
+    }
+
+    .admin-form-group label {
+        font-size: 13px;
+        margin-bottom: 8px;
+    }
+
+    .admin-form-group {
+        margin-bottom: 14px;
+    }
+
+    /* Search: iOS search bar style */
+    .admin-search {
+        padding: 14px 16px 14px 42px;
+        font-size: 16px;
+        border-radius: 12px;
+        background: #f0f0f0;
+        border: none;
+        -webkit-appearance: none;
+    }
+
+    .admin-search:focus {
+        background: #fff;
+        box-shadow: 0 0 0 3px rgba(201, 169, 98, 0.15);
+        border: 1px solid var(--admin-gold);
+    }
+
+    .admin-search-icon {
+        font-size: 16px;
+        left: 14px;
+    }
+
+    /* Toast: iPhone-optimized */
+    .toast-container {
+        top: calc(12px + env(safe-area-inset-top, 0px));
+        left: 8px;
+        right: 8px;
+    }
+
+    .toast {
+        border-radius: 14px;
+        /* iOS notification style */
+        padding: 14px 16px;
+        backdrop-filter: blur(20px);
+        -webkit-backdrop-filter: blur(20px);
+        background: rgba(255, 255, 255, 0.95);
+    }
+
+    .toast-title {
+        font-size: 13px;
+    }
+
+    .toast-message {
+        font-size: 11px;
+    }
+
+    /* Buttons: iOS touch targets */
+    .admin-btn {
+        padding: 12px 20px;
+        font-size: 14px;
+        min-height: 44px;
+        border-radius: 10px;
+    }
+
+    .admin-btn-primary {
+        width: 100%;
+        /* Full width on iPhone */
+    }
+
+    .admin-btn-cancel {
+        padding: 12px 20px;
+        min-height: 44px;
+        border-radius: 10px;
+        font-size: 14px;
+    }
+
+    .admin-form-actions {
+        flex-direction: column-reverse;
+        /* Primary action on top in iPhone */
+        gap: 8px;
+    }
+
+    /* Checkbox group: wrap on iPhone */
+    .admin-checkbox-group {
+        flex-direction: column;
+        gap: 8px;
+        padding: 12px;
+    }
+
+    .admin-checkbox-group label {
+        padding: 6px 0;
+        min-height: 32px;
+    }
+
+    /* Status badges: slightly larger for readability */
+    .status-badge {
+        font-size: 9px;
+        padding: 4px 10px;
+    }
+
+    /* Order info cards */
+    .order-info-card {
+        padding: 12px !important;
+        border-radius: 10px !important;
+    }
+
+    .order-info-card h4 {
+        font-size: 13px !important;
+    }
+
+    .order-info-card p {
+        font-size: 12px !important;
+    }
+
+    /* Order total section */
+    .order-total-section {
+        border-radius: 10px;
+    }
+
+    /* Product images in edit modal */
+    .existing-image-item {
+        width: 80px !important;
+        height: 80px !important;
+    }
+
+    /* Product view modal on iPhone */
+    .product-view-img {
+        max-height: 200px !important;
+        border-radius: 10px !important;
+    }
+
+    .product-view-gallery img {
+        width: 50px !important;
+        height: 50px !important;
+    }
+
+    .product-detail-grid {
+        grid-template-columns: 1fr 1fr !important;
+        gap: 8px !important;
+    }
+
+    /* Track driver map on iPhone */
+    #trackDriverMap {
+        height: 250px !important;
+        border-radius: 12px !important;
+    }
+
+    /* Marketing form */
+    #emailMarketingForm {
+        padding: 0 !important;
+    }
+
+    /* Table wrap */
+    .admin-table-wrap {
+        border-radius: 10px;
+    }
+
+    /* Footer currency: safe area */
+    footer {
+        padding-bottom: calc(20px + env(safe-area-inset-bottom, 0px)) !important;
+    }
+
+    /* Recent orders heading */
+    h2[data-i18n="admin_recent_orders"] {
+        font-size: 17px !important;
+        margin-bottom: 12px !important;
+    }
+}
+
+/* ============================================
+   iPhone SE / iPhone Mini (small screens)
+   ============================================ */
+@media (max-width: 375px) {
+    .admin-stats {
+        grid-template-columns: 1fr;
+        /* Single column for tiny screens */
+        gap: 8px;
+    }
+
+    .admin-stat-card {
+        padding: 12px;
+    }
+
+    .stat-content h3 {
+        font-size: 16px;
+    }
+
+    .admin-table {
+        min-width: 360px;
+    }
+
+    .admin-table th,
+    .admin-table td {
+        padding: 8px;
+        font-size: 11px;
+    }
+
+    .admin-page-title {
+        font-size: 18px;
+    }
+
+    .admin-modal-content {
+        max-height: 95vh;
+    }
+
+    .sidebar-link {
+        font-size: 13px;
+        padding: 12px;
+    }
+}
+
+/* ============================================
+   iOS-specific enhancements
+   ============================================ */
+
+/* Prevent rubber-band scrolling on body */
+@supports (padding: env(safe-area-inset-top)) {
+    .admin-main {
+        padding-top: calc(60px + env(safe-area-inset-top, 0px));
+    }
+
+    .mobile-toggle {
+        top: calc(12px + env(safe-area-inset-top, 0px));
+    }
+}
+
+/* Smooth scrolling for iOS */
+.admin-table-scroll,
+.admin-modal-content,
+.sidebar-nav {
+    -webkit-overflow-scrolling: touch;
+}
+
+/* Disable text selection on interactive elements (iOS feel) */
+.admin-btn,
+.admin-btn-icon,
+.admin-btn-primary,
+.sidebar-link,
+.mobile-toggle {
+    -webkit-user-select: none;
+    user-select: none;
+    -webkit-tap-highlight-color: transparent;
+}
+
+/* Active state for iOS touch feedback */
+@media (hover: none) and (pointer: coarse) {
+    .admin-btn:active {
+        transform: scale(0.97);
+        opacity: 0.8;
+    }
+
+    .admin-btn-icon:active {
+        transform: scale(0.9);
+        opacity: 0.7;
+    }
+
+    .sidebar-link:active {
+        background: rgba(201, 169, 98, 0.15);
+    }
+
+    .admin-stat-card:active {
+        transform: scale(0.98);
+    }
+
+    .admin-table tbody tr:active td {
+        background: rgba(201, 169, 98, 0.08);
+    }
 }

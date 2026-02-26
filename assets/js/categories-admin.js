@@ -46,11 +46,17 @@ function renderCategoriesTable(categories) {
         return;
     }
 
-    tbody.innerHTML = categories.map(cat => `
+    tbody.innerHTML = categories.map(cat => {
+        // Resolve image URL: absolute URLs pass through, relative paths resolve to backend
+        const backendOrigin = (typeof API_BASE_URL !== 'undefined' ? API_BASE_URL : '').replace('/api', '');
+        const imgSrc = cat.image
+            ? (cat.image.startsWith('http') ? cat.image : backendOrigin + cat.image)
+            : 'assets/images/placeholder.png';
+        return `
         <tr>
             <td>
                 <img 
-                    src="${cat.image || 'assets/images/placeholder.png'}" 
+                    src="${imgSrc}" 
                     class="product-thumb" 
                     alt="${cat.name}"
                     onerror="this.src='assets/images/placeholder.png'"
@@ -64,7 +70,7 @@ function renderCategoriesTable(categories) {
                 <button class="admin-btn-icon delete" onclick="deleteCategory('${cat._id}')" title="Delete">🗑️</button>
             </td>
         </tr>
-    `).join('');
+    `}).join('');
 
     // Load product counts
     categories.forEach(cat => {
@@ -81,7 +87,7 @@ async function loadCategoryProductCount(categoryId) {
             }
         });
         const data = await response.json();
-        
+
         if (data.success) {
             const countEl = document.getElementById(`cat-products-${categoryId}`);
             if (countEl) {
@@ -105,53 +111,55 @@ function initCategoryForm() {
 }
 
 // Open add category modal
-window.openAddCategoryModal = function() {
+window.openAddCategoryModal = function () {
     editingCategoryId = null;
     const form = document.getElementById('categoryForm');
     if (form) form.reset();
-    
+
     document.getElementById('categoryModalTitle').textContent = 'Add New Category';
     document.getElementById('categoryId').value = '';
     document.getElementById('currentCategoryImage').style.display = 'none';
-    
+
     const modal = document.getElementById('categoryModal');
     if (modal) modal.classList.remove('hidden');
 };
 
 // Close category modal
-window.closeCategoryModal = function() {
+window.closeCategoryModal = function () {
     const modal = document.getElementById('categoryModal');
     if (modal) modal.classList.add('hidden');
     editingCategoryId = null;
 };
 
 // Edit category
-window.editCategory = async function(categoryId) {
+window.editCategory = async function (categoryId) {
     try {
         const response = await CategoriesAPI.getById(categoryId);
         if (response.success) {
             const cat = response.data;
             editingCategoryId = categoryId;
-            
+
             document.getElementById('categoryModalTitle').textContent = 'Edit Category';
             document.getElementById('categoryId').value = cat._id;
             document.getElementById('categoryName').value = cat.name;
             document.getElementById('categoryNameAr').value = cat.nameAr || '';
             document.getElementById('categoryDescription').value = cat.description || '';
             document.getElementById('categoryDescriptionAr').value = cat.descriptionAr || '';
-            
+
             // Show current image
             const currentImageDiv = document.getElementById('currentCategoryImage');
             if (cat.image) {
+                const backendOrigin = (typeof API_BASE_URL !== 'undefined' ? API_BASE_URL : '').replace('/api', '');
+                const editImgSrc = cat.image.startsWith('http') ? cat.image : backendOrigin + cat.image;
                 currentImageDiv.innerHTML = `
                     <label>Current Image:</label>
-                    <img src="${cat.image}" alt="${cat.name}" style="max-width: 200px; border-radius: 8px;">
+                    <img src="${editImgSrc}" alt="${cat.name}" style="max-width: 200px; border-radius: 8px;">
                 `;
                 currentImageDiv.style.display = 'block';
             } else {
                 currentImageDiv.style.display = 'none';
             }
-            
+
             const modal = document.getElementById('categoryModal');
             if (modal) modal.classList.remove('hidden');
         }
@@ -166,7 +174,7 @@ async function saveCategoryForm() {
     const form = document.getElementById('categoryForm');
     const formData = new FormData(form);
     const categoryId = document.getElementById('categoryId').value;
-    
+
     try {
         let response;
         if (categoryId) {
@@ -188,9 +196,9 @@ async function saveCategoryForm() {
                 body: formData
             });
         }
-        
+
         const data = await response.json();
-        
+
         if (data.success) {
             showToast('Success', categoryId ? 'Category updated' : 'Category created', 'success');
             closeCategoryModal();
@@ -205,7 +213,7 @@ async function saveCategoryForm() {
 }
 
 // Delete category
-window.deleteCategory = async function(categoryId) {
+window.deleteCategory = async function (categoryId) {
     // Get product count first
     try {
         const statsResponse = await fetch(`${API_BASE_URL}/categories/${categoryId}/stats`, {
@@ -214,25 +222,25 @@ window.deleteCategory = async function(categoryId) {
             }
         });
         const statsData = await statsResponse.json();
-        
+
         if (statsData.success && statsData.data.productsCount > 0) {
             showToast('Error', `Cannot delete category. ${statsData.data.productsCount} product(s) are linked to this category.`, 'error');
             return;
         }
-        
+
         if (!confirm('Are you sure you want to delete this category?')) {
             return;
         }
-        
+
         const response = await fetch(`${API_BASE_URL}/categories/${categoryId}`, {
             method: 'DELETE',
             headers: {
                 'Authorization': `Bearer ${localStorage.getItem('arteva_token')}`
             }
         });
-        
+
         const data = await response.json();
-        
+
         if (data.success) {
             showToast('Success', 'Category deleted', 'success');
             loadCategoriesAdmin();

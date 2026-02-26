@@ -189,6 +189,7 @@ const translations = {
         order_number_label: "Order Number",
         track_order_btn: "Track My Order",
         view_orders_btn: "View My Orders",
+        view_receipt_btn: "📄 View Receipt",
         email_confirmation: "📧 A confirmation email has been sent to your registered email address with order details and tracking information.",
         order_received: "Order Received",
 
@@ -385,6 +386,19 @@ const translations = {
         admin_coming_soon: "Coming Soon",
         admin_save_address: "Save Address",
         admin_print_receipt: "Print Receipt",
+
+        // Apple Pay
+        apple_pay: "Apple Pay",
+        apple_pay_desc: "Pay with Apple Pay",
+
+        // Phone
+        phone_placeholder: "965XXXXXXXX",
+
+        // Email Campaign
+        campaign_queued: "Campaign queued! Emails are being sent.",
+        campaign_complete: "Campaign complete",
+        campaign_sent: "sent",
+        campaign_failed: "failed",
     },
     ar: {
         // Navigation
@@ -576,6 +590,7 @@ const translations = {
         order_number_label: "رقم الطلب",
         track_order_btn: "تتبع طلبي",
         view_orders_btn: "عرض طلباتي",
+        view_receipt_btn: "📄 عرض الإيصال",
         email_confirmation: "📧 تم إرسال رسالة تأكيد إلى بريدك الإلكتروني المسجل تحتوي على تفاصيل الطلب ومعلومات التتبع.",
         order_received: "تم استلام الطلب",
 
@@ -773,6 +788,19 @@ const translations = {
         admin_coming_soon: "قريباً",
         admin_save_address: "حفظ العنوان",
         admin_print_receipt: "طباعة الإيصال",
+
+        // Apple Pay
+        apple_pay: "Apple Pay",
+        apple_pay_desc: "الدفع عبر Apple Pay",
+
+        // Phone
+        phone_placeholder: "965XXXXXXXX",
+
+        // Email Campaign
+        campaign_queued: "تم إرسال الحملة! يتم إرسال الرسائل.",
+        campaign_complete: "اكتملت الحملة",
+        campaign_sent: "تم الإرسال",
+        campaign_failed: "فشل",
     }
 };
 
@@ -780,7 +808,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // CRITICAL: Load language preference IMMEDIATELY
     // Priority: 1. User profile (if logged in), 2. localStorage, 3. Default 'en'
     let currentLang = 'en';
-    
+
     // Check if user is logged in and has a saved preference
     if (window.AuthAPI && window.AuthAPI.isLoggedIn()) {
         const user = window.AuthAPI.getUser();
@@ -830,7 +858,7 @@ function setLanguage(lang) {
                     localStorage.setItem('arteva_user', JSON.stringify(updatedUser.data));
                 }
             })
-            .catch(() => {}); // Silent fail
+            .catch(() => { }); // Silent fail
     }
 
     // Apply language to document

@@ -27,14 +27,27 @@ document.addEventListener('DOMContentLoaded', async function () {
     // 3. Load payment methods from MyFatoorah
     await loadPaymentMethods();
 
-    // 4. Initialize saved addresses (will use the map)
+    // 4. Show Apple Pay option only on supported devices
+    initApplePayVisibility();
+
+    // 5. Initialize saved addresses (will use the map)
     await initSavedAddresses();
 
-    // 5. Initialize rest of the form
+    // 6. Initialize rest of the form
     initCheckoutForm();
     initPaymentMethodSelection();
     updateOrderSummary();
 });
+
+// ============================================
+// Apple Pay Device Detection
+// ============================================
+function initApplePayVisibility() {
+    const applePayMethod = document.getElementById('applePayMethod');
+    if (applePayMethod && window.ApplePaySession && ApplePaySession.canMakePayments()) {
+        applePayMethod.style.display = '';
+    }
+}
 
 // ============================================
 // Saved Addresses
@@ -290,9 +303,9 @@ async function syncCartToServer() {
                 // Fallback: direct API call
                 await window.apiRequest('/cart', {
                     method: 'POST',
-                    body: JSON.stringify({ 
-                        productId: item.id || item._id, 
-                        quantity: item.quantity 
+                    body: JSON.stringify({
+                        productId: item.id || item._id,
+                        quantity: item.quantity
                     })
                 });
             }

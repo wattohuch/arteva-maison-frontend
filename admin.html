@@ -3,7 +3,7 @@
 
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <title>Admin Dashboard | ARTÉVA Maison</title>
 
     <!-- Fonts -->
@@ -41,8 +41,8 @@
                         class="icon">📊</span> <span class="nav-text">Dashboard</span></a></li>
             <li><a href="#products" class="sidebar-link" data-i18n="admin_products"><span class="icon">📦</span> <span
                         class="nav-text">Products</span></a></li>
-            <li><a href="#categories" class="sidebar-link" data-i18n="admin_categories"><span class="icon">📁</span> <span
-                        class="nav-text">Categories</span></a></li>
+            <li><a href="#categories" class="sidebar-link" data-i18n="admin_categories"><span class="icon">📁</span>
+                    <span class="nav-text">Categories</span></a></li>
             <li><a href="#orders" class="sidebar-link" data-i18n="admin_orders"><span class="icon">🛍️</span> <span
                         class="nav-text">Orders</span> <span class="badge hidden" id="newOrderBadge">0</span></a></li>
             <li><a href="#users" class="sidebar-link" data-i18n="admin_users"><span class="icon">👥</span> <span
@@ -185,7 +185,9 @@
                             </tr>
                         </thead>
                         <tbody id="categoriesTableBody">
-                            <tr><td colspan="6" style="text-align: center; padding: 32px;">Loading categories...</td></tr>
+                            <tr>
+                                <td colspan="6" style="text-align: center; padding: 32px;">Loading categories...</td>
+                            </tr>
                         </tbody>
                     </table>
                 </div>
@@ -320,8 +322,10 @@
                         <div class="admin-form-group">
                             <label data-i18n="admin_attach_images">Attach Images (Optional)</label>
                             <input type="file" name="images" id="emailImages" accept="image/*" multiple>
-                            <small data-i18n="admin_attach_images_help">You can attach multiple images to your email</small>
-                            <div id="emailImagePreview" style="display: flex; gap: 10px; margin-top: 10px; flex-wrap: wrap;"></div>
+                            <small data-i18n="admin_attach_images_help">You can attach multiple images to your
+                                email</small>
+                            <div id="emailImagePreview"
+                                style="display: flex; gap: 10px; margin-top: 10px; flex-wrap: wrap;"></div>
                         </div>
                         <div class="admin-form-actions" style="border: none; padding-top: 0;">
                             <button type="submit" class="admin-btn admin-btn-primary" data-i18n="admin_send_campaign">📧
@@ -383,12 +387,13 @@
 
                     <div class="admin-form-group">
                         <label data-i18n="admin_images">Images</label>
-                        
+
                         <!-- Existing Images Display -->
-                        <div id="existingProductImages" style="display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 10px;">
+                        <div id="existingProductImages"
+                            style="display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 10px;">
                             <!-- Existing images will be populated here by JavaScript -->
                         </div>
-                        
+
                         <!-- Upload New Images -->
                         <input type="file" name="images" id="productImagesInput" multiple accept="image/*">
                         <small style="color: var(--admin-text-muted); font-size: 11px; margin-top: 4px; display: block;"
@@ -591,48 +596,51 @@
             </div>
             <form id="categoryForm" enctype="multipart/form-data">
                 <input type="hidden" id="categoryId">
-                
+
                 <div class="admin-form-row">
                     <div class="admin-form-group">
                         <label>Name (English) *</label>
                         <input type="text" name="name" class="admin-input" required placeholder="e.g., Crystals">
                     </div>
                 </div>
-                
+
                 <div class="admin-form-row">
                     <div class="admin-form-group">
                         <label>Name (Arabic)</label>
                         <input type="text" name="nameAr" class="admin-input" placeholder="مثال: كريستال" dir="rtl">
                     </div>
                 </div>
-                
+
                 <div class="admin-form-row">
                     <div class="admin-form-group">
                         <label>Description</label>
-                        <textarea name="description" class="admin-input" rows="3" placeholder="Optional description..."></textarea>
+                        <textarea name="description" class="admin-input" rows="3"
+                            placeholder="Optional description..."></textarea>
                     </div>
                 </div>
-                
+
                 <div class="admin-form-row">
                     <div class="admin-form-group">
                         <label>Category Image</label>
-                        
+
                         <!-- Existing Image Display -->
                         <div id="existingCategoryImage" style="margin-bottom: 10px;">
                             <!-- Existing image will be populated here -->
                         </div>
-                        
+
                         <!-- Upload New Image -->
-                        <input type="file" name="image" id="categoryImageInput" accept="image/*" class="admin-input" onchange="previewCategoryImage(event)">
+                        <input type="file" name="image" id="categoryImageInput" accept="image/*" class="admin-input"
+                            onchange="previewCategoryImage(event)">
                         <small style="color: #666; display: block; margin-top: 4px;">
                             Recommended: 400x400px, JPG or PNG
                         </small>
-                        
+
                         <!-- Preview for new upload -->
-                        <img id="categoryImagePreview" style="max-width: 200px; margin-top: 10px; display: none; border-radius: 8px; border: 1px solid #ddd;">
+                        <img id="categoryImagePreview"
+                            style="max-width: 200px; margin-top: 10px; display: none; border-radius: 8px; border: 1px solid #ddd;">
                     </div>
                 </div>
-                
+
                 <div class="admin-form-row">
                     <div class="admin-form-group">
                         <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
@@ -641,7 +649,7 @@
                         </label>
                     </div>
                 </div>
-                
+
                 <div class="admin-form-actions">
                     <button type="button" class="admin-btn-cancel" onclick="closeCategoryModal()">Cancel</button>
                     <button type="submit" class="admin-btn admin-btn-primary">Save Category</button>
@@ -666,7 +674,8 @@
                 <button class="currency-trigger" aria-label="Select Currency">
                     <span class="currency-flag fi fi-kw"></span>
                     <span class="currency-code">KWD</span>
-                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width: 16px; height: 16px;">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                        stroke-width="2" style="width: 16px; height: 16px;">
                         <path d="M18 15l-6-6-6 6" />
                     </svg>
                 </button>
@@ -713,13 +722,13 @@
                             <div class="currency-option-name">Omani Rial</div>
                         </div>
                     </div>
-                <div class="currency-option" data-currency="USD">
-                                <span class="currency-option-flag fi fi-us" aria-label="USA"></span>
-                                <div class="currency-option-info">
-                                    <div class="currency-option-code" style="display: none;">USD</div>
-                                    <div class="currency-option-name">US Dollar</div>
-                                </div>
-                            </div>
+                    <div class="currency-option" data-currency="USD">
+                        <span class="currency-option-flag fi fi-us" aria-label="USA"></span>
+                        <div class="currency-option-info">
+                            <div class="currency-option-code" style="display: none;">USD</div>
+                            <div class="currency-option-name">US Dollar</div>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
