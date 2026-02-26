@@ -399,6 +399,86 @@ const translations = {
         campaign_complete: "Campaign complete",
         campaign_sent: "sent",
         campaign_failed: "failed",
+
+        // Account Dashboard
+        welcome_user: "Welcome",
+        dashboard_desc: "Manage your account, orders, and preferences.",
+        admin_dashboard_btn: "Admin Dashboard",
+        driver_dashboard_btn: "Driver Dashboard",
+        checkout: "Checkout",
+        view_orders: "View My Orders",
+        manage_addresses: "Manage Addresses",
+        logout: "Logout",
+
+        // Sidebar & Pages
+        sidebar_dashboard: "Dashboard",
+        sidebar_orders: "My Orders",
+        sidebar_addresses: "Addresses",
+        my_addresses: "My Addresses",
+        add_new_address: "Add New Address",
+        address_label: "Label (e.g. Home, Work)",
+        address_label_placeholder: "Home",
+        location: "Location",
+        use_current_location: "Use My Current Location",
+        street_address: "Street Address",
+        city: "City",
+        postal_code: "Postal Code",
+        phone_number: "Phone Number",
+        set_default_address: "Set as default address",
+        save_address: "Save Address",
+        add_new_address_card: "Add New Address",
+        default_label: "Default",
+        edit: "Edit",
+        delete_text: "Delete",
+        set_default: "Set Default",
+
+        // Shared: Cart Drawer
+        your_cart: "Your Cart",
+        cart_empty: "Your cart is empty",
+        continue_shopping: "Continue Shopping",
+        subtotal: "Subtotal",
+        view_cart: "View Cart",
+
+        // Shared: Header Dropdowns
+        crystals: "Crystals",
+        glassware: "Glassware",
+        vases_bowls: "Vases",
+        view_all: "View All",
+
+        // Contact Page
+        get_in_touch: "Get In Touch",
+        contact_desc: "We'd love to hear from you. Send us a message and we'll respond as soon as possible.",
+        business_hours: "Business Hours",
+        business_hours_value: "Sat-Thu: 10AM-10PM",
+        send_message: "Send Message",
+        your_name: "Your Name",
+        your_email: "Your Email",
+        subject: "Subject",
+        message: "Message",
+        general_inquiry: "General Inquiry",
+        order_status_inquiry: "Order Status",
+        product_question: "Product Question",
+        returns_inquiry: "Returns",
+
+        // Forgot Password
+        forgot_password: "Forgot your password?",
+        forgot_password_title: "Reset Password",
+        forgot_password_desc: "Enter your email address and we'll send you a link to reset your password.",
+        send_reset_link: "Send Reset Link",
+        back_to_login: "Back to Login",
+
+        // Cart Page
+        shopping_cart: "Shopping Cart",
+        product_label: "Product",
+        price_label: "Price",
+        quantity: "Quantity",
+        total: "Total",
+        remove: "Remove",
+        order_summary: "Order Summary",
+        shipping_label: "Shipping",
+        proceed_to_checkout: "Proceed to Checkout",
+        cart_empty_page: "Your cart is empty",
+        start_shopping: "Start Shopping",
     },
     ar: {
         // Navigation
@@ -801,6 +881,86 @@ const translations = {
         campaign_complete: "اكتملت الحملة",
         campaign_sent: "تم الإرسال",
         campaign_failed: "فشل",
+
+        // Account Dashboard
+        welcome_user: "مرحبًا",
+        dashboard_desc: "إدارة حسابك وطلباتك وتفضيلاتك.",
+        admin_dashboard_btn: "لوحة التحكم",
+        driver_dashboard_btn: "لوحة السائق",
+        checkout: "الدفع",
+        view_orders: "عرض طلباتي",
+        manage_addresses: "إدارة العناوين",
+        logout: "تسجيل الخروج",
+
+        // Sidebar & Pages
+        sidebar_dashboard: "لوحة التحكم",
+        sidebar_orders: "طلباتي",
+        sidebar_addresses: "العناوين",
+        my_addresses: "عناويني",
+        add_new_address: "إضافة عنوان جديد",
+        address_label: "التسمية (مثل: المنزل، العمل)",
+        address_label_placeholder: "المنزل",
+        location: "الموقع",
+        use_current_location: "استخدام موقعي الحالي",
+        street_address: "عنوان الشارع",
+        city: "المدينة",
+        postal_code: "الرمز البريدي",
+        phone_number: "رقم الهاتف",
+        set_default_address: "تعيين كعنوان افتراضي",
+        save_address: "حفظ العنوان",
+        add_new_address_card: "إضافة عنوان جديد",
+        default_label: "افتراضي",
+        edit: "تعديل",
+        delete_text: "حذف",
+        set_default: "تعيين افتراضي",
+
+        // Shared: Cart Drawer
+        your_cart: "سلة التسوق",
+        cart_empty: "سلة التسوق فارغة",
+        continue_shopping: "متابعة التسوق",
+        subtotal: "المجموع الفرعي",
+        view_cart: "عرض السلة",
+
+        // Shared: Header Dropdowns
+        crystals: "كريستال",
+        glassware: "الأواني الزجاجية",
+        vases_bowls: "المزهريات",
+        view_all: "عرض الكل",
+
+        // Contact Page
+        get_in_touch: "تواصل معنا",
+        contact_desc: "يسعدنا سماع رأيك. أرسل لنا رسالة وسنرد في أقرب وقت.",
+        business_hours: "ساعات العمل",
+        business_hours_value: "السبت-الخميس: 10 صباحًا - 10 مساءً",
+        send_message: "إرسال الرسالة",
+        your_name: "الاسم",
+        your_email: "البريد الإلكتروني",
+        subject: "الموضوع",
+        message: "الرسالة",
+        general_inquiry: "استفسار عام",
+        order_status_inquiry: "حالة الطلب",
+        product_question: "سؤال عن منتج",
+        returns_inquiry: "الإرجاع",
+
+        // Forgot Password
+        forgot_password: "هل نسيت كلمة المرور؟",
+        forgot_password_title: "إعادة تعيين كلمة المرور",
+        forgot_password_desc: "أدخل بريدك الإلكتروني وسنرسل لك رابط لإعادة تعيين كلمة المرور.",
+        send_reset_link: "إرسال رابط إعادة التعيين",
+        back_to_login: "العودة لتسجيل الدخول",
+
+        // Cart Page
+        shopping_cart: "سلة التسوق",
+        product_label: "المنتج",
+        price_label: "السعر",
+        quantity: "الكمية",
+        total: "الإجمالي",
+        remove: "إزالة",
+        order_summary: "ملخص الطلب",
+        shipping_label: "الشحن",
+        proceed_to_checkout: "المتابعة للدفع",
+        cart_empty_page: "سلة التسوق فارغة",
+        start_shopping: "ابدأ التسوق",
     }
 };
 

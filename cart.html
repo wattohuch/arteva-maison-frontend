@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en" dir="ltr">
 
 <head>
@@ -42,13 +42,13 @@
                             </svg></a>
                         <div class="dropdown-menu">
                             <a href="collection.html?cat=crystals" class="dropdown-item">Crystals<span
-                                    class="ar">كريستال</span></a>
+                                    class="ar">???????</span></a>
                             <a href="collection.html?cat=glassware" class="dropdown-item">Glassware<span
-                                    class="ar">الأواني الزجاجية</span></a>
+                                    class="ar">??????? ????????</span></a>
                             <a href="collection.html?cat=vases" class="dropdown-item">Vases<span
-                                    class="ar">المزهريات</span></a>
-                            <a href="collections.html" class="dropdown-item">View All<span class="ar">عرض
-                                    الكل</span></a>
+                                    class="ar">?????????</span></a>
+                            <a href="collections.html" class="dropdown-item">View All<span class="ar">???
+                                    ????</span></a>
                         </div>
                     </div>
                     <div class="nav-item"><a href="collections.html" class="nav-link" data-i18n="collections">Collections</a></div>
@@ -56,7 +56,7 @@
                 </nav>
             </div>
             <div class="logo">
-                <a href="index.html"><span class="logo-text"><span class="main">ARTÉVA</span><span
+                <a href="index.html"><span class="logo-text"><span class="main">ART�VA</span><span
                             class="sub">MAISON</span></span></a>
             </div>
             <div class="header-right">
@@ -158,7 +158,7 @@
     <!-- Mobile Menu -->
     <div class="mobile-menu" id="mobileMenu">
         <div class="mobile-menu-header">
-            <div class="logo"><a href="index.html"><span class="logo-text"><span class="main">ARTÉVA</span><span
+            <div class="logo"><a href="index.html"><span class="logo-text"><span class="main">ART�VA</span><span
                             class="sub">MAISON</span></span></a></div>
             <button class="mobile-menu-close" id="mobileMenuClose" aria-label="Close Menu">
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
@@ -200,7 +200,7 @@
     <!-- Cart Drawer -->
     <div class="cart-drawer" id="cartDrawer">
         <div class="cart-header">
-            <h3 class="cart-title">Your Cart</h3>
+            <h3 class="cart-title" data-i18n="your_cart">Your Cart</h3>
             <button class="cart-close" id="cartClose" aria-label="Close Cart">
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
                     stroke-width="2">
@@ -217,8 +217,8 @@
                     <line x1="3" y1="6" x2="21" y2="6" />
                     <path d="M16 10a4 4 0 0 1-8 0" />
                 </svg>
-                <p>Your cart is empty</p>
-                <a href="collections.html" class="btn btn-primary">Continue Shopping</a>
+                <p data-i18n="cart_empty">Your cart is empty</p>
+                <a href="collections.html" class="btn btn-primary" data-i18n="continue_shopping">Continue Shopping</a>
             </div>
         </div>
         <div class="cart-footer" id="cartFooter" style="display: none;">
@@ -310,12 +310,12 @@
             <div class="logo">
               <a href="index.html">
                 <span class="logo-text">
-                  <span class="main">ARTÉVA</span>
+                  <span class="main">ART�VA</span>
                   <span class="sub">MAISON</span>
                 </span>
               </a>
             </div>
-            <p data-i18n="footer_desc">Discover the art of luxury living with our exquisite collection of handcrafted home décor and artisan glassware.</p>
+            <p data-i18n="footer_desc">Discover the art of luxury living with our exquisite collection of handcrafted home d�cor and artisan glassware.</p>
             <div class="footer-social">
               <a href="https://www.instagram.com/arteva.maison" class="social-link" aria-label="Instagram" target="_blank" rel="noopener">
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
@@ -344,7 +344,7 @@
                 <circle cx="12" cy="10" r="3" />
               </svg>
               <div>
-                <p>ARTÉVA Maison</p>
+                <p>ART�VA Maison</p>
                 <p>Kuwait City, Kuwait</p>
               </div>
             </div>
@@ -362,9 +362,9 @@
         </div>
 
         <div class="footer-bottom">
-          <p class="footer-copyright" data-i18n="footer_copyright">© 2026 ARTÉVA Maison. All rights reserved.</p>
+          <p class="footer-copyright" data-i18n="footer_copyright">� 2026 ART�VA Maison. All rights reserved.</p>
           <div class="footer-payments">
-            <span style="font-size: 12px; color: rgba(255,255,255,0.5);" data-i18n="footer_payments">We accept: KNET • Visa • Mastercard</span>
+            <span style="font-size: 12px; color: rgba(255,255,255,0.5);" data-i18n="footer_payments">We accept: KNET � Visa � Mastercard</span>
           </div>
           
           <!-- Mobile Currency Selector (Shows only on mobile) -->
@@ -446,8 +446,8 @@
             // Clear cart button
             document.getElementById('clearCartBtn').addEventListener('click', () => {
                 const lang = localStorage.getItem('site_lang') || 'en';
-                const confirmMsg = lang === 'ar' ? 'هل أنت متأكد أنك تريد إفراغ سلة التسوق؟' : 'Are you sure you want to clear your cart?';
-                const successMsg = lang === 'ar' ? 'تم إفراغ السلة' : 'Cart cleared';
+                const confirmMsg = lang === 'ar' ? '?? ??? ????? ??? ???? ????? ??? ???????' : 'Are you sure you want to clear your cart?';
+                const successMsg = lang === 'ar' ? '?? ????? ?????' : 'Cart cleared';
 
                 if (confirm(confirmMsg)) {
                     window.clearCart();
@@ -459,7 +459,7 @@
             document.getElementById('checkoutBtn').addEventListener('click', () => {
                 if (window.getCartCount && window.getCartCount() === 0) {
                     const lang = localStorage.getItem('site_lang') || 'en';
-                    const errorMsg = lang === 'ar' ? 'سلة التسوق فارغة' : 'Your cart is empty';
+                    const errorMsg = lang === 'ar' ? '??? ?????? ?????' : 'Your cart is empty';
                     window.showNotification(errorMsg, 'error');
                     return;
                 }
