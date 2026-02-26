@@ -37,7 +37,21 @@ document.addEventListener('DOMContentLoaded', async function () {
     initCheckoutForm();
     initPaymentMethodSelection();
     updateOrderSummary();
+
+    // 7. Handle browser back-button from payment gateway
+    // pageshow fires when page is restored from bfcache (back/forward navigation)
+    window.addEventListener('pageshow', function (event) {
+        if (event.persisted) {
+            // Page was restored from bfcache — user pressed back from payment gateway
+            const submitBtn = document.querySelector('#checkoutForm button[type="submit"]');
+            if (submitBtn) {
+                submitBtn.disabled = false;
+                submitBtn.textContent = window.getTranslation ? window.getTranslation('place_order') : 'Place Order';
+            }
+        }
+    });
 });
+
 
 // ============================================
 // Apple Pay Device Detection

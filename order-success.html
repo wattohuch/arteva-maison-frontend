@@ -202,23 +202,36 @@
             const paymentId = urlParams.get('paymentId');
             const invoiceId = urlParams.get('Id'); // MyFatoorah callback parameter
 
-            // Log all URL parameters for debugging
-            console.log('URL Parameters:', {
-                orderNumber,
-                paymentId,
-                invoiceId,
-                allParams: Object.fromEntries(urlParams.entries())
-            });
-
             const orderNumberEl = document.getElementById('orderNumber');
             const trackOrderBtn = document.getElementById('trackOrderBtn');
+            const receiptBtn = document.getElementById('viewReceiptBtn');
+            const successTitle = document.querySelector('.success-title');
+            const successMessage = document.querySelector('.success-message');
+            const successIcon = document.querySelector('.success-icon');
             let finalOrderNumber = null;
+
+            // Helper: fetch order by number and check payment status
+            async function verifyOrderPayment(orderNum) {
+                try {
+                    const token = localStorage.getItem('arteva_token');
+                    if (!token) return null;
+                    const res = await fetch(`${API_BASE_URL}/orders/by-number/${orderNum}`, {
+                        headers: { 'Authorization': `Bearer ${token}` }
+                    });
+                    if (!res.ok) return null;
+                    const data = await res.json();
+                    return data.success ? data.data : null;
+                } catch (e) {
+                    console.error('Order verification failed:', e);
+                    return null;
+                }
+            }
 
             if (orderNumber) {
                 finalOrderNumber = orderNumber;
                 orderNumberEl.textContent = orderNumber;
             } else if (paymentId || invoiceId) {
-                // Verify payment with MyFatoorah
+                // Verify payment with MyFatoorah via backend
                 const idToVerify = paymentId || invoiceId;
                 try {
                     const response = await fetch(`${API_BASE_URL}/payments/verify/${idToVerify}`, {
@@ -227,8 +240,6 @@
                         }
                     });
                     const data = await response.json();
-
-                    console.log('Payment verification response:', data);
 
                     if (data.success && data.data.orderNumber) {
                         finalOrderNumber = data.data.orderNumber;
@@ -244,21 +255,61 @@
                 orderNumberEl.textContent = 'Order Received';
             }
 
-            // Set track order button link
+            // === CRITICAL: Verify payment status before clearing cart or showing receipt ===
+            let paymentVerified = false;
             if (finalOrderNumber) {
-                trackOrderBtn.href = `order-tracking.html?order=${finalOrderNumber}`;
-                // Show and configure receipt button
-                const receiptBtn = document.getElementById('viewReceiptBtn');
-                if (receiptBtn) {
-                    receiptBtn.href = `receipt.html?order=${finalOrderNumber}`;
-                    receiptBtn.style.display = '';
+                const order = await verifyOrderPayment(finalOrderNumber);
+                if (order && order.paymentStatus === 'paid') {
+                    // Payment is confirmed — safe to clear cart and show receipt
+                    paymentVerified = true;
+                    localStorage.removeItem('arteva_cart');
+                    if (window.clearCart) window.clearCart();
+
+                    trackOrderBtn.href = `order-tracking.html?order=${finalOrderNumber}`;
+                    if (receiptBtn) {
+                        receiptBtn.href = `receipt.html?order=${finalOrderNumber}`;
+                        receiptBtn.style.display = '';
+                    }
+                } else if (order && (order.paymentStatus === 'failed' || order.paymentStatus === 'cancelled')) {
+                    // Payment failed or cancelled — show error state
+                    if (successTitle) successTitle.textContent = 'Payment Not Completed';
+                    if (successMessage) successMessage.textContent = 'Your payment was not successful. Your cart has been preserved. Please try again.';
+                    if (successIcon) successIcon.style.background = 'linear-gradient(135deg, #ef4444, #dc2626)';
+                    if (receiptBtn) receiptBtn.style.display = 'none';
+                    trackOrderBtn.href = 'checkout.html';
+                    trackOrderBtn.textContent = 'Try Again';
+                    // Do NOT clear cart
+                } else if (order && order.paymentStatus === 'awaiting_payment') {
+                    // Payment still pending
+                    if (successTitle) successTitle.textContent = 'Payment Pending';
+                    if (successMessage) successMessage.textContent = 'Your payment is being verified. Please check back in a few minutes.';
+                    if (successIcon) successIcon.style.background = 'linear-gradient(135deg, #f59e0b, #d97706)';
+                    if (receiptBtn) receiptBtn.style.display = 'none';
+                    trackOrderBtn.href = `order-tracking.html?order=${finalOrderNumber}`;
+                    // Do NOT clear cart until verified
+                } else if (order && order.paymentMethod === 'cod') {
+                    // COD orders are always confirmed immediately
+                    paymentVerified = true;
+                    localStorage.removeItem('arteva_cart');
+                    if (window.clearCart) window.clearCart();
+                    trackOrderBtn.href = `order-tracking.html?order=${finalOrderNumber}`;
+                    if (receiptBtn) {
+                        receiptBtn.href = `receipt.html?order=${finalOrderNumber}`;
+                        receiptBtn.style.display = '';
+                    }
+                } else {
+                    // Could not verify — show cautious message
+                    if (successTitle) successTitle.textContent = 'Order Received';
+                    if (successMessage) successMessage.textContent = 'We received your order. Payment verification is in progress.';
+                    if (receiptBtn) receiptBtn.style.display = 'none';
+                    trackOrderBtn.href = 'account.html';
+                    // Do NOT clear cart
                 }
             } else {
-                trackOrderBtn.href = 'account.html'; // Redirect to orders page if no order number
+                trackOrderBtn.href = 'account.html';
+                if (receiptBtn) receiptBtn.style.display = 'none';
+                // Do NOT clear cart without a verified order
             }
-
-            // Clear cart
-            localStorage.removeItem('arteva_cart');
         });
     </script>
 </body>
