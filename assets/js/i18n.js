@@ -37,6 +37,18 @@ const translations = {
         // Categories
         category_new: "New",
         category_outlet: "Outlet",
+        glassware: "Glassware",
+        category_glassware: "Glassware",
+        category_lighting: "Lighting",
+        category_serveware: "Serveware",
+        category_decor: "Décor",
+        category_candles: "Candle Holders",
+
+        // Contact Form Options
+        general_inquiry: "General Inquiry",
+        order_status_inquiry: "Order Status",
+        product_question: "Product Question",
+        returns_inquiry: "Returns",
 
         // Featured Products / New Arrivals
         new_arrivals_title: "New Arrivals",
@@ -518,6 +530,18 @@ const translations = {
         // Categories
         category_new: "جديد",
         category_outlet: "تخفيضات",
+        glassware: "الأواني الزجاجية",
+        category_glassware: "الأواني الزجاجية",
+        category_lighting: "الإضاءة",
+        category_serveware: "أدوات التقديم",
+        category_decor: "ديكور",
+        category_candles: "حاملات الشموع",
+
+        // Contact Form Options
+        general_inquiry: "استفسار عام",
+        order_status_inquiry: "حالة الطلب",
+        product_question: "سؤال عن منتج",
+        returns_inquiry: "الإرجاع",
 
         // Featured Products / New Arrivals
         new_arrivals_title: "وصل حديثاً",
