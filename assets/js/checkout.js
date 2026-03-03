@@ -58,7 +58,14 @@ document.addEventListener('DOMContentLoaded', async function () {
 // ============================================
 function initApplePayVisibility() {
     const applePayMethod = document.getElementById('applePayMethod');
-    if (applePayMethod && window.ApplePaySession && ApplePaySession.canMakePayments()) {
+    if (!applePayMethod) return;
+
+    // Show Apple Pay only on supported devices AND if the method is available from MyFatoorah
+    const applePayAvailable = availablePaymentMethods.find(
+        m => (m.name || '').toLowerCase().includes('apple') || (m.code || '').toLowerCase().includes('ap')
+    );
+
+    if (applePayAvailable && window.ApplePaySession && ApplePaySession.canMakePayments()) {
         applePayMethod.style.display = '';
     }
 }
@@ -278,11 +285,43 @@ async function loadPaymentMethods() {
         const response = await window.PaymentsAPI.getPaymentMethods(1);
         if (response.success) {
             availablePaymentMethods = response.data;
+            console.log('Available payment methods:', availablePaymentMethods.map(m => `${m.name} (ID: ${m.id})`));
         }
     } catch (error) {
         // Continue with default methods (COD, KNET, Card) if API fails
         availablePaymentMethods = [];
     }
+}
+
+// ============================================
+// Helper: Get dynamic PaymentMethodId
+// ============================================
+function getPaymentMethodId(type) {
+    // Fallback IDs (common defaults)
+    const fallbacks = { knet: 1, card: 2, applepay: 20 };
+
+    if (!availablePaymentMethods || availablePaymentMethods.length === 0) {
+        return fallbacks[type] || null;
+    }
+
+    let method;
+    if (type === 'knet') {
+        method = availablePaymentMethods.find(
+            m => (m.name || '').toLowerCase().includes('knet') || (m.code || '').toLowerCase() === 'kn'
+        );
+    } else if (type === 'card') {
+        method = availablePaymentMethods.find(
+            m => (m.name || '').toLowerCase().includes('visa') ||
+                (m.name || '').toLowerCase().includes('master') ||
+                (m.code || '').toLowerCase() === 'vm'
+        );
+    } else if (type === 'applepay') {
+        method = availablePaymentMethods.find(
+            m => (m.name || '').toLowerCase().includes('apple') || (m.code || '').toLowerCase().includes('ap')
+        );
+    }
+
+    return method ? method.id : (fallbacks[type] || null);
 }
 
 // ============================================
@@ -332,6 +371,30 @@ async function syncCartToServer() {
 
 
 // ============================================
+// Collect & validate shipping address
+// ============================================
+function collectShippingAddress() {
+    const shippingAddress = {
+        street: document.getElementById('street')?.value,
+        city: document.getElementById('city')?.value,
+        state: document.getElementById('state')?.value,
+        country: document.getElementById('country')?.value || 'Kuwait',
+        zipCode: document.getElementById('zipCode')?.value,
+        phone: document.getElementById('phone')?.value,
+        coordinates: {
+            lat: parseFloat(document.getElementById('lat')?.value || 0),
+            lng: parseFloat(document.getElementById('lng')?.value || 0)
+        }
+    };
+
+    if (!shippingAddress.street || !shippingAddress.city) {
+        showCheckoutNotification(window.getTranslation ? window.getTranslation('fill_required_fields') : 'Please fill in all required address fields', 'error');
+        return null;
+    }
+    return shippingAddress;
+}
+
+// ============================================
 // Initialize Checkout Form
 // ============================================
 function initCheckoutForm() {
@@ -348,25 +411,8 @@ function initCheckoutForm() {
             return;
         }
 
-        // Collect shipping address
-        const shippingAddress = {
-            street: document.getElementById('street')?.value,
-            city: document.getElementById('city')?.value,
-            state: document.getElementById('state')?.value,
-            country: document.getElementById('country')?.value || 'Kuwait',
-            zipCode: document.getElementById('zipCode')?.value,
-            phone: document.getElementById('phone')?.value,
-            coordinates: {
-                lat: parseFloat(document.getElementById('lat')?.value || 0),
-                lng: parseFloat(document.getElementById('lng')?.value || 0)
-            }
-        };
-
-        // Validate required fields
-        if (!shippingAddress.street || !shippingAddress.city) {
-            showCheckoutNotification(window.getTranslation ? window.getTranslation('fill_required_fields') : 'Please fill in all required address fields', 'error');
-            return;
-        }
+        const shippingAddress = collectShippingAddress();
+        if (!shippingAddress) return;
 
         // Disable submit button
         const submitBtn = checkoutForm.querySelector('button[type="submit"]');
@@ -396,6 +442,60 @@ function initCheckoutForm() {
             }
         }
     });
+
+    // ============================================
+    // Apple Pay: Direct order on button click
+    // ============================================
+    initApplePayDirectOrder();
+}
+
+// ============================================
+// Apple Pay Direct Order (click = place order)
+// ============================================
+function initApplePayDirectOrder() {
+    const applePayBtn = document.getElementById('applePayMethod');
+    if (!applePayBtn) return;
+
+    applePayBtn.addEventListener('click', async (e) => {
+        // Prevent the radio from being selected (we handle everything here)
+        e.preventDefault();
+        e.stopPropagation();
+
+        // Validate login
+        if (!window.AuthAPI?.isLoggedIn()) {
+            showCheckoutNotification(window.getTranslation ? window.getTranslation('login_required') : 'Please login to checkout', 'error');
+            window.location.href = '/account.html?redirect=checkout';
+            return;
+        }
+
+        // Validate address
+        const shippingAddress = collectShippingAddress();
+        if (!shippingAddress) return;
+
+        // Visual feedback on Apple Pay button
+        applePayBtn.style.opacity = '0.6';
+        applePayBtn.style.pointerEvents = 'none';
+
+        // Also disable the Place Order button to prevent double-submit
+        const submitBtn = document.querySelector('#checkoutForm button[type="submit"]');
+        if (submitBtn) {
+            submitBtn.disabled = true;
+            submitBtn.textContent = window.getTranslation ? window.getTranslation('processing') : 'Processing...';
+        }
+
+        try {
+            await syncCartToServer();
+            await processApplePayPayment(shippingAddress);
+        } catch (error) {
+            showCheckoutNotification(error.message || (window.getTranslation ? window.getTranslation('payment_failed') : 'Payment failed'), 'error');
+            applePayBtn.style.opacity = '1';
+            applePayBtn.style.pointerEvents = 'auto';
+            if (submitBtn) {
+                submitBtn.disabled = false;
+                submitBtn.textContent = window.getTranslation ? window.getTranslation('place_order') : 'Place Order';
+            }
+        }
+    });
 }
 
 // ============================================
@@ -408,8 +508,10 @@ async function processCardPayment(shippingAddress) {
         return;
     }
 
-    // Payment Method ID: 2 = VISA/MasterCard
-    const data = await window.PaymentsAPI.executePayment(2, shippingAddress);
+    // Use dynamic Payment Method ID from InitiatePayment API
+    const methodId = getPaymentMethodId('card');
+    console.log('Card payment - using method ID:', methodId);
+    const data = await window.PaymentsAPI.executePayment(methodId, shippingAddress);
 
     // Redirect to MyFatoorah payment page
     if (data.success && data.data.paymentUrl) {
@@ -429,8 +531,10 @@ async function processKNETPayment(shippingAddress) {
         return;
     }
 
-    // Payment Method ID: 1 = KNET
-    const data = await window.PaymentsAPI.executePayment(1, shippingAddress);
+    // Use dynamic Payment Method ID from InitiatePayment API
+    const methodId = getPaymentMethodId('knet');
+    console.log('KNET payment - using method ID:', methodId);
+    const data = await window.PaymentsAPI.executePayment(methodId, shippingAddress);
 
     // Redirect to MyFatoorah KNET payment page
     if (data.success && data.data.paymentUrl) {
@@ -450,8 +554,10 @@ async function processApplePayPayment(shippingAddress) {
         return;
     }
 
-    // Payment Method ID: 20 = Apple Pay
-    const data = await window.PaymentsAPI.executePayment(20, shippingAddress);
+    // Use dynamic Payment Method ID from InitiatePayment API
+    const methodId = getPaymentMethodId('applepay');
+    console.log('Apple Pay - using method ID:', methodId);
+    const data = await window.PaymentsAPI.executePayment(methodId, shippingAddress);
 
     // Redirect to MyFatoorah Apple Pay page
     if (data.success && data.data.paymentUrl) {
