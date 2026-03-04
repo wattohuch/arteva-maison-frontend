@@ -142,132 +142,138 @@ const CurrencyAPI = {
     updateSwitcherUI(overrideCode) {
         const current = overrideCode || this.getCurrent();
 
-        // Update footer currency buttons
-        const btns = document.querySelectorAll('.currency-btn');
-        btns.forEach(btn => {
-            if (btn.dataset.currency === current) {
-                btn.classList.add('active');
-            } else {
-                btn.classList.remove('active');
-            }
-        });
-
-        // Update ALL currency selectors (header and footer)
-        const triggers = document.querySelectorAll('.currency-trigger');
-        triggers.forEach(trigger => {
-            const flag = trigger.querySelector('.currency-flag');
-            const codeElement = trigger.querySelector('.currency-code');
-
+        // Update floating widget trigger
+        const floatingTrigger = document.querySelector('.floating-currency-trigger');
+        if (floatingTrigger) {
+            const flag = floatingTrigger.querySelector('.currency-flag');
+            const codeText = floatingTrigger.querySelector('.currency-code-text');
             if (flag) {
                 const flagCode = this.flags[current] || 'kw';
                 flag.className = 'currency-flag fi fi-' + flagCode;
-                flag.style.display = 'block';
             }
-
-            // Show code in footer, hide in header
-            if (codeElement) {
-                const isFooter = trigger.closest('.footer-currency-selector');
-                if (isFooter) {
-                    codeElement.textContent = current;
-                    codeElement.style.display = 'inline-block';
-                } else {
-                    codeElement.style.display = 'none';
-                }
+            if (codeText) {
+                codeText.textContent = current;
             }
+        }
 
-            trigger.classList.add('active');
-        });
-
-        // Update ALL dropdown options
-        const options = document.querySelectorAll('.currency-option');
-        options.forEach(option => {
-            const currencyCode = option.dataset.currency;
-            if (currencyCode === current) {
+        // Update floating dropdown active state
+        const floatingOptions = document.querySelectorAll('.floating-currency-option');
+        floatingOptions.forEach(option => {
+            if (option.dataset.currency === current) {
                 option.classList.add('active');
             } else {
                 option.classList.remove('active');
             }
+        });
 
-            const flagElement = option.querySelector('.currency-option-flag');
-            const codeElement = option.querySelector('.currency-option-code');
-            const isFooter = option.closest('.footer-currency-selector');
-
-            if (flagElement && this.flags[currencyCode]) {
-                const flagCode = this.flags[currencyCode];
-                flagElement.className = 'currency-option-flag fi fi-' + flagCode;
-                flagElement.style.display = 'block';
-            }
-
-            // Show code in footer, hide in header
-            if (codeElement) {
-                if (isFooter) {
-                    codeElement.style.display = 'inline-block';
-                } else {
-                    codeElement.style.display = 'none';
-                }
-            }
+        // Also update legacy selectors if any still exist
+        const btns = document.querySelectorAll('.currency-btn');
+        btns.forEach(btn => {
+            btn.classList.toggle('active', btn.dataset.currency === current);
         });
 
         const display = document.getElementById('currentCurrencyDisplay');
         if (display) display.textContent = current;
     },
 
+    _createFloatingWidget() {
+        // Don't create on admin pages
+        if (document.body.classList.contains('admin-body')) return;
+
+        // Don't double-create
+        if (document.querySelector('.floating-currency')) return;
+
+        const current = this.getCurrent();
+        const flagCode = this.flags[current] || 'kw';
+
+        const currencies = Object.keys(this.rates);
+        const optionsHTML = currencies.map(code => {
+            const fc = this.flags[code];
+            return `<div class="floating-currency-option ${code === current ? 'active' : ''}" data-currency="${code}">
+                <span class="option-flag fi fi-${fc}"></span>
+                <span class="option-name">${this.names[code]}</span>
+                <span class="option-code">${code}</span>
+            </div>`;
+        }).join('');
+
+        const widget = document.createElement('div');
+        widget.className = 'floating-currency';
+        widget.innerHTML = `
+            <div class="floating-currency-trigger">
+                <span class="currency-flag fi fi-${flagCode}"></span>
+                <span class="currency-code-text">${current}</span>
+                <svg class="currency-chevron" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M18 15l-6-6-6 6"/></svg>
+            </div>
+            <div class="floating-currency-dropdown">
+                ${optionsHTML}
+            </div>
+        `;
+
+        document.body.appendChild(widget);
+    },
+
     init() {
-        // CRITICAL: Load currency preference IMMEDIATELY
-        // Priority: 1. User profile (if logged in), 2. localStorage, 3. Default 'KWD'
+        // Load currency preference
         let savedCurrency = 'KWD';
 
-        // Check if user has a saved preference in their profile
         if (window.AuthAPI && window.AuthAPI.isLoggedIn()) {
             const user = window.AuthAPI.getUser();
             if (user && user.currency && this.rates[user.currency]) {
                 savedCurrency = user.currency;
                 localStorage.setItem('arteva_currency', savedCurrency);
             } else {
-                // Fall back to localStorage
                 savedCurrency = localStorage.getItem('arteva_currency') || 'KWD';
             }
         } else {
-            // Not logged in, use localStorage
             savedCurrency = localStorage.getItem('arteva_currency') || 'KWD';
         }
 
-        // Immediately hide all currency codes and ensure flags are visible
-        document.querySelectorAll('.currency-option-code').forEach(codeEl => {
-            codeEl.style.display = 'none';
-            codeEl.textContent = '';
-        });
-
-        // Ensure all flags are visible and properly set
-        document.querySelectorAll('.currency-option').forEach(option => {
-            const currencyCode = option.dataset.currency;
-            const flagEl = option.querySelector('.currency-option-flag');
-            if (flagEl && this.flags[currencyCode]) {
-                const flagCode = this.flags[currencyCode];
-                flagEl.className = 'currency-option-flag fi fi-' + flagCode;
-                flagEl.style.display = 'block';
-                flagEl.style.visibility = 'visible';
-            }
-        });
+        // Create the floating widget
+        this._createFloatingWidget();
 
         // Apply currency immediately
         this.updatePagePrices();
         this.updateSwitcherUI();
 
-        // Attach event listeners to switchers - use event delegation
+        // Event delegation for the floating widget
         document.addEventListener('click', (e) => {
-            // Footer currency buttons
-            if (e.target.matches('.currency-btn')) {
+            // Floating currency option click
+            const floatingOption = e.target.closest('.floating-currency-option');
+            if (floatingOption) {
                 e.preventDefault();
                 e.stopPropagation();
-                const code = e.target.dataset.currency;
+                const code = floatingOption.dataset.currency;
                 if (code) {
                     this.setCurrent(code);
+                    // Close dropdown
+                    const widget = document.querySelector('.floating-currency');
+                    if (widget) widget.classList.remove('open');
                 }
                 return;
             }
 
-            // Currency dropdown options (works for both header and footer)
+            // Floating trigger click (toggle)
+            const floatingTrigger = e.target.closest('.floating-currency-trigger');
+            if (floatingTrigger) {
+                e.preventDefault();
+                e.stopPropagation();
+                const widget = floatingTrigger.closest('.floating-currency');
+                if (widget) {
+                    widget.classList.toggle('open');
+                }
+                return;
+            }
+
+            // Legacy: currency-btn clicks
+            if (e.target.matches('.currency-btn')) {
+                e.preventDefault();
+                e.stopPropagation();
+                const code = e.target.dataset.currency;
+                if (code) this.setCurrent(code);
+                return;
+            }
+
+            // Legacy: currency-option clicks
             const option = e.target.closest('.currency-option');
             if (option) {
                 e.preventDefault();
@@ -275,45 +281,50 @@ const CurrencyAPI = {
                 const code = option.dataset.currency;
                 if (code) {
                     this.setCurrent(code);
-                    // Close the dropdown
                     const selector = option.closest('.currency-selector');
                     if (selector) selector.classList.remove('open');
                 }
                 return;
             }
 
-            // Currency trigger button (works for both header and footer)
-            const trigger = e.target.closest('.currency-trigger');
-            if (trigger) {
-                e.preventDefault();
-                e.stopPropagation();
-                const selector = trigger.closest('.currency-selector');
-                if (selector) {
-                    const isOpen = selector.classList.contains('open');
-                    // Close all other dropdowns first
-                    document.querySelectorAll('.currency-selector.open').forEach(s => {
-                        if (s !== selector) s.classList.remove('open');
-                    });
-                    selector.classList.toggle('open', !isOpen);
-                }
-                return;
+            // Close floating on outside click
+            const floatingWidget = document.querySelector('.floating-currency');
+            if (floatingWidget && !floatingWidget.contains(e.target)) {
+                floatingWidget.classList.remove('open');
             }
 
-            // Close dropdown when clicking outside
-            const openSelectors = document.querySelectorAll('.currency-selector.open');
-            openSelectors.forEach(selector => {
-                if (!selector.contains(e.target)) {
-                    selector.classList.remove('open');
-                }
+            // Close legacy selectors
+            document.querySelectorAll('.currency-selector.open').forEach(s => {
+                if (!s.contains(e.target)) s.classList.remove('open');
             });
         });
 
-        // Close dropdown on escape key
+        // Desktop: open on hover
+        const widget = document.querySelector('.floating-currency');
+        if (widget) {
+            let hoverTimer;
+            widget.addEventListener('mouseenter', () => {
+                clearTimeout(hoverTimer);
+                // Only use hover on non-touch devices
+                if (!('ontouchstart' in window)) {
+                    widget.classList.add('open');
+                }
+            });
+            widget.addEventListener('mouseleave', () => {
+                if (!('ontouchstart' in window)) {
+                    hoverTimer = setTimeout(() => {
+                        widget.classList.remove('open');
+                    }, 200);
+                }
+            });
+        }
+
+        // Close on Escape
         document.addEventListener('keydown', (e) => {
             if (e.key === 'Escape') {
-                document.querySelectorAll('.currency-selector.open').forEach(selector => {
-                    selector.classList.remove('open');
-                });
+                const w = document.querySelector('.floating-currency');
+                if (w) w.classList.remove('open');
+                document.querySelectorAll('.currency-selector.open').forEach(s => s.classList.remove('open'));
             }
         });
 

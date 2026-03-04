@@ -1049,7 +1049,7 @@
     position: absolute;
     bottom: 0;
     right: 0;
-    background-color: rgba(0,0,0,0.6);
+    background-color: rgba(0, 0, 0, 0.6);
     color: white;
     font-size: 10px;
     padding: 2px 4px;
@@ -1123,30 +1123,223 @@
     .orders-layout {
         grid-template-columns: 1fr;
     }
-    
+
     .account-sidebar {
         position: static;
         margin-bottom: var(--space-8);
     }
-    
+
     .account-menu {
         flex-direction: row;
         overflow-x: auto;
         padding-bottom: var(--space-2);
     }
-    
+
     .account-menu li {
         flex: 0 0 auto;
     }
-    
+
     .order-header {
         flex-direction: column;
         align-items: flex-start;
         gap: var(--space-2);
     }
-    
+
     .order-header-info {
         width: 100%;
         justify-content: space-between;
+    }
+}
+
+/* ============================================
+   COMPREHENSIVE MOBILE POLISH
+   ============================================ */
+
+/* Product detail page - sticky add to cart on mobile */
+@media (max-width: 768px) {
+    .product-layout {
+        gap: var(--space-6);
+    }
+
+    .product-current-price {
+        font-size: var(--fs-xl);
+    }
+
+    .product-quantity {
+        flex-wrap: wrap;
+    }
+
+    .product-add-btn {
+        max-width: 100%;
+        width: 100%;
+    }
+
+    .product-description {
+        font-size: var(--fs-sm);
+        line-height: 1.7;
+    }
+
+    /* Gallery thumbnails horizontal scroll */
+    .product-thumbnails {
+        display: flex;
+        gap: var(--space-2);
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+        scrollbar-width: none;
+    }
+
+    .product-thumbnails::-webkit-scrollbar {
+        display: none;
+    }
+
+    .product-thumbnail {
+        width: 64px;
+        height: 64px;
+        flex-shrink: 0;
+    }
+}
+
+@media (max-width: 480px) {
+    .page-header {
+        padding: var(--space-8) 0 var(--space-4);
+    }
+
+    .page-header h1 {
+        font-size: var(--fs-xl);
+    }
+
+    .toolbar {
+        flex-direction: column;
+        gap: var(--space-3);
+    }
+
+    .toolbar-actions {
+        width: 100%;
+        justify-content: space-between;
+    }
+}
+
+/* Cart page mobile polish */
+@media (max-width: 480px) {
+    .cart-page {
+        padding: var(--space-8) 0;
+    }
+
+    .cart-product-image {
+        width: 72px;
+        height: 72px;
+    }
+
+    .cart-product-name {
+        font-size: var(--fs-sm);
+    }
+
+    .cart-summary {
+        border-radius: var(--radius-md);
+        padding: var(--space-6);
+        margin-bottom: env(safe-area-inset-bottom, 0px);
+    }
+
+    .cart-summary-title {
+        font-size: var(--fs-lg);
+    }
+}
+
+/* Auth page mobile */
+@media (max-width: 480px) {
+    .account-page {
+        padding: var(--space-8) 0;
+    }
+
+    .auth-form {
+        padding: var(--space-6);
+    }
+
+    .auth-tabs {
+        margin-bottom: var(--space-6);
+    }
+
+    .auth-tab {
+        padding: var(--space-3);
+        font-size: var(--fs-sm);
+    }
+}
+
+/* Collection/ filter page mobile */
+@media (max-width: 480px) {
+    .filter-toggle {
+        padding: var(--space-3) var(--space-4);
+        font-size: var(--fs-sm);
+    }
+
+    .view-toggle {
+        display: none;
+    }
+
+    .results-count {
+        font-size: 12px;
+    }
+}
+
+/* Contact page mobile */
+@media (max-width: 480px) {
+    .contact-page {
+        padding: var(--space-8) 0;
+    }
+
+    .contact-info,
+    .contact-form-section {
+        padding: var(--space-6);
+    }
+
+    .contact-info-title,
+    .contact-form-title {
+        font-size: var(--fs-xl);
+    }
+
+    .contact-icon {
+        width: 40px;
+        height: 40px;
+    }
+
+    .contact-icon svg {
+        width: 20px;
+        height: 20px;
+    }
+}
+
+/* Orders page mobile */
+@media (max-width: 480px) {
+    .orders-page {
+        padding: var(--space-8) 0;
+    }
+
+    .order-body {
+        padding: var(--space-4);
+    }
+
+    .order-header {
+        padding: var(--space-3) var(--space-4);
+    }
+
+    .order-id {
+        font-size: var(--fs-base);
+    }
+
+    .order-item-thumb {
+        width: 56px;
+        height: 56px;
+    }
+
+    .order-footer {
+        flex-direction: column;
+        gap: var(--space-3);
+        align-items: flex-start;
+    }
+
+    /* Pagination touch targets */
+    .page-btn {
+        width: 44px;
+        height: 44px;
     }
 }

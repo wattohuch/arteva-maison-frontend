@@ -738,6 +738,31 @@
         </div>
     </footer>
 
+    <!-- Bottom Navigation (Mobile) -->
+    <nav class="admin-bottom-nav" id="adminBottomNav">
+        <a href="#dashboard" class="bottom-nav-item active" data-section="dashboard">
+            <span class="bottom-nav-icon">📊</span>
+            <span class="bottom-nav-label" data-i18n="admin_dashboard">Dashboard</span>
+        </a>
+        <a href="#orders" class="bottom-nav-item" data-section="orders">
+            <span class="bottom-nav-icon">🛍️</span>
+            <span class="bottom-nav-label" data-i18n="admin_orders">Orders</span>
+            <span class="bottom-nav-badge hidden" id="bottomNavOrderBadge">0</span>
+        </a>
+        <a href="#products" class="bottom-nav-item" data-section="products">
+            <span class="bottom-nav-icon">📦</span>
+            <span class="bottom-nav-label" data-i18n="admin_products">Products</span>
+        </a>
+        <a href="#users" class="bottom-nav-item" data-section="users">
+            <span class="bottom-nav-icon">👥</span>
+            <span class="bottom-nav-label" data-i18n="admin_users">Users</span>
+        </a>
+        <a href="#settings" class="bottom-nav-item" data-section="settings">
+            <span class="bottom-nav-icon">📧</span>
+            <span class="bottom-nav-label" data-i18n="admin_marketing">More</span>
+        </a>
+    </nav>
+
     <!-- Scripts -->
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
@@ -746,7 +771,8 @@
     <script src="assets/js/config.js"></script>
     <script src="assets/js/api.js"></script>
     <script src="assets/js/currency.js"></script>
-    <script src="assets/js/admin.js?v=6"></script>
+    <script src="assets/js/order-notification.js"></script>
+    <script src="assets/js/admin.js?v=7"></script>
 </body>
 
 </html>

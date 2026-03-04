@@ -270,6 +270,14 @@ function initSocket() {
             badge.classList.remove('hidden');
         }
 
+        // Sync bottom nav badge
+        const bottomBadge = document.getElementById('bottomNavOrderBadge');
+        if (bottomBadge) {
+            const count = parseInt(bottomBadge.textContent || '0') + 1;
+            bottomBadge.textContent = count;
+            bottomBadge.classList.remove('hidden');
+        }
+
         refreshActiveSection();
     });
 
@@ -345,28 +353,85 @@ function initNavigation() {
             if (target) target.classList.remove('hidden');
 
             // Load data
-            switch (targetId) {
-                case 'dashboard': loadDashboard(); break;
-                case 'products': loadProducts(); break;
-                case 'categories':
-                    if (typeof initCategoriesManagement === 'function') {
-                        initCategoriesManagement();
-                    }
-                    break;
-                case 'orders':
-                    loadOrders();
-                    // Clear badge
-                    const badge = document.getElementById('newOrderBadge');
-                    if (badge) { badge.textContent = '0'; badge.classList.add('hidden'); }
-                    break;
-                case 'users': loadUsers(); break;
-                case 'drivers': loadDrivers(); break;
-                case 'settings': loadSettings(); break;
-            }
+            switchToSection(targetId);
 
             closeMobileSidebar();
             window.location.hash = targetId;
+
+            // Sync bottom nav
+            syncBottomNav(targetId);
         });
+    });
+
+    // Bottom navigation handlers
+    initBottomNav();
+}
+
+function switchToSection(targetId) {
+    switch (targetId) {
+        case 'dashboard': loadDashboard(); break;
+        case 'products': loadProducts(); break;
+        case 'categories':
+            if (typeof initCategoriesManagement === 'function') {
+                initCategoriesManagement();
+            }
+            break;
+        case 'orders':
+            loadOrders();
+            // Clear badges
+            const badge = document.getElementById('newOrderBadge');
+            if (badge) { badge.textContent = '0'; badge.classList.add('hidden'); }
+            const bottomBadge = document.getElementById('bottomNavOrderBadge');
+            if (bottomBadge) { bottomBadge.textContent = '0'; bottomBadge.classList.add('hidden'); }
+            break;
+        case 'users': loadUsers(); break;
+        case 'drivers': loadDrivers(); break;
+        case 'settings': loadSettings(); break;
+    }
+}
+
+function initBottomNav() {
+    const bottomNavItems = document.querySelectorAll('.bottom-nav-item');
+    const sections = document.querySelectorAll('.admin-section');
+    const sidebarLinks = document.querySelectorAll('.sidebar-link');
+
+    bottomNavItems.forEach(item => {
+        item.addEventListener('click', (e) => {
+            e.preventDefault();
+            const sectionId = item.getAttribute('data-section');
+            if (!sectionId) return;
+
+            // Update bottom nav active state
+            bottomNavItems.forEach(n => n.classList.remove('active'));
+            item.classList.add('active');
+
+            // Show section
+            sections.forEach(s => s.classList.add('hidden'));
+            const target = document.getElementById(sectionId);
+            if (target) target.classList.remove('hidden');
+
+            // Sync sidebar links
+            sidebarLinks.forEach(l => {
+                l.classList.remove('active');
+                if (l.getAttribute('href') === `#${sectionId}`) {
+                    l.classList.add('active');
+                }
+            });
+
+            // Load data
+            switchToSection(sectionId);
+            window.location.hash = sectionId;
+        });
+    });
+}
+
+function syncBottomNav(sectionId) {
+    const bottomNavItems = document.querySelectorAll('.bottom-nav-item');
+    bottomNavItems.forEach(item => {
+        item.classList.remove('active');
+        if (item.getAttribute('data-section') === sectionId) {
+            item.classList.add('active');
+        }
     });
 }
 

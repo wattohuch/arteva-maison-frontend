@@ -1771,6 +1771,7 @@ body.admin-body {
         background: #f0f0f0;
         border: none;
         -webkit-appearance: none;
+        appearance: none;
     }
 
     .admin-search:focus {
@@ -2018,5 +2019,265 @@ body.admin-body {
 
     .admin-table tbody tr:active td {
         background: rgba(201, 169, 98, 0.08);
+    }
+}
+
+/* ============================================
+   SIDEBAR OVERLAY (Mobile)
+   ============================================ */
+.sidebar-overlay {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5);
+    z-index: 999;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+    -webkit-backdrop-filter: blur(2px);
+    backdrop-filter: blur(2px);
+}
+
+.sidebar-overlay.active {
+    display: block;
+    opacity: 1;
+}
+
+/* ============================================
+   BOTTOM NAVIGATION BAR (Mobile)
+   iOS Tab Bar style
+   ============================================ */
+.admin-bottom-nav {
+    display: none;
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    z-index: 1100;
+    background: rgba(255, 255, 255, 0.95);
+    -webkit-backdrop-filter: saturate(180%) blur(20px);
+    backdrop-filter: saturate(180%) blur(20px);
+    border-top: 0.5px solid rgba(0, 0, 0, 0.12);
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+    justify-content: space-around;
+    align-items: stretch;
+}
+
+.bottom-nav-item {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 2px;
+    padding: 8px 4px 6px;
+    text-decoration: none;
+    color: #8e8e93;
+    font-size: 10px;
+    font-weight: 500;
+    letter-spacing: 0.01em;
+    transition: color 0.2s ease;
+    position: relative;
+    -webkit-tap-highlight-color: transparent;
+    -webkit-user-select: none;
+    user-select: none;
+}
+
+.bottom-nav-item.active {
+    color: var(--admin-gold);
+}
+
+.bottom-nav-icon {
+    font-size: 22px;
+    line-height: 1;
+    height: 26px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.bottom-nav-label {
+    font-size: 10px;
+    line-height: 1;
+    white-space: nowrap;
+}
+
+.bottom-nav-badge {
+    position: absolute;
+    top: 4px;
+    right: calc(50% - 18px);
+    min-width: 16px;
+    height: 16px;
+    padding: 0 4px;
+    background: #ff3b30;
+    color: white;
+    font-size: 10px;
+    font-weight: 700;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    line-height: 1;
+}
+
+.bottom-nav-badge.hidden {
+    display: none;
+}
+
+/* Show bottom nav, hide mobile toggle on mobile */
+@media (max-width: 768px) {
+    .admin-bottom-nav {
+        display: flex;
+    }
+
+    /* Adjust main content for bottom nav */
+    .admin-main {
+        padding-bottom: calc(70px + env(safe-area-inset-bottom, 0px)) !important;
+    }
+
+    /* Hide the footer on mobile admin (currency is handled elsewhere) */
+    .admin-body>footer {
+        display: none;
+    }
+
+    /* Hide mobile toggle when bottom nav present */
+    .mobile-toggle {
+        display: flex;
+        position: fixed;
+        top: calc(12px + env(safe-area-inset-top, 0px));
+        right: 12px;
+        left: auto;
+        z-index: 1050;
+    }
+
+    /* Sidebar overlay integration */
+    .sidebar-overlay.active {
+        display: block;
+    }
+
+    /* Sticky section headers */
+    .admin-page-header {
+        position: sticky;
+        top: 0;
+        background: var(--admin-bg);
+        z-index: 5;
+        padding-top: 8px;
+        padding-bottom: 12px;
+        margin-left: -12px;
+        margin-right: -12px;
+        padding-left: 12px;
+        padding-right: 12px;
+    }
+
+    /* Horizontally scrollable stat cards */
+    .admin-stats {
+        display: flex !important;
+        overflow-x: auto;
+        scroll-snap-type: x mandatory;
+        -webkit-overflow-scrolling: touch;
+        gap: 10px;
+        padding-bottom: 4px;
+        scrollbar-width: none;
+    }
+
+    .admin-stats::-webkit-scrollbar {
+        display: none;
+    }
+
+    .admin-stat-card {
+        flex: 0 0 calc(50% - 5px);
+        scroll-snap-align: start;
+        min-width: 140px;
+    }
+}
+
+/* ============================================
+   MOBILE ORDER CARDS (replaces table on small screens)
+   ============================================ */
+@media (max-width: 480px) {
+
+    /* Hide the existing table header row on mobile */
+    #dashboard .admin-table thead,
+    #orders .admin-table thead {
+        display: none;
+    }
+
+    #dashboard .admin-table,
+    #orders .admin-table {
+        min-width: auto !important;
+    }
+
+    #dashboard .admin-table-scroll,
+    #orders .admin-table-scroll {
+        overflow-x: visible;
+    }
+
+    /* Transform each table row into a card */
+    #dashboard .admin-table tbody tr,
+    #orders .admin-table tbody tr {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: 6px 12px;
+        padding: 14px 16px;
+        margin-bottom: 8px;
+        background: #fff;
+        border-radius: 12px;
+        border: 1px solid rgba(0, 0, 0, 0.06);
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+        cursor: pointer;
+        transition: box-shadow 0.2s ease;
+    }
+
+    #dashboard .admin-table tbody tr:active,
+    #orders .admin-table tbody tr:active {
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    }
+
+    /* Reset td styles for card layout */
+    #dashboard .admin-table tbody td,
+    #orders .admin-table tbody td {
+        border: none !important;
+        padding: 0 !important;
+        font-size: 13px;
+    }
+
+    /* Order number - prominent */
+    #dashboard .admin-table tbody td:first-child,
+    #orders .admin-table tbody td:first-child {
+        font-weight: 700;
+        font-size: 14px;
+        color: var(--admin-dark);
+        flex: 1 1 auto;
+    }
+
+    /* Status badge - right side */
+    #dashboard .admin-table tbody td:last-child,
+    #orders .admin-table tbody td:nth-child(4) {
+        margin-left: auto;
+    }
+
+    /* Date/customer info - full width secondary line */
+    #dashboard .admin-table tbody td:nth-child(2),
+    #dashboard .admin-table tbody td:nth-child(3),
+    #orders .admin-table tbody td:nth-child(2),
+    #orders .admin-table tbody td:nth-child(6) {
+        color: var(--admin-text-muted);
+        font-size: 12px;
+    }
+
+    /* Amount */
+    #dashboard .admin-table tbody td:nth-child(4),
+    #orders .admin-table tbody td:nth-child(3) {
+        font-weight: 600;
+        color: var(--admin-dark);
+    }
+
+    /* Bottom nav items active touch state */
+    .bottom-nav-item:active {
+        transform: scale(0.92);
+        transition: transform 0.1s ease;
     }
 }
