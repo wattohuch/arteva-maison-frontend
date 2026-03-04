@@ -40,7 +40,7 @@ const PushNotifications = {
     async subscribe() {
         try {
             // Get VAPID key from server
-            const response = await fetch(`${window.API_BASE_URL || ''}/api/push/vapid-key`);
+            const response = await fetch(`${window.API_BASE_URL || ''}/push/vapid-key`);
             const data = await response.json();
 
             if (!data.success || !data.key) {
@@ -60,7 +60,7 @@ const PushNotifications = {
             // Send subscription to server
             const token = localStorage.getItem('arteva_token');
             if (token) {
-                await fetch(`${window.API_BASE_URL || ''}/api/push/subscribe`, {
+                await fetch(`${window.API_BASE_URL || ''}/push/subscribe`, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
@@ -87,7 +87,7 @@ const PushNotifications = {
             if (subscription) {
                 const token = localStorage.getItem('arteva_token');
                 if (token) {
-                    await fetch(`${window.API_BASE_URL || ''}/api/push/unsubscribe`, {
+                    await fetch(`${window.API_BASE_URL || ''}/push/unsubscribe`, {
                         method: 'POST',
                         headers: {
                             'Content-Type': 'application/json',
