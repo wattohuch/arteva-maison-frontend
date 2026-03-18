@@ -1097,43 +1097,40 @@ function setLanguage(lang) {
         window.CurrencyAPI.updatePagePrices();
     }
 
-    // BoundingRect-based scroll alignment to bypass all Safari/Chrome RTL scroll bugs
-    alignScrollContainers(lang);
+    // Force horizontal scroll in Arabic mode based on user request
+    forceScrollOnLoad(lang);
 }
 
-function alignScrollContainers(lang) {
-    const doAlign = () => {
+function forceScrollOnLoad(lang) {
+    const doScroll = () => {
         document.querySelectorAll('.collections-scroll, .categories-grid').forEach(container => {
-            const firstChild = container.firstElementChild;
-            if (!firstChild) return;
-            
-            const containerRect = container.getBoundingClientRect();
-            const childRect = firstChild.getBoundingClientRect();
-            
             if (lang === 'ar') {
-                // In RTL, align the right edge of the first child with the right edge of the container.
-                // ScrollReveal sometimes adds slight transforms, so we add a padding buffer.
-                const offset = childRect.right - containerRect.right + 20; 
-                if (Math.abs(offset) > 2) {
-                    container.scrollLeft += offset;
+                // User favor: force scroll 2000px horizontally on Arabic reload
+                // Forcing negative scrollLeft pushes the viewport to the far left edge
+                // where the initial images (Crystal) are sitting in RTL. 
+                // This universally hits the left edge across Chrome/Safari.
+                container.scrollLeft = -2000;
+                
+                // Fallback: If browser clamped to 0 and 0 isn't the left edge natively,
+                // some really old Safaris used 0 as the left edge anyway.
+                if (container.scrollLeft > 0) {
+                    container.scrollLeft = 0;
                 }
             } else {
-                // In LTR, align the left edge.
-                const offset = childRect.left - containerRect.left - 20;
-                if (Math.abs(offset) > 2) {
-                    container.scrollLeft += offset;
-                }
+                // English: reset to 0 (native left edge)
+                container.scrollLeft = 0;
             }
-            // Trigger a dummy scroll event so ScrollReveal notices the elements
+            
+            // Wake up scroll animations
             container.dispatchEvent(new Event('scroll'));
         });
     };
 
-    // Run immediately and after layout settles
-    doAlign();
-    requestAnimationFrame(doAlign);
-    setTimeout(doAlign, 100);
-    setTimeout(doAlign, 300);
+    // Execute immediately and after layout
+    doScroll();
+    requestAnimationFrame(doScroll);
+    setTimeout(doScroll, 100);
+    setTimeout(doScroll, 500);
 }
 
 
