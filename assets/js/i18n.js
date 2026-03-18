@@ -1097,32 +1097,39 @@ function setLanguage(lang) {
         window.CurrencyAPI.updatePagePrices();
     }
 
-    // Fix RTL horizontal scroll containers:
-    // In RTL, browsers reverse flex order so last item shows first.
-    // Instead of fighting the browser, we physically reverse the DOM children
-    // so the browser's RTL reversal puts them back in the correct visual order.
-    // This means: first collection card appears at the scroll start (right side in RTL).
+    // Fix iOS Safari RTL scroll position bug:
+    // iOS Safari starts horizontal scroll at position 0 (left edge) even in RTL,
+    // instead of the right edge where the first item should be visible.
+    // We force-scroll to the right edge after layout settles.
+    fixRTLScrollPosition(lang);
+}
+
+function fixRTLScrollPosition(lang) {
     const scrollContainers = document.querySelectorAll('.collections-scroll');
-    scrollContainers.forEach(container => {
-        const children = Array.from(container.children);
-        if (children.length === 0) return;
-        
-        // Check if already reversed by us (data attribute marker)
-        const isReversed = container.getAttribute('data-rtl-reversed') === 'true';
-        
-        if (lang === 'ar' && !isReversed) {
-            // Reverse the children for RTL
-            children.reverse().forEach(child => container.appendChild(child));
-            container.setAttribute('data-rtl-reversed', 'true');
-        } else if (lang === 'en' && isReversed) {
-            // Restore original order for LTR
-            children.reverse().forEach(child => container.appendChild(child));
-            container.removeAttribute('data-rtl-reversed');
-        }
-        
-        // Reset scroll to start
-        container.scrollLeft = 0;
-    });
+    if (scrollContainers.length === 0) return;
+    
+    // Use multiple timing strategies to catch iOS Safari's delayed layout
+    const doScroll = () => {
+        scrollContainers.forEach(container => {
+            if (lang === 'ar') {
+                // In RTL, scroll to the right edge (where the first item is)
+                // Safari uses positive scrollLeft values in RTL
+                container.scrollLeft = container.scrollWidth;
+            } else {
+                // In LTR, scroll to the left edge (default)
+                container.scrollLeft = 0;
+            }
+        });
+    };
+    
+    // Immediate
+    doScroll();
+    // After next frame (layout recalc)
+    requestAnimationFrame(doScroll);
+    // After Safari's delayed paint
+    setTimeout(doScroll, 50);
+    setTimeout(doScroll, 150);
+    setTimeout(doScroll, 300);
 }
 
 // Expose translations globally
