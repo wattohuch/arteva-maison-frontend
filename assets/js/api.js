@@ -279,7 +279,7 @@ const AdminAPI = {
 
     async createProduct(formData) {
         // Note: formData is used here for file upload support
-        const url = `${API_BASE_URL}/admin/products`;
+        const url = `${getApiBaseUrl()}/admin/products`;
         const options = {
             method: 'POST',
             body: formData,
@@ -298,7 +298,7 @@ const AdminAPI = {
     },
 
     async updateProduct(id, formData) {
-        const url = `${API_BASE_URL}/admin/products/${id}`;
+        const url = `${getApiBaseUrl()}/admin/products/${id}`;
         const options = {
             method: 'PUT',
             body: formData,
@@ -359,7 +359,7 @@ const AdminAPI = {
     },
 
     async sendEmailWithImages(formData) {
-        const url = `${API_BASE_URL}/admin/send-email`;
+        const url = `${getApiBaseUrl()}/admin/send-email`;
         const options = {
             method: 'POST',
             body: formData,

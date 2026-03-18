@@ -29,6 +29,13 @@ async function loadNewArrivals() {
 function renderProducts(container, products) {
     const lang = localStorage.getItem('site_lang') || 'en';
 
+    // Cache all products so addToCart can find them
+    products.forEach(product => {
+        if (window.cacheProduct) {
+            window.cacheProduct(product);
+        }
+    });
+
     container.innerHTML = products.map(product => {
         const name = lang === 'ar' && product.nameAr ? product.nameAr : product.name;
         const currency = lang === 'ar' ? 'د.ك' : 'KWD';
@@ -74,13 +81,11 @@ function renderProducts(container, products) {
 
     if (window.CurrencyAPI) window.CurrencyAPI.updatePagePrices();
 
-    // Re-bind listeners
-    if (window.initAddToCartButtons) window.initAddToCartButtons();
-    if (window.initWishlistButtons) window.initWishlistButtons(); // assuming this exists or I need to add it
-
-    // Add event listeners locally if not global
+    // Bind add-to-cart listeners
     container.querySelectorAll('.add-to-cart-btn').forEach(btn => {
         btn.addEventListener('click', (e) => {
+            e.preventDefault();
+            e.stopPropagation();
             if (window.addToCart) window.addToCart(btn.dataset.productId);
         });
     });

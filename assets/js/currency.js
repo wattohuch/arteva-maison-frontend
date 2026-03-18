@@ -79,8 +79,8 @@ const CurrencyAPI = {
         this.updateSwitcherUI(code);
 
         // Also trigger cart and checkout updates if available
-        if (window.CartAPI && typeof window.CartAPI.updateCartDisplay === 'function') {
-            window.CartAPI.updateCartDisplay();
+        if (window.LocalCart && typeof window.LocalCart.updateCartDisplay === 'function') {
+            window.LocalCart.updateCartDisplay();
         }
         if (window.updateOrderSummary && typeof window.updateOrderSummary === 'function') {
             window.updateOrderSummary();

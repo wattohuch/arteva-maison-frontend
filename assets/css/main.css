@@ -1001,7 +1001,7 @@ select {
 /* Floating Currency Widget */
 .floating-currency {
     position: fixed;
-    bottom: 20px;
+    bottom: calc(20px + env(safe-area-inset-bottom, 0px));
     left: 20px;
     z-index: 9999;
 }

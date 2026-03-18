@@ -405,7 +405,7 @@ function updateCartPage() {
 // ============================================
 // Export Functions
 // ============================================
-window.CartAPI = {
+window.LocalCart = {
     updateCartDisplay: updateCartDisplay
 };
 window.addToCart = addToCart;
@@ -416,29 +416,27 @@ window.getCartTotal = getCartTotal;
 window.getCartCount = getCartCount;
 window.cacheProduct = cacheProduct;
 window.getProductById = getProductById;
+window.initAddToCartButtons = initAddToCartButtons;
 // ============================================
 // Sync Cart with Server (when logged in)
 // ============================================
 async function syncCartWithServer() {
-    if (!window.CartAPI || !window.AuthAPI || !window.AuthAPI.isLoggedIn()) {
+    if (!window.AuthAPI || !window.AuthAPI.isLoggedIn()) {
         return;
     }
 
     try {
-        // Ensure CartAPI is available
-        if (!window.CartAPI || typeof window.CartAPI.get !== 'function') {
-            console.warn('CartAPI not available yet, skipping sync');
+        // Use the CartAPI from api.js (server-side cart)
+        const ServerCartAPI = window.CartAPI;
+        if (!ServerCartAPI || typeof ServerCartAPI.get !== 'function') {
             return;
         }
         
         // Get server cart
-        const response = await window.CartAPI.get();
+        const response = await ServerCartAPI.get();
         if (response.success && response.data && response.data.items) {
             const serverCart = response.data.items;
             
-            // Merge local cart with server cart
-            // For simplicity, we'll use server cart if it exists
-            // In a real app, you'd want more sophisticated merging logic
             if (serverCart.length > 0) {
                 cart = serverCart.map(item => ({
                     id: item.product._id || item.product.id,
@@ -456,7 +454,6 @@ async function syncCartWithServer() {
         }
     } catch (error) {
         console.error('Failed to sync cart with server:', error);
-        // Continue with local cart if sync fails
     }
 }
 
