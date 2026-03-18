@@ -1096,6 +1096,12 @@ function setLanguage(lang) {
     if (window.CurrencyAPI) {
         window.CurrencyAPI.updatePagePrices();
     }
+
+    // Reset scroll position of horizontal scroll containers after language switch
+    // This prevents the "white space" issue where containers are scrolled to the wrong end
+    document.querySelectorAll('.collections-scroll, .categories-grid').forEach(el => {
+        el.scrollLeft = 0;
+    });
 }
 
 // Expose translations globally
