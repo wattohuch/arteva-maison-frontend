@@ -493,16 +493,17 @@ function initAnimations() {
     });
   }, observerOptions);
 
-  // Apply to grid items
-  const gridElements = document.querySelectorAll('.product-card, .collection-card, .category-card');
+  // Apply to grid items (exclude .collection-card — they're in horizontal
+  // scroll containers where IntersectionObserver fails in RTL mode)
+  const gridElements = document.querySelectorAll('.product-card, .category-card');
   gridElements.forEach(el => {
     el.classList.add('reveal');
   });
 
   // Observe first element of each grid to trigger stagger
-  const grids = document.querySelectorAll('.products-grid, .categories-grid, .collections-scroll');
+  const grids = document.querySelectorAll('.products-grid, .categories-grid');
   grids.forEach(grid => {
-    const firstItem = grid.querySelector('.product-card, .collection-card, .category-card');
+    const firstItem = grid.querySelector('.product-card, .category-card');
     if (firstItem) {
       gridObserver.observe(firstItem);
     }
