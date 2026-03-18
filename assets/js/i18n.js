@@ -1097,40 +1097,13 @@ function setLanguage(lang) {
         window.CurrencyAPI.updatePagePrices();
     }
 
-    // Fix iOS Safari RTL scroll position bug:
-    // iOS Safari starts horizontal scroll at position 0 (left edge) even in RTL,
-    // instead of the right edge where the first item should be visible.
-    // We force-scroll to the right edge after layout settles.
-    fixRTLScrollPosition(lang);
+    // Reset scroll position to 0 (which is the natural start in both RTL and LTR)
+    document.querySelectorAll('.collections-scroll, .categories-grid').forEach(el => {
+        el.scrollLeft = 0;
+    });
 }
 
-function fixRTLScrollPosition(lang) {
-    const scrollContainers = document.querySelectorAll('.collections-scroll');
-    if (scrollContainers.length === 0) return;
-    
-    // Use multiple timing strategies to catch iOS Safari's delayed layout
-    const doScroll = () => {
-        scrollContainers.forEach(container => {
-            if (lang === 'ar') {
-                // In RTL, scroll to the right edge (where the first item is)
-                // Safari uses positive scrollLeft values in RTL
-                container.scrollLeft = container.scrollWidth;
-            } else {
-                // In LTR, scroll to the left edge (default)
-                container.scrollLeft = 0;
-            }
-        });
-    };
-    
-    // Immediate
-    doScroll();
-    // After next frame (layout recalc)
-    requestAnimationFrame(doScroll);
-    // After Safari's delayed paint
-    setTimeout(doScroll, 50);
-    setTimeout(doScroll, 150);
-    setTimeout(doScroll, 300);
-}
+
 
 // Expose translations globally
 window.translations = translations;

@@ -171,18 +171,7 @@ body[dir="rtl"] {
    iPhone Safari Specific Fixes
    ========================================== */
 
-/* Fix for collections scroll and grids in RTL - overflow containment only */
-@media only screen and (max-width: 768px) {
-    [dir="rtl"] .featured-collections,
-    [dir="rtl"] .categories-section,
-    [dir="rtl"] .section,
-    [dir="rtl"] main {
-        overflow-x: clip !important;
-        width: 100%;
-        max-width: 100%;
-        box-sizing: border-box;
-    }
-}
+/* iPhone Safari smooth scrolling and body containment */
 
 /* iPhone Safari body-level containment */
 @supports (-webkit-overflow-scrolling: touch) {
