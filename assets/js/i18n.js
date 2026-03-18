@@ -1097,10 +1097,43 @@ function setLanguage(lang) {
         window.CurrencyAPI.updatePagePrices();
     }
 
-    // Reset scroll position to 0 (which is the natural start in both RTL and LTR)
-    document.querySelectorAll('.collections-scroll, .categories-grid').forEach(el => {
-        el.scrollLeft = 0;
-    });
+    // BoundingRect-based scroll alignment to bypass all Safari/Chrome RTL scroll bugs
+    alignScrollContainers(lang);
+}
+
+function alignScrollContainers(lang) {
+    const doAlign = () => {
+        document.querySelectorAll('.collections-scroll, .categories-grid').forEach(container => {
+            const firstChild = container.firstElementChild;
+            if (!firstChild) return;
+            
+            const containerRect = container.getBoundingClientRect();
+            const childRect = firstChild.getBoundingClientRect();
+            
+            if (lang === 'ar') {
+                // In RTL, align the right edge of the first child with the right edge of the container.
+                // ScrollReveal sometimes adds slight transforms, so we add a padding buffer.
+                const offset = childRect.right - containerRect.right + 20; 
+                if (Math.abs(offset) > 2) {
+                    container.scrollLeft += offset;
+                }
+            } else {
+                // In LTR, align the left edge.
+                const offset = childRect.left - containerRect.left - 20;
+                if (Math.abs(offset) > 2) {
+                    container.scrollLeft += offset;
+                }
+            }
+            // Trigger a dummy scroll event so ScrollReveal notices the elements
+            container.dispatchEvent(new Event('scroll'));
+        });
+    };
+
+    // Run immediately and after layout settles
+    doAlign();
+    requestAnimationFrame(doAlign);
+    setTimeout(doAlign, 100);
+    setTimeout(doAlign, 300);
 }
 
 
