@@ -1097,10 +1097,31 @@ function setLanguage(lang) {
         window.CurrencyAPI.updatePagePrices();
     }
 
-    // Reset scroll position of horizontal scroll containers after language switch
-    // This prevents the "white space" issue where containers are scrolled to the wrong end
-    document.querySelectorAll('.collections-scroll, .categories-grid').forEach(el => {
-        el.scrollLeft = 0;
+    // Fix RTL horizontal scroll containers:
+    // In RTL, browsers reverse flex order so last item shows first.
+    // Instead of fighting the browser, we physically reverse the DOM children
+    // so the browser's RTL reversal puts them back in the correct visual order.
+    // This means: first collection card appears at the scroll start (right side in RTL).
+    const scrollContainers = document.querySelectorAll('.collections-scroll');
+    scrollContainers.forEach(container => {
+        const children = Array.from(container.children);
+        if (children.length === 0) return;
+        
+        // Check if already reversed by us (data attribute marker)
+        const isReversed = container.getAttribute('data-rtl-reversed') === 'true';
+        
+        if (lang === 'ar' && !isReversed) {
+            // Reverse the children for RTL
+            children.reverse().forEach(child => container.appendChild(child));
+            container.setAttribute('data-rtl-reversed', 'true');
+        } else if (lang === 'en' && isReversed) {
+            // Restore original order for LTR
+            children.reverse().forEach(child => container.appendChild(child));
+            container.removeAttribute('data-rtl-reversed');
+        }
+        
+        // Reset scroll to start
+        container.scrollLeft = 0;
     });
 }
 

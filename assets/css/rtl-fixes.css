@@ -171,76 +171,20 @@ body[dir="rtl"] {
    iPhone Safari Specific Fixes
    ========================================== */
 
-/* Fix for collections scroll and grids in RTL */
+/* Fix for collections scroll and grids in RTL - overflow containment only */
 @media only screen and (max-width: 768px) {
     [dir="rtl"] .featured-collections,
     [dir="rtl"] .categories-section,
     [dir="rtl"] .section,
     [dir="rtl"] main {
-        overflow-x: clip !important; /* Use clip to guarantee containment on iOS */
+        overflow-x: clip !important;
         width: 100%;
         max-width: 100%;
         box-sizing: border-box;
-    }
-
-    /* iOS Safari RTL Flex Scroll Fix using Transform RotateY Trick */
-    [dir="rtl"] .collections-scroll {
-        /* Force LTR direction mechanics to avoid RTL Safari bugs (showing last item first) */
-        direction: ltr !important; 
-        /* Physically flip the container so Left becomes Right */
-        transform: rotateY(180deg);
-        display: flex;
-        overflow-x: auto !important;
-        flex-wrap: nowrap;
-        -webkit-overflow-scrolling: touch;
-        width: 100%;
-        max-width: 100%;
-        box-sizing: border-box;
-        /* Keep snap type on the scrolling container, but let LTR mechanics run it */
-        scroll-snap-type: x mandatory;
-    }
-    
-    [dir="rtl"] .collections-scroll > * {
-        /* Flip children back to read properly */
-        transform: rotateY(180deg);
-        /* Restore text direction */
-        direction: rtl;
-        /* Ensure they snap properly in the scroll */
-        scroll-snap-align: start;
     }
 }
 
-@media only screen and (max-width: 480px) {
-    [dir="rtl"] .categories-grid {
-        direction: ltr !important;
-        transform: rotateY(180deg);
-        display: flex;
-        overflow-x: auto !important;
-        flex-wrap: nowrap;
-        -webkit-overflow-scrolling: touch;
-        width: 100%;
-        max-width: 100%;
-        box-sizing: border-box;
-        scroll-snap-type: x mandatory;
-        /* Remove negative margin in RTL to prevent 100vw leak */
-        margin: 0 !important;
-        padding-bottom: var(--space-4);
-        padding-left: var(--space-4);
-        padding-right: var(--space-4);
-    }
-
-    [dir="rtl"] .categories-grid > * {
-        transform: rotateY(180deg);
-        direction: rtl;
-        scroll-snap-align: start;
-    }
-    
-    [dir="rtl"] .categories-grid .category-card {
-        flex: 0 0 85% !important;
-    }
-}
-
-/* iPhone Safari smooth scrolling and containment */
+/* iPhone Safari body-level containment */
 @supports (-webkit-overflow-scrolling: touch) {
     html[dir="rtl"],
     body[dir="rtl"] {
