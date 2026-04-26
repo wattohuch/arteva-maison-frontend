@@ -51,6 +51,8 @@
                         class="nav-text">Drivers</span></a></li>
             <li><a href="#settings" class="sidebar-link" data-i18n="admin_marketing"><span class="icon">📧</span> <span
                         class="nav-text">Marketing</span></a></li>
+            <li><a href="#analytics" class="sidebar-link"><span class="icon">📈</span> <span
+                        class="nav-text">Analytics</span></a></li>
             <li><a href="#" id="logoutBtn" class="sidebar-link" data-i18n="admin_logout"><span class="icon">🚪</span>
                     <span class="nav-text">Logout</span></a></li>
         </ul>
@@ -332,6 +334,67 @@
                                 Send Campaign</button>
                         </div>
                     </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- ========== ANALYTICS ========== -->
+        <div id="analytics" class="admin-section hidden">
+            <div class="admin-page-header">
+                <h1 class="admin-page-title">Product Analytics</h1>
+            </div>
+
+            <div class="admin-stats" id="analyticsStats">
+                <div class="admin-stat-card">
+                    <div class="stat-icon-wrap">👁️</div>
+                    <div class="stat-content">
+                        <h3 id="statTotalViews">0</h3>
+                        <p>Total Views</p>
+                    </div>
+                </div>
+                <div class="admin-stat-card">
+                    <div class="stat-icon-wrap">🏆</div>
+                    <div class="stat-content">
+                        <h3 id="statTopProduct" style="font-size: 14px;">—</h3>
+                        <p>Most Viewed</p>
+                    </div>
+                </div>
+                <div class="admin-stat-card">
+                    <div class="stat-icon-wrap">📊</div>
+                    <div class="stat-content">
+                        <h3 id="statAvgViews">0</h3>
+                        <p>Avg Views</p>
+                    </div>
+                </div>
+                <div class="admin-stat-card">
+                    <div class="stat-icon-wrap">📦</div>
+                    <div class="stat-content">
+                        <h3 id="statTrackedProducts">0</h3>
+                        <p>Products</p>
+                    </div>
+                </div>
+            </div>
+
+            <h2 style="font-family: 'Playfair Display', serif; font-size: 20px; margin-bottom: 16px; color: var(--admin-text);">Most Viewed Products</h2>
+
+            <div class="admin-table-wrap">
+                <div class="admin-table-scroll">
+                    <table class="admin-table" id="analyticsTable">
+                        <thead>
+                            <tr>
+                                <th style="width: 50px;">#</th>
+                                <th>Product</th>
+                                <th>Category</th>
+                                <th style="width: 100px; text-align: right;">Views</th>
+                                <th style="min-width: 180px;">Popularity</th>
+                            </tr>
+                        </thead>
+                        <tbody id="analyticsTableBody">
+                            <tr>
+                                <td colspan="5" style="text-align: center; padding: 40px; color: var(--admin-text-muted);">Loading analytics...</td>
+                            </tr>
+                        </tbody>
+                    </table>
                 </div>
             </div>
         </div>
@@ -761,6 +824,10 @@
             <span class="bottom-nav-icon">📧</span>
             <span class="bottom-nav-label" data-i18n="admin_marketing">More</span>
         </a>
+        <a href="#analytics" class="bottom-nav-item" data-section="analytics">
+            <span class="bottom-nav-icon">📈</span>
+            <span class="bottom-nav-label">Analytics</span>
+        </a>
     </nav>
 
     <!-- Scripts -->
@@ -773,6 +840,7 @@
     <script src="assets/js/currency.js"></script>
     <script src="assets/js/order-notification.js"></script>
     <script src="assets/js/admin.js?v=7"></script>
+  <script src="assets/js/support-widget.js"></script>
 </body>
 
 </html>

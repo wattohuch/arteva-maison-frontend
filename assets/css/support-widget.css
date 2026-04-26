@@ -1,0 +1,412 @@
+/* ========================================
+   ARTÉVA Maison - Floating Support Widget
+   Dark / Gold Luxury Theme
+   ======================================== */
+
+/* ---------- Container ---------- */
+.support-widget {
+  position: fixed;
+  bottom: 28px;
+  right: 28px;
+  z-index: 9999;
+  font-family: 'Inter', 'Noto Sans Arabic', sans-serif;
+  direction: ltr;
+}
+
+/* ---------- Main FAB Button ---------- */
+.support-widget__fab {
+  width: 58px;
+  height: 58px;
+  border-radius: 50%;
+  border: 1.5px solid rgba(201, 169, 98, 0.35);
+  cursor: pointer;
+  background: linear-gradient(145deg, #1a1a1a, #111111);
+  color: #c9a962;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow:
+    0 4px 20px rgba(0, 0, 0, 0.4),
+    0 0 20px rgba(201, 169, 98, 0.08),
+    inset 0 1px 0 rgba(255, 255, 255, 0.04);
+  transition: transform 0.3s cubic-bezier(.4,0,.2,1),
+              box-shadow 0.3s ease,
+              border-color 0.3s ease;
+  position: relative;
+}
+
+.support-widget__fab:hover {
+  transform: scale(1.06);
+  border-color: rgba(201, 169, 98, 0.6);
+  box-shadow:
+    0 6px 28px rgba(0, 0, 0, 0.5),
+    0 0 30px rgba(201, 169, 98, 0.15);
+}
+
+.support-widget__fab:active {
+  transform: scale(0.96);
+}
+
+/* Pulse ring — gold */
+.support-widget__fab::before {
+  content: '';
+  position: absolute;
+  inset: -5px;
+  border-radius: 50%;
+  border: 1.5px solid rgba(201, 169, 98, 0.35);
+  animation: supportPulse 2.8s cubic-bezier(.4,0,.6,1) infinite;
+}
+
+@keyframes supportPulse {
+  0% { transform: scale(1); opacity: 0.6; }
+  70% { transform: scale(1.3); opacity: 0; }
+  100% { transform: scale(1.3); opacity: 0; }
+}
+
+/* Icons */
+.support-widget__fab svg {
+  width: 26px;
+  height: 26px;
+  transition: transform 0.35s cubic-bezier(.4,0,.2,1),
+              opacity 0.25s ease;
+}
+
+.support-widget__fab .support-widget__icon-close {
+  position: absolute;
+  transform: rotate(-90deg) scale(0);
+  opacity: 0;
+}
+
+/* Open state */
+.support-widget.is-open .support-widget__fab {
+  background: linear-gradient(145deg, #c9a962, #a08848);
+  color: #0f0f0f;
+  border-color: transparent;
+  box-shadow:
+    0 4px 24px rgba(201, 169, 98, 0.3),
+    0 0 40px rgba(201, 169, 98, 0.1);
+}
+
+.support-widget.is-open .support-widget__fab::before {
+  animation: none;
+  opacity: 0;
+}
+
+.support-widget.is-open .support-widget__fab .support-widget__icon-chat {
+  transform: rotate(90deg) scale(0);
+  opacity: 0;
+}
+
+.support-widget.is-open .support-widget__fab .support-widget__icon-close {
+  transform: rotate(0deg) scale(1);
+  opacity: 1;
+}
+
+/* ---------- Popup Panel ---------- */
+.support-widget__panel {
+  position: absolute;
+  bottom: 72px;
+  right: 0;
+  width: 310px;
+  background: #1a1a1a;
+  border: 1px solid rgba(201, 169, 98, 0.15);
+  border-radius: 16px;
+  box-shadow:
+    0 16px 56px rgba(0, 0, 0, 0.6),
+    0 0 40px rgba(201, 169, 98, 0.05);
+  overflow: hidden;
+  pointer-events: none;
+  opacity: 0;
+  transform: translateY(14px) scale(0.96);
+  transform-origin: bottom right;
+  transition: opacity 0.3s cubic-bezier(.4,0,.2,1),
+              transform 0.3s cubic-bezier(.4,0,.2,1);
+}
+
+.support-widget.is-open .support-widget__panel {
+  pointer-events: auto;
+  opacity: 1;
+  transform: translateY(0) scale(1);
+}
+
+/* Panel header */
+.support-widget__header {
+  background: linear-gradient(135deg, #111111 0%, #1e1e1e 100%);
+  padding: 20px 22px;
+  border-bottom: 1px solid rgba(201, 169, 98, 0.1);
+  position: relative;
+  overflow: hidden;
+}
+
+/* Decorative gold line */
+.support-widget__header::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 22px;
+  right: 22px;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(201, 169, 98, 0.3), transparent);
+}
+
+.support-widget__header-title {
+  font-family: 'Playfair Display', Georgia, serif;
+  font-size: 16px;
+  font-weight: 600;
+  margin: 0 0 4px 0;
+  color: #f0ede6;
+  letter-spacing: 0.5px;
+}
+
+.support-widget__header-subtitle {
+  font-size: 12px;
+  font-weight: 400;
+  margin: 0;
+  color: rgba(201, 169, 98, 0.6);
+  letter-spacing: 0.2px;
+}
+
+/* Panel body */
+.support-widget__body {
+  padding: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+/* ---------- Action Buttons ---------- */
+.support-widget__action {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 14px 16px;
+  border-radius: 12px;
+  text-decoration: none;
+  font-size: 13.5px;
+  font-weight: 500;
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  background: rgba(255, 255, 255, 0.03);
+  transition: all 0.25s ease;
+  line-height: 1.3;
+  color: #f0ede6;
+}
+
+.support-widget__action:hover {
+  transform: translateY(-1px);
+  color: #f0ede6;
+}
+
+/* WhatsApp button */
+.support-widget__action--whatsapp:hover {
+  background: rgba(37, 211, 102, 0.1);
+  border-color: rgba(37, 211, 102, 0.25);
+  box-shadow: 0 4px 20px rgba(37, 211, 102, 0.1);
+}
+
+/* Email button */
+.support-widget__action--email:hover {
+  background: rgba(201, 169, 98, 0.08);
+  border-color: rgba(201, 169, 98, 0.25);
+  box-shadow: 0 4px 20px rgba(201, 169, 98, 0.08);
+}
+
+/* Icon circles */
+.support-widget__action-icon {
+  width: 40px;
+  height: 40px;
+  min-width: 40px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.support-widget__action-icon svg {
+  width: 20px;
+  height: 20px;
+}
+
+.support-widget__action--whatsapp .support-widget__action-icon {
+  background: #25D366;
+  color: #fff;
+}
+
+.support-widget__action--whatsapp .support-widget__action-icon svg {
+  fill: #fff;
+}
+
+.support-widget__action--email .support-widget__action-icon {
+  background: linear-gradient(135deg, #c9a962, #a08848);
+  color: #0f0f0f;
+}
+
+.support-widget__action--email .support-widget__action-icon svg {
+  stroke: #0f0f0f;
+  fill: none;
+}
+
+/* Action text */
+.support-widget__action-text {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.support-widget__action-label {
+  font-weight: 600;
+  font-size: 13.5px;
+  color: #f0ede6;
+}
+
+.support-widget__action-desc {
+  font-size: 11px;
+  color: #6b6b6b;
+  font-weight: 400;
+}
+
+/* ---------- Panel footer ---------- */
+.support-widget__footer {
+  padding: 10px 16px 14px;
+  text-align: center;
+  border-top: 1px solid rgba(255, 255, 255, 0.04);
+}
+
+.support-widget__footer span {
+  font-size: 10px;
+  color: rgba(201, 169, 98, 0.35);
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  font-weight: 500;
+}
+
+/* ---------- Entrance animations ---------- */
+.support-widget__action {
+  opacity: 0;
+  transform: translateY(8px);
+}
+
+.support-widget.is-open .support-widget__action {
+  animation: supportActionIn 0.3s cubic-bezier(.4,0,.2,1) forwards;
+}
+
+.support-widget.is-open .support-widget__action:nth-child(1) {
+  animation-delay: 0.06s;
+}
+
+.support-widget.is-open .support-widget__action:nth-child(2) {
+  animation-delay: 0.14s;
+}
+
+@keyframes supportActionIn {
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* ---------- Tooltip ---------- */
+.support-widget__tooltip {
+  position: absolute;
+  right: 70px;
+  bottom: 14px;
+  background: #1a1a1a;
+  color: #c9a962;
+  padding: 8px 14px;
+  border-radius: 8px;
+  border: 1px solid rgba(201, 169, 98, 0.15);
+  font-size: 12px;
+  font-weight: 500;
+  white-space: nowrap;
+  pointer-events: none;
+  opacity: 0;
+  transform: translateX(8px);
+  transition: opacity 0.25s ease, transform 0.25s ease;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.4);
+}
+
+.support-widget__tooltip::after {
+  content: '';
+  position: absolute;
+  right: -6px;
+  top: 50%;
+  transform: translateY(-50%);
+  border-width: 6px 0 6px 6px;
+  border-style: solid;
+  border-color: transparent transparent transparent #1a1a1a;
+}
+
+.support-widget__fab:hover ~ .support-widget__tooltip {
+  opacity: 1;
+  transform: translateX(0);
+}
+
+.support-widget.is-open .support-widget__tooltip {
+  display: none;
+}
+
+/* ---------- RTL Support ---------- */
+[dir="rtl"] .support-widget {
+  right: auto;
+  left: 28px;
+}
+
+[dir="rtl"] .support-widget__panel {
+  right: auto;
+  left: 0;
+  transform-origin: bottom left;
+}
+
+[dir="rtl"] .support-widget__tooltip {
+  right: auto;
+  left: 70px;
+  transform: translateX(-8px);
+}
+
+[dir="rtl"] .support-widget__tooltip::after {
+  right: auto;
+  left: -6px;
+  border-width: 6px 6px 6px 0;
+  border-color: transparent #1a1a1a transparent transparent;
+}
+
+[dir="rtl"] .support-widget__fab:hover ~ .support-widget__tooltip {
+  transform: translateX(0);
+}
+
+/* ---------- Mobile ---------- */
+@media (max-width: 480px) {
+  .support-widget {
+    bottom: 20px;
+    right: 20px;
+  }
+
+  [dir="rtl"] .support-widget {
+    right: auto;
+    left: 20px;
+  }
+
+  .support-widget__fab {
+    width: 52px;
+    height: 52px;
+  }
+
+  .support-widget__fab svg {
+    width: 24px;
+    height: 24px;
+  }
+
+  .support-widget__panel {
+    width: calc(100vw - 40px);
+    right: -8px;
+    bottom: 66px;
+  }
+
+  [dir="rtl"] .support-widget__panel {
+    right: auto;
+    left: -8px;
+  }
+
+  .support-widget__tooltip {
+    display: none;
+  }
+}

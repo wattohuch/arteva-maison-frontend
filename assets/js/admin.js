@@ -387,6 +387,7 @@ function switchToSection(targetId) {
         case 'users': loadUsers(); break;
         case 'drivers': loadDrivers(); break;
         case 'settings': loadSettings(); break;
+        case 'analytics': loadAnalytics(); break;
     }
 }
 
@@ -1767,3 +1768,102 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 });
+
+// ==========================================
+// Product Analytics
+// ==========================================
+let analyticsLoaded = false;
+
+async function loadAnalytics() {
+    const tbody = document.getElementById('analyticsTableBody');
+    if (tbody && !analyticsLoaded) {
+        tbody.innerHTML = '<tr><td colspan="5" style="text-align: center; padding: 40px; color: var(--admin-text-muted);">Loading analytics...</td></tr>';
+    }
+
+    try {
+        const response = await fetch(`${API_BASE_URL}/admin/analytics/product-views`, {
+            headers: {
+                'Authorization': `Bearer ${localStorage.getItem('arteva_token')}`
+            }
+        });
+        const result = await response.json();
+
+        if (result.success) {
+            renderAnalytics(result.data);
+            analyticsLoaded = true;
+        } else {
+            throw new Error(result.message || 'Failed to load analytics');
+        }
+    } catch (err) {
+        console.error('Failed to load analytics:', err);
+        if (tbody) {
+            tbody.innerHTML = '<tr><td colspan="5" style="text-align: center; padding: 40px; color: var(--admin-text-muted);">Failed to load analytics. Please try again.</td></tr>';
+        }
+    }
+}
+
+function renderAnalytics(data) {
+    const { products, summary } = data;
+
+    const totalViewsEl = document.getElementById('statTotalViews');
+    const topProductEl = document.getElementById('statTopProduct');
+    const avgViewsEl = document.getElementById('statAvgViews');
+    const trackedProductsEl = document.getElementById('statTrackedProducts');
+
+    if (totalViewsEl) totalViewsEl.textContent = summary.totalViews.toLocaleString();
+    if (topProductEl) topProductEl.textContent = summary.topProduct;
+    if (avgViewsEl) avgViewsEl.textContent = summary.averageViews.toLocaleString();
+    if (trackedProductsEl) trackedProductsEl.textContent = summary.totalProducts.toLocaleString();
+
+    const tbody = document.getElementById('analyticsTableBody');
+    if (!tbody) return;
+
+    if (!products || products.length === 0) {
+        tbody.innerHTML = `
+            <tr><td colspan="5">
+                <div class="analytics-empty">
+                    <div class="analytics-empty-icon">\ud83d\udcca</div>
+                    <div class="analytics-empty-text">No product views recorded yet.<br>Views will appear here as customers browse products.</div>
+                </div>
+            </td></tr>`;
+        return;
+    }
+
+    const maxViews = products[0]?.viewCount || 1;
+
+    tbody.innerHTML = products.map((product, index) => {
+        const rank = index + 1;
+        const rankClass = rank <= 3 ? ` top-${rank}` : '';
+        const views = product.viewCount || 0;
+        const percentage = Math.round((views / maxViews) * 100);
+        const categoryName = product.category?.name || 'Uncategorized';
+
+        let imageUrl = 'assets/images/products/placeholder.png';
+        if (product.images && product.images.length > 0) {
+            const primary = product.images.find(img => img.isPrimary);
+            imageUrl = resolveImageUrl((primary || product.images[0]).url, imageUrl);
+        }
+
+        return `
+            <tr>
+                <td><span class="analytics-rank${rankClass}">${rank}</span></td>
+                <td>
+                    <div class="analytics-product-cell">
+                        <img src="${imageUrl}" class="analytics-product-thumb" alt="${product.name}" onerror="this.src='assets/images/products/placeholder.png';">
+                        <span class="analytics-product-name">${product.name}</span>
+                    </div>
+                </td>
+                <td>${categoryName}</td>
+                <td class="analytics-view-count">${views.toLocaleString()}</td>
+                <td>
+                    <div class="analytics-bar-wrap">
+                        <div class="analytics-bar-track">
+                            <div class="analytics-bar-fill" style="width: ${percentage}%;"></div>
+                        </div>
+                        <span class="analytics-bar-percent">${percentage}%</span>
+                    </div>
+                </td>
+            </tr>
+        `;
+    }).join('');
+}
