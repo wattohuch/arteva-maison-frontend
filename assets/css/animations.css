@@ -623,6 +623,138 @@ a {
   .scroll-progress { display: none !important; }
 }
 
+/* ─── Enhanced Micro-Interactions ────────────── */
+
+/* Gold glow on primary buttons */
+.btn-primary,
+.btn.btn-primary {
+  position: relative;
+  overflow: hidden;
+  transition: all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+
+.btn-primary:hover,
+.btn.btn-primary:hover {
+  box-shadow: 0 6px 24px rgba(201, 169, 98, 0.35), 0 0 0 1px rgba(201, 169, 98, 0.1);
+  transform: translateY(-2px);
+}
+
+.btn-primary:active,
+.btn.btn-primary:active {
+  transform: translateY(0) scale(0.98);
+  box-shadow: 0 2px 8px rgba(201, 169, 98, 0.2);
+}
+
+/* Ripple effect on click */
+.btn-primary::after {
+  content: '';
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  top: 0;
+  left: 0;
+  background: radial-gradient(circle, rgba(255,255,255,0.25) 10%, transparent 10.01%);
+  transform: scale(10);
+  opacity: 0;
+  transition: transform 0.5s, opacity 0.8s;
+  pointer-events: none;
+}
+
+.btn-primary:active::after {
+  transform: scale(0);
+  opacity: 1;
+  transition: 0s;
+}
+
+/* Product card enhanced lift */
+.product-card {
+  transition: transform 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94),
+              box-shadow 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+
+.product-card:hover {
+  transform: translateY(-6px);
+  box-shadow: 0 16px 48px rgba(0, 0, 0, 0.08), 0 0 0 1px rgba(201, 169, 98, 0.06);
+}
+
+/* Product image zoom on hover */
+.product-card .product-image img {
+  transition: transform 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+
+.product-card:hover .product-image img {
+  transform: scale(1.05);
+}
+
+/* Category card image parallax zoom */
+.category-card img {
+  transition: transform 0.7s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+
+.category-card:hover img {
+  transform: scale(1.08);
+}
+
+/* Smooth underline for nav links */
+.nav-link {
+  position: relative;
+}
+
+.nav-link::after {
+  content: '';
+  position: absolute;
+  bottom: -2px;
+  left: 50%;
+  width: 0;
+  height: 1px;
+  background: var(--color-gold, #c9a962);
+  transition: width 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94), left 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+
+.nav-link:hover::after {
+  width: 100%;
+  left: 0;
+}
+
+/* Input focus glow */
+.form-group input:focus,
+.form-group textarea:focus,
+.form-group select:focus,
+input.newsletter-input:focus {
+  box-shadow: 0 0 0 3px rgba(201, 169, 98, 0.12);
+  border-color: var(--color-gold, #c9a962);
+}
+
+/* Footer social icon hover */
+.social-link {
+  transition: transform 0.3s ease, color 0.3s ease;
+}
+
+.social-link:hover {
+  transform: translateY(-3px) scale(1.1);
+  color: var(--color-gold, #c9a962);
+}
+
+/* Section title elegant reveal (auto-applied via JS) */
+.section-title {
+  position: relative;
+}
+
+/* Smooth scroll indicator pulse */
+@keyframes scrollPulse {
+  0%, 100% { opacity: 0.4; transform: translateY(0); }
+  50% { opacity: 1; transform: translateY(6px); }
+}
+
+/* Logo hover */
+.logo a {
+  transition: opacity 0.3s ease;
+}
+
+.logo a:hover {
+  opacity: 0.85;
+}
+
 /* ─── Fallback: No JS ────────────────────────── */
 .no-js [data-animate] {
   opacity: 1;

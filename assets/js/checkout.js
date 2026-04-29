@@ -288,7 +288,7 @@ async function loadPaymentMethods() {
             console.log('Available payment methods:', availablePaymentMethods.map(m => `${m.name} (ID: ${m.id})`));
         }
     } catch (error) {
-        // Continue with default methods (COD, KNET, Card) if API fails
+        // Continue with default methods (KNET, Card) if API fails
         availablePaymentMethods = [];
     }
 }
@@ -427,8 +427,6 @@ function initCheckoutForm() {
 
             if (paymentMethod === 'card') {
                 await processCardPayment(shippingAddress);
-            } else if (paymentMethod === 'cod') {
-                await processCODPayment(shippingAddress);
             } else if (paymentMethod === 'knet') {
                 await processKNETPayment(shippingAddress);
             } else if (paymentMethod === 'applepay') {
@@ -567,28 +565,6 @@ async function processApplePayPayment(shippingAddress) {
     }
 }
 
-// ============================================
-// Process COD Payment
-// ============================================
-async function processCODPayment(shippingAddress) {
-    if (!window.AuthAPI?.isLoggedIn()) {
-        showCheckoutNotification(window.getTranslation ? window.getTranslation('login_required') : 'Please login to checkout', 'error');
-        window.location.href = '/account.html?redirect=checkout';
-        return;
-    }
-
-    const notes = document.getElementById('orderNotes')?.value || '';
-
-    const data = await window.PaymentsAPI.processCOD(shippingAddress, notes);
-
-    // Clear local cart
-    if (window.clearCart) {
-        window.clearCart();
-    }
-
-    // Redirect to success page
-    window.location.href = `/order-success.html?order=${data.data.orderNumber}`;
-}
 
 // ============================================
 // Process KNET Payment (MyFatoorah) - Deprecated, use processKNETPayment above
@@ -601,21 +577,17 @@ async function processCODPayment(shippingAddress) {
 function initPaymentMethodSelection() {
     const paymentMethods = document.querySelectorAll('input[name="paymentMethod"]');
     const cardDetails = document.getElementById('cardPaymentDetails');
-    const codDetails = document.getElementById('codPaymentDetails');
     const knetDetails = document.getElementById('knetPaymentDetails');
 
     paymentMethods.forEach(radio => {
         radio.addEventListener('change', () => {
             // Hide all detail sections
             if (cardDetails) cardDetails.style.display = 'none';
-            if (codDetails) codDetails.style.display = 'none';
             if (knetDetails) knetDetails.style.display = 'none';
 
             // Show selected section
             if (radio.value === 'card' && cardDetails) {
                 cardDetails.style.display = 'block';
-            } else if (radio.value === 'cod' && codDetails) {
-                codDetails.style.display = 'block';
             } else if (radio.value === 'knet' && knetDetails) {
                 knetDetails.style.display = 'block';
             }
@@ -699,6 +671,5 @@ function showCheckoutNotification(message, type = 'info') {
 window.processCardPayment = processCardPayment;
 window.processKNETPayment = processKNETPayment;
 window.processApplePayPayment = processApplePayPayment;
-window.processCODPayment = processCODPayment;
 window.updateOrderSummary = updateOrderSummary;
 window.syncCartToServer = syncCartToServer;

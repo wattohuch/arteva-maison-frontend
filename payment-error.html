@@ -1,182 +1,160 @@
 <!DOCTYPE html>
 <html lang="en" dir="ltr">
-
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <meta name="description" content="Payment Failed - ARTEVA Maison">
     <title data-i18n="payment_failed">Payment Failed | ARTEVA Maison</title>
-
-    <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link
-        href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600;700&family=Montserrat:wght@300;400;500;600&display=swap"
-        rel="stylesheet">
-
-    <!-- Stylesheets -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:wght@400;500;600;700&family=Noto+Sans+Arabic:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="assets/css/main.css">
-
-    <style>
-        .error-container {
-            max-width: 600px;
-            margin: 0 auto;
-            padding: var(--space-12) var(--space-4);
-            margin-top: var(--header-height);
-            text-align: center;
-        }
-
-        .error-icon {
-            width: 80px;
-            height: 80px;
-            background: linear-gradient(135deg, #ef4444, #dc2626);
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            margin: 0 auto var(--space-6);
-            animation: shake 0.5s ease;
-        }
-
-        .error-icon svg {
-            width: 40px;
-            height: 40px;
-            stroke: white;
-            stroke-width: 2;
-        }
-
-        @keyframes shake {
-            0%, 100% { transform: translateX(0); }
-            25% { transform: translateX(-10px); }
-            75% { transform: translateX(10px); }
-        }
-
-        .error-title {
-            font-family: var(--font-display);
-            font-size: var(--fs-3xl);
-            margin-bottom: var(--space-3);
-            color: #dc2626;
-        }
-
-        .error-message {
-            color: var(--text-muted);
-            margin-bottom: var(--space-6);
-            line-height: 1.6;
-        }
-
-        .error-details {
-            background: var(--bg-secondary);
-            padding: var(--space-4);
-            border-radius: var(--radius-md);
-            margin-bottom: var(--space-6);
-            border-left: 4px solid #dc2626;
-        }
-
-        .error-details-label {
-            font-size: var(--fs-sm);
-            color: var(--text-muted);
-            margin-bottom: var(--space-2);
-        }
-
-        .error-details-value {
-            font-family: var(--font-body);
-            font-size: var(--fs-base);
-            font-weight: 500;
-            color: var(--text-primary);
-        }
-
-        .error-actions {
-            display: flex;
-            flex-direction: column;
-            gap: var(--space-3);
-        }
-
-        .error-btn {
-            display: inline-block;
-            padding: var(--space-4) var(--space-6);
-            border-radius: var(--radius-md);
-            font-family: var(--font-body);
-            font-size: var(--fs-base);
-            font-weight: 500;
-            text-decoration: none;
-            text-align: center;
-            transition: all var(--transition-fast);
-        }
-
-        .error-btn.primary {
-            background: var(--color-gold);
-            color: white;
-        }
-
-        .error-btn.primary:hover {
-            background: var(--color-gold-dark);
-        }
-
-        .error-btn.secondary {
-            background: transparent;
-            color: var(--text-primary);
-            border: 1px solid var(--border-light);
-        }
-
-        .error-btn.secondary:hover {
-            border-color: var(--color-gold);
-            color: var(--color-gold);
-        }
-
-        .help-notice {
-            margin-top: var(--space-6);
-            padding: var(--space-4);
-            background: rgba(239, 68, 68, 0.1);
-            border-radius: var(--radius-md);
-            font-size: var(--fs-sm);
-            color: var(--text-secondary);
-        }
-    </style>
+    <link rel="stylesheet" href="assets/css/components.css">
+    <link rel="stylesheet" href="assets/css/pages.css">
+    <link rel="stylesheet" href="assets/css/animations.css">
+    <link rel="stylesheet" href="assets/css/support-widget.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flag-icons@7.2.3/css/flag-icons.min.css">
     <link rel="icon" type="image/png" href="assets/images/favicon.png">
+    <style>
+        .error-page { min-height: 70vh; display: flex; align-items: center; justify-content: center; margin-top: var(--header-height); padding: var(--space-12) var(--space-4); }
+        .error-card { max-width: 520px; width: 100%; text-align: center; background: var(--bg-secondary); border-radius: var(--radius-lg); padding: var(--space-10) var(--space-8); border: 1px solid var(--border-light); }
+        .error-icon { width: 80px; height: 80px; background: linear-gradient(135deg, rgba(239,68,68,0.15), rgba(220,38,38,0.08)); border: 2px solid rgba(239,68,68,0.2); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto var(--space-6); animation: errorPulse 2s ease-in-out infinite; }
+        .error-icon svg { width: 36px; height: 36px; stroke: #ef4444; stroke-width: 2.5; }
+        @keyframes errorPulse { 0%,100% { box-shadow: 0 0 0 0 rgba(239,68,68,0.15); } 50% { box-shadow: 0 0 0 12px rgba(239,68,68,0); } }
+        .error-title { font-family: var(--font-display); font-size: var(--fs-2xl); margin-bottom: var(--space-3); color: var(--text-primary); }
+        .error-message { color: var(--text-muted); margin-bottom: var(--space-6); line-height: 1.7; font-size: var(--fs-base); }
+        .error-details { background: var(--bg-primary); padding: var(--space-4); border-radius: var(--radius-md); margin-bottom: var(--space-6); border-left: 3px solid #ef4444; text-align: left; display: none; }
+        .error-details-label { font-size: var(--fs-xs); color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: var(--space-1); }
+        .error-details-value { font-size: var(--fs-sm); font-weight: var(--fw-semibold); color: var(--text-primary); }
+        .error-actions { display: flex; flex-direction: column; gap: var(--space-3); }
+        .error-actions .btn { width: 100%; }
+        .error-help { margin-top: var(--space-6); padding: var(--space-4); background: rgba(201,169,98,0.06); border: 1px solid rgba(201,169,98,0.12); border-radius: var(--radius-md); font-size: var(--fs-sm); color: var(--text-secondary); line-height: 1.6; }
+        .error-help a { color: var(--color-gold); text-decoration: underline; }
+    </style>
 </head>
-
 <body>
     <!-- Header -->
     <header class="header" id="header">
-        <div class="header-container">
+        <div class="header-inner">
             <div class="header-left">
-                <a href="index.html" class="logo">ARTÉVA</a>
+                <button class="menu-toggle" id="menuToggle" aria-label="Toggle Menu"><span></span><span></span><span></span></button>
+                <nav class="main-nav" id="mainNav">
+                    <div class="nav-item"><a href="index.html" class="nav-link" data-i18n="home">Home</a></div>
+                    <div class="nav-item">
+                        <a href="#" class="nav-link"><span data-i18n="categories">Categories</span><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg></a>
+                        <div class="dropdown-menu">
+                            <a href="collection.html?cat=crystals" class="dropdown-item" data-i18n="crystals">Crystals</a>
+                            <a href="collection.html?cat=glassware" class="dropdown-item" data-i18n="glassware">Glassware</a>
+                            <a href="collection.html?cat=vases" class="dropdown-item" data-i18n="vases_bowls">Vases</a>
+                            <a href="collections.html" class="dropdown-item" data-i18n="view_all">View All</a>
+                        </div>
+                    </div>
+                    <div class="nav-item"><a href="collections.html" class="nav-link" data-i18n="collections">Collections</a></div>
+                    <div class="nav-item"><a href="contact.html" class="nav-link" data-i18n="contact">Contact</a></div>
+                </nav>
+            </div>
+            <div class="logo"><a href="index.html"><span class="logo-text"><span class="main">ARTÉVA</span><span class="sub">MAISON</span></span></a></div>
+            <div class="header-right">
+                <div class="lang-switcher">
+                    <button id="lang-en" class="lang-btn active">EN</button>
+                    <span class="lang-separator">|</span>
+                    <button id="lang-ar" class="lang-btn">AR</button>
+                </div>
+                <a href="account.html" class="header-icon" aria-label="Account"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg></a>
+                <button class="header-icon cart-icon" id="cartToggle" aria-label="Cart"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/></svg><span class="cart-count" id="cartCount">0</span></button>
             </div>
         </div>
     </header>
 
+    <!-- Mobile Menu -->
+    <div class="mobile-menu" id="mobileMenu">
+        <div class="mobile-menu-header">
+            <div class="logo"><a href="index.html"><span class="logo-text"><span class="main">ARTÉVA</span><span class="sub">MAISON</span></span></a></div>
+            <button class="mobile-menu-close" id="mobileMenuClose" aria-label="Close Menu"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
+        </div>
+        <nav class="mobile-nav">
+            <div class="mobile-nav-item"><a href="index.html" class="mobile-nav-link" data-i18n="home">Home</a></div>
+            <div class="mobile-nav-item"><a href="collections.html" class="mobile-nav-link" data-i18n="collections">Collections</a></div>
+            <div class="mobile-nav-item"><a href="contact.html" class="mobile-nav-link" data-i18n="contact">Contact</a></div>
+        </nav>
+    </div>
+
+    <!-- Cart Drawer -->
+    <div class="cart-drawer" id="cartDrawer">
+        <div class="cart-header">
+            <h3 class="cart-title" data-i18n="your_cart">Your Cart</h3>
+            <button class="cart-close" id="cartClose" aria-label="Close Cart"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
+        </div>
+        <div class="cart-items" id="cartItems">
+            <div class="cart-empty" id="cartEmpty"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/></svg><p data-i18n="cart_empty">Your cart is empty</p><a href="collections.html" class="btn btn-primary" data-i18n="continue_shopping">Continue Shopping</a></div>
+        </div>
+        <div class="cart-footer" id="cartFooter" style="display: none;">
+            <div class="cart-subtotal"><span data-i18n="subtotal">Subtotal</span><strong id="cartSubtotal">0.000 KWD</strong></div>
+            <a href="cart.html" class="btn btn-primary cart-checkout-btn" data-i18n="view_cart">View Cart</a>
+        </div>
+    </div>
+    <div class="overlay" id="overlay"></div>
+
     <!-- Main Content -->
-    <main class="error-container">
-        <div class="error-icon">
-            <svg viewBox="0 0 24 24" fill="none">
-                <path d="M6 18L18 6M6 6l12 12" stroke-linecap="round" stroke-linejoin="round" />
-            </svg>
-        </div>
+    <main class="error-page">
+        <div class="error-card" data-animate="fade-up">
+            <div class="error-icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M6 18L18 6M6 6l12 12"/>
+                </svg>
+            </div>
 
-        <h1 class="error-title" data-i18n="payment_failed_title">Payment Failed</h1>
-        <p class="error-message" id="errorMessage" data-i18n="payment_failed_msg">
-            We couldn't process your payment. Please try again or use a different payment method.
-        </p>
+            <h1 class="error-title" data-i18n="payment_failed_title">Payment Failed</h1>
+            <p class="error-message" id="errorMessage" data-i18n="payment_failed_msg">
+                We couldn't process your payment. Please try again or use a different payment method.
+            </p>
 
-        <div class="error-details" id="errorDetails" style="display: none;">
-            <div class="error-details-label">Error Details</div>
-            <div class="error-details-value" id="errorDetailsValue"></div>
-        </div>
+            <div class="error-details" id="errorDetails">
+                <div class="error-details-label">Error Details</div>
+                <div class="error-details-value" id="errorDetailsValue"></div>
+            </div>
 
-        <div class="error-actions">
-            <a href="checkout.html" class="error-btn primary" data-i18n="try_again_btn">Try Again</a>
-            <a href="cart.html" class="error-btn secondary" data-i18n="view_cart_btn">View Cart</a>
-            <a href="account.html" class="error-btn secondary" data-i18n="contact_support_btn">Contact Support</a>
-        </div>
+            <div class="error-actions">
+                <a href="checkout.html" class="btn btn-primary" data-i18n="try_again_btn">Try Again</a>
+                <a href="cart.html" class="btn btn-secondary" data-i18n="view_cart_btn">View Cart</a>
+                <a href="contact.html" class="btn btn-secondary" data-i18n="contact_support_btn">Contact Support</a>
+            </div>
 
-        <div class="help-notice" data-i18n="payment_help">
-            💡 If you continue to experience issues, please contact our support team or try a different payment method.
+            <div class="error-help">
+                💡 <span data-i18n="payment_help">If you continue to experience issues, please
+                <a href="https://wa.me/96555636321">contact us on WhatsApp</a> or try a different payment method.</span>
+            </div>
         </div>
     </main>
 
-    <!-- Scripts -->
-    <script src="assets/js/i18n.js"></script>
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-grid">
+                <div class="footer-brand">
+                    <div class="logo"><a href="index.html"><span class="logo-text"><span class="main">ARTÉVA</span><span class="sub">MAISON</span></span></a></div>
+                    <p data-i18n="footer_desc">Discover the art of luxury living with our exquisite collection of handcrafted home décor and artisan glassware.</p>
+                </div>
+                <div class="footer-contact">
+                    <h4 class="footer-title" data-i18n="contact_info">Contact Info</h4>
+                    <div class="footer-contact-item"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg><div><p>+965 5563 6321</p></div></div>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p class="footer-copyright" data-i18n="footer_copyright">© 2026 ARTÉVA Maison. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+
     <script src="assets/js/config.js"></script>
+    <script src="assets/js/keep-alive.js"></script>
+    <script src="assets/js/api.js"></script>
+    <script src="assets/js/i18n.js"></script>
+    <script src="assets/js/main.js"></script>
+    <script src="assets/js/cart.js"></script>
+    <script src="assets/js/currency.js"></script>
+    <script src="assets/js/animations.js"></script>
+    <script src="assets/js/support-widget.js"></script>
     <script>
         document.addEventListener('DOMContentLoaded', () => {
             const urlParams = new URLSearchParams(window.location.search);
@@ -188,7 +166,6 @@
             const errorDetails = document.getElementById('errorDetails');
             const errorDetailsValue = document.getElementById('errorDetailsValue');
 
-            // Customize message based on error type
             if (status === 'failed') {
                 errorMessage.textContent = 'Your payment was declined. Please check your payment details and try again.';
             } else if (status === 'expired') {
@@ -201,16 +178,15 @@
                 errorMessage.textContent = 'Order not found. Please contact support if you were charged.';
             } else if (error === 'verification_failed') {
                 errorMessage.textContent = 'Payment verification failed. Please contact support.';
+            } else if (error === 'missing_payment_id') {
+                errorMessage.textContent = 'Payment session was invalid. Please try checking out again.';
             }
 
-            // Show order number if available
             if (orderNumber) {
                 errorDetails.style.display = 'block';
-                errorDetailsValue.textContent = `Order Number: ${orderNumber}`;
+                errorDetailsValue.textContent = `Order: #${orderNumber}`;
             }
         });
     </script>
-  <script src="assets/js/support-widget.js"></script>
 </body>
-
 </html>

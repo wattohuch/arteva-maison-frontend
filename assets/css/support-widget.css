@@ -345,28 +345,29 @@
 }
 
 /* ---------- RTL Support ---------- */
+/* Keep widget on the RIGHT in RTL to avoid collision with currency widget on the left */
 [dir="rtl"] .support-widget {
-  right: auto;
-  left: 28px;
+  right: 28px;
+  left: auto;
 }
 
 [dir="rtl"] .support-widget__panel {
-  right: auto;
-  left: 0;
-  transform-origin: bottom left;
+  right: 0;
+  left: auto;
+  transform-origin: bottom right;
 }
 
 [dir="rtl"] .support-widget__tooltip {
-  right: auto;
-  left: 70px;
-  transform: translateX(-8px);
+  right: 70px;
+  left: auto;
+  transform: translateX(8px);
 }
 
 [dir="rtl"] .support-widget__tooltip::after {
-  right: auto;
-  left: -6px;
-  border-width: 6px 6px 6px 0;
-  border-color: transparent #1a1a1a transparent transparent;
+  right: -6px;
+  left: auto;
+  border-width: 6px 0 6px 6px;
+  border-color: transparent transparent transparent #1a1a1a;
 }
 
 [dir="rtl"] .support-widget__fab:hover ~ .support-widget__tooltip {
@@ -381,8 +382,8 @@
   }
 
   [dir="rtl"] .support-widget {
-    right: auto;
-    left: 20px;
+    right: 20px;
+    left: auto;
   }
 
   .support-widget__fab {
@@ -402,8 +403,8 @@
   }
 
   [dir="rtl"] .support-widget__panel {
-    right: auto;
-    left: -8px;
+    right: -8px;
+    left: auto;
   }
 
   .support-widget__tooltip {

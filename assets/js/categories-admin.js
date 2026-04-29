@@ -118,7 +118,17 @@ window.openAddCategoryModal = function () {
 
     document.getElementById('categoryModalTitle').textContent = 'Add New Category';
     document.getElementById('categoryId').value = '';
-    document.getElementById('currentCategoryImage').style.display = 'none';
+
+    // Use the correct ID: existingCategoryImage
+    const existingImg = document.getElementById('existingCategoryImage');
+    if (existingImg) {
+        existingImg.innerHTML = '';
+        existingImg.style.display = 'none';
+    }
+
+    // Hide preview
+    const preview = document.getElementById('categoryImagePreview');
+    if (preview) preview.style.display = 'none';
 
     const modal = document.getElementById('categoryModal');
     if (modal) modal.classList.remove('hidden');
@@ -131,7 +141,7 @@ window.closeCategoryModal = function () {
     editingCategoryId = null;
 };
 
-// Edit category
+// Edit category — fixed to use correct form field selectors
 window.editCategory = async function (categoryId) {
     try {
         const response = await CategoriesAPI.getById(categoryId);
@@ -141,13 +151,23 @@ window.editCategory = async function (categoryId) {
 
             document.getElementById('categoryModalTitle').textContent = 'Edit Category';
             document.getElementById('categoryId').value = cat._id;
-            document.getElementById('categoryName').value = cat.name;
-            document.getElementById('categoryNameAr').value = cat.nameAr || '';
-            document.getElementById('categoryDescription').value = cat.description || '';
-            document.getElementById('categoryDescriptionAr').value = cat.descriptionAr || '';
 
-            // Show current image
-            const currentImageDiv = document.getElementById('currentCategoryImage');
+            // Use form.querySelector with name attributes (matching admin.html form)
+            const form = document.getElementById('categoryForm');
+            const nameField = form.querySelector('[name="name"]');
+            const nameArField = form.querySelector('[name="nameAr"]');
+            const descField = form.querySelector('[name="description"]');
+
+            if (nameField) nameField.value = cat.name || '';
+            if (nameArField) nameArField.value = cat.nameAr || '';
+            if (descField) descField.value = cat.description || '';
+
+            // Handle isActive checkbox
+            const isActiveField = form.querySelector('[name="isActive"]');
+            if (isActiveField) isActiveField.checked = cat.isActive !== false;
+
+            // Show current image — use the correct ID: existingCategoryImage
+            const currentImageDiv = document.getElementById('existingCategoryImage');
             if (cat.image) {
                 const backendOrigin = (typeof API_BASE_URL !== 'undefined' ? API_BASE_URL : '').replace('/api', '');
                 const editImgSrc = cat.image.startsWith('http') ? cat.image : backendOrigin + cat.image;
@@ -157,6 +177,7 @@ window.editCategory = async function (categoryId) {
                 `;
                 currentImageDiv.style.display = 'block';
             } else {
+                currentImageDiv.innerHTML = '';
                 currentImageDiv.style.display = 'none';
             }
 
@@ -169,11 +190,21 @@ window.editCategory = async function (categoryId) {
     }
 };
 
-// Save category form
+// Save category form — with loading spinner
 async function saveCategoryForm() {
     const form = document.getElementById('categoryForm');
     const formData = new FormData(form);
     const categoryId = document.getElementById('categoryId').value;
+
+    // Get the submit button and show loading state
+    const submitBtn = form.querySelector('button[type="submit"]');
+    const originalText = submitBtn ? submitBtn.textContent : 'Save Category';
+
+    if (submitBtn) {
+        submitBtn.disabled = true;
+        submitBtn.classList.add('admin-btn-loading');
+        submitBtn.innerHTML = '<span class="admin-spinner"></span> Saving…';
+    }
 
     try {
         let response;
@@ -209,10 +240,17 @@ async function saveCategoryForm() {
     } catch (error) {
         console.error('Failed to save category:', error);
         showToast('Error', 'Failed to save category', 'error');
+    } finally {
+        // Restore button state
+        if (submitBtn) {
+            submitBtn.disabled = false;
+            submitBtn.classList.remove('admin-btn-loading');
+            submitBtn.textContent = originalText;
+        }
     }
 }
 
-// Delete category
+// Delete category — with loading state
 window.deleteCategory = async function (categoryId) {
     // Get product count first
     try {
@@ -232,6 +270,13 @@ window.deleteCategory = async function (categoryId) {
             return;
         }
 
+        // Find and disable the delete button
+        const deleteBtn = document.querySelector(`button[onclick="deleteCategory('${categoryId}')"]`);
+        if (deleteBtn) {
+            deleteBtn.disabled = true;
+            deleteBtn.textContent = '⏳';
+        }
+
         const response = await fetch(`${API_BASE_URL}/categories/${categoryId}`, {
             method: 'DELETE',
             headers: {
@@ -246,6 +291,10 @@ window.deleteCategory = async function (categoryId) {
             loadCategoriesAdmin();
         } else {
             showToast('Error', data.message || 'Failed to delete category', 'error');
+            if (deleteBtn) {
+                deleteBtn.disabled = false;
+                deleteBtn.textContent = '🗑️';
+            }
         }
     } catch (error) {
         console.error('Failed to delete category:', error);

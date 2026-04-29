@@ -1237,7 +1237,14 @@
     .cart-summary {
         border-radius: var(--radius-md);
         padding: var(--space-6);
-        margin-bottom: env(safe-area-inset-bottom, 0px);
+        /* Extra bottom padding to prevent Safari bottom toolbar from covering the checkout button */
+        padding-bottom: calc(var(--space-6) + env(safe-area-inset-bottom, 20px));
+        margin-bottom: calc(env(safe-area-inset-bottom, 20px) + 16px);
+    }
+
+    .cart-summary .btn {
+        /* Ensure checkout button is not clipped by Safari UI */
+        margin-bottom: env(safe-area-inset-bottom, 12px);
     }
 
     .cart-summary-title {
