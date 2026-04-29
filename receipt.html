@@ -58,7 +58,7 @@
         .order-meta {
             display: flex;
             justify-content: space-between;
-            margin-bottom: 40px;
+            margin-bottom: 30px;
         }
 
         .meta-group h3 {
@@ -72,6 +72,17 @@
         .meta-group p {
             margin: 0;
             font-weight: 500;
+        }
+
+        .info-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            margin-bottom: 30px;
+            padding: 20px;
+            background: #fafaf8;
+            border-radius: 8px;
+            border: 1px solid var(--color-border);
         }
 
         .items-table {
@@ -121,14 +132,28 @@
             padding-top: 20px;
         }
 
-        @media print {
-            body {
-                padding: 0;
-            }
+        .status-badge {
+            display: inline-block;
+            padding: 3px 10px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 600;
+            text-transform: capitalize;
+        }
+        .status-paid { background: #d1fae5; color: #065f46; }
+        .status-pending { background: #fef3c7; color: #92400e; }
+        .status-failed { background: #fee2e2; color: #991b1b; }
 
-            .no-print {
-                display: none;
-            }
+        @media print {
+            body { padding: 0; }
+            .no-print { display: none; }
+            .info-grid { background: #fff; border: 1px solid #ddd; }
+        }
+
+        @media (max-width: 600px) {
+            .info-grid { grid-template-columns: 1fr; gap: 20px; }
+            .order-meta { flex-direction: column; gap: 15px; }
+            .total-section { width: 100%; }
         }
 
         .btn-print {
@@ -159,6 +184,7 @@
     <div class="loading" id="loading">Loading receipt details...</div>
 
     <div id="receiptContent" style="display: none;">
+        <!-- Order Info Row -->
         <div class="order-meta">
             <div class="meta-group">
                 <h3>Order Number</h3>
@@ -168,19 +194,45 @@
                 <h3>Date</h3>
                 <p id="orderDate">...</p>
             </div>
-            <div class="meta-group" style="text-align: right;">
-                <h3>Customer</h3>
-                <p id="customerName">...</p>
-                <p id="customerPhone" style="font-size: 12px; color: #666;"></p>
+            <div class="meta-group">
+                <h3>Order Status</h3>
+                <p><span id="orderStatus" class="status-badge">...</span></p>
             </div>
         </div>
 
+        <!-- Customer & Shipping Details -->
+        <div class="info-grid">
+            <div class="meta-group">
+                <h3>Customer Details</h3>
+                <p id="customerName" style="font-weight: 600; margin-bottom: 4px;">...</p>
+                <p id="customerEmail" style="font-size: 13px; color: #666; font-weight: 400;">...</p>
+                <p id="customerPhone" style="font-size: 13px; color: #666; font-weight: 400;">...</p>
+            </div>
+            <div class="meta-group">
+                <h3>Shipping Address</h3>
+                <p id="shippingAddress" style="white-space: pre-line; line-height: 1.6; font-weight: 400;"></p>
+            </div>
+        </div>
+
+        <!-- Payment Info -->
+        <div class="info-grid">
+            <div class="meta-group">
+                <h3>Payment Method</h3>
+                <p id="paymentMethod" style="text-transform: uppercase;">...</p>
+            </div>
+            <div class="meta-group">
+                <h3>Payment Status</h3>
+                <p><span id="paymentStatus" class="status-badge">...</span></p>
+            </div>
+        </div>
+
+        <!-- Items Table -->
         <table class="items-table">
             <thead>
                 <tr>
                     <th width="50%">Item</th>
-                    <th width="20%">Price</th>
-                    <th width="10%">Qty</th>
+                    <th width="20%">Unit Price</th>
+                    <th width="10%" style="text-align: center;">Qty</th>
                     <th width="20%" style="text-align: right;">Total</th>
                 </tr>
             </thead>
@@ -189,31 +241,26 @@
             </tbody>
         </table>
 
+        <!-- Price Breakdown -->
         <div class="total-section">
             <div class="total-row">
                 <span>Subtotal</span>
                 <span id="subtotal">0.000 KWD</span>
             </div>
             <div class="total-row">
-                <span>Shipping</span>
+                <span>Delivery Fee (Kuwait)</span>
                 <span id="shipping">0.000 KWD</span>
             </div>
             <div class="total-row final">
-                <span>Total</span>
+                <span>Total Paid</span>
                 <span id="total">0.000 KWD</span>
-            </div>
-        </div>
-
-        <div style="margin-top: 40px;">
-            <div class="meta-group">
-                <h3>Shipping Address</h3>
-                <p id="shippingAddress" style="white-space: pre-line; line-height: 1.5;"></p>
             </div>
         </div>
     </div>
 
     <div class="footer">
-        <p>Thank you for shopping with ARTEVA Maison.</p>
+        <p>Thank you for shopping with ARTÉVA Maison.</p>
+        <p>For any questions, contact us at arteva.maison@gmail.com</p>
         <p>www.artevamaisonkw.com</p>
     </div>
 
@@ -222,8 +269,8 @@
     <script>
         document.addEventListener('DOMContentLoaded', async () => {
             const urlParams = new URLSearchParams(window.location.search);
-            const orderId = urlParams.get('id'); // MongoDB _id
-            const orderNumber = urlParams.get('order'); // Order number e.g. ART-000001
+            const orderId = urlParams.get('id');
+            const orderNumber = urlParams.get('order');
 
             if (!orderId && !orderNumber) {
                 document.getElementById('loading').textContent = 'Order ID not provided.';
@@ -234,7 +281,6 @@
                 let order;
 
                 if (orderNumber) {
-                    // Look up by order number via the new endpoint
                     const token = localStorage.getItem('arteva_token');
                     const res = await fetch(`${window.API_BASE_URL || 'https://arteva-maison-backend-gy1x.onrender.com/api'}/orders/by-number/${orderNumber}`, {
                         headers: token ? { 'Authorization': `Bearer ${token}` } : {}
@@ -246,7 +292,6 @@
                     const data = await res.json();
                     order = data.success ? data.data : null;
                 } else if (orderId && orderId.match(/^[0-9a-fA-F]{24}$/)) {
-                    // Look up by MongoDB _id
                     const res = await window.API.orders.getById(orderId);
                     order = res.data;
                 } else {
@@ -260,7 +305,6 @@
                 }
 
                 // === PAYMENT STATUS GATE ===
-                // Only show receipt for paid orders or COD orders (which are confirmed immediately)
                 const isPaid = order.paymentStatus === 'paid';
                 const isCOD = order.paymentMethod === 'cod' && (order.paymentStatus === 'pending' || order.paymentStatus === 'paid');
 
@@ -275,21 +319,59 @@
                     return;
                 }
 
-                // Populate Data
+                // === POPULATE RECEIPT DATA ===
+
+                // Order info
                 document.getElementById('orderNumber').textContent = order.orderNumber;
                 document.getElementById('orderDate').textContent = new Date(order.createdAt).toLocaleDateString('en-US', {
-                    year: 'numeric',
-                    month: 'long',
-                    day: 'numeric'
+                    year: 'numeric', month: 'long', day: 'numeric'
                 });
 
-                document.getElementById('customerName').textContent = order.user ? order.user.name : (order.shippingAddress.firstName || 'Guest');
-                document.getElementById('customerPhone').textContent = order.shippingAddress.phone || order.user?.phone || '';
+                // Order status badge
+                const statusEl = document.getElementById('orderStatus');
+                const statusText = (order.orderStatus || 'pending').replace(/_/g, ' ');
+                statusEl.textContent = statusText;
+                if (['confirmed', 'delivered'].includes(order.orderStatus)) {
+                    statusEl.classList.add('status-paid');
+                } else if (['cancelled'].includes(order.orderStatus)) {
+                    statusEl.classList.add('status-failed');
+                } else {
+                    statusEl.classList.add('status-pending');
+                }
 
-                // Address
+                // Customer details
+                document.getElementById('customerName').textContent = order.user ? order.user.name : (order.shippingAddress?.firstName || 'Guest');
+                document.getElementById('customerEmail').textContent = order.user?.email || '';
+                document.getElementById('customerPhone').textContent = order.shippingAddress?.phone || order.user?.phone || '';
+
+                // Shipping address
                 const addr = order.shippingAddress;
-                document.getElementById('shippingAddress').textContent =
-                    `${addr.street}\n${addr.city}, ${addr.state || ''} ${addr.zipCode || ''}\n${addr.country}`;
+                if (addr) {
+                    let addressParts = [addr.street];
+                    if (addr.city) addressParts.push(addr.city + (addr.state ? ', ' + addr.state : '') + (addr.zipCode ? ' ' + addr.zipCode : ''));
+                    if (addr.country) addressParts.push(addr.country);
+                    document.getElementById('shippingAddress').textContent = addressParts.filter(Boolean).join('\n');
+                }
+
+                // Payment info
+                const paymentMethodNames = {
+                    'cod': 'Cash on Delivery',
+                    'knet': 'KNET',
+                    'card': 'Credit/Debit Card',
+                    'applepay': 'Apple Pay',
+                    'myfatoorah': 'Online Payment'
+                };
+                document.getElementById('paymentMethod').textContent = paymentMethodNames[order.paymentMethod] || order.paymentMethod || 'N/A';
+
+                const paymentStatusEl = document.getElementById('paymentStatus');
+                paymentStatusEl.textContent = (order.paymentStatus || 'pending').replace(/_/g, ' ');
+                if (order.paymentStatus === 'paid') {
+                    paymentStatusEl.classList.add('status-paid');
+                } else if (order.paymentStatus === 'failed') {
+                    paymentStatusEl.classList.add('status-failed');
+                } else {
+                    paymentStatusEl.classList.add('status-pending');
+                }
 
                 // Items
                 const tbody = document.getElementById('itemsList');
@@ -300,7 +382,7 @@
                             <div style="font-size: 12px; color: #888;">${item.variant ? item.variant : ''}</div>
                         </td>
                         <td>${item.price.toFixed(3)} KWD</td>
-                        <td>${item.quantity}</td>
+                        <td style="text-align: center;">${item.quantity}</td>
                         <td style="text-align: right;">${(item.price * item.quantity).toFixed(3)} KWD</td>
                     </tr>
                 `).join('');
@@ -320,7 +402,7 @@
             }
         });
     </script>
-  <script src="assets/js/support-widget.js"></script>
+    <script src="assets/js/support-widget.js"></script>
 </body>
 
 </html>
