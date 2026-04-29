@@ -1,0 +1,376 @@
+/* ============================================
+   ARTÉVA Maison — Premium Animation System
+   Apple-inspired storytelling & scroll reveals
+   ============================================ */
+
+/* ─── Scroll Reveal: Base State ─────────────── */
+[data-animate] {
+  opacity: 0;
+  will-change: transform, opacity;
+  transition:
+    opacity 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94),
+    transform 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94),
+    filter 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+
+/* Directional reveals */
+[data-animate="fade-up"]    { transform: translateY(40px); }
+[data-animate="fade-down"]  { transform: translateY(-40px); }
+[data-animate="fade-left"]  { transform: translateX(40px); }
+[data-animate="fade-right"] { transform: translateX(-40px); }
+[data-animate="scale-up"]   { transform: scale(0.92); }
+[data-animate="blur-in"]    { transform: translateY(20px); filter: blur(8px); }
+[data-animate="fade-in"]    { /* opacity only */ }
+
+/* ─── Revealed State ─────────────────────────── */
+[data-animate].is-visible {
+  opacity: 1;
+  transform: translate(0, 0) scale(1);
+  filter: blur(0);
+}
+
+/* ─── Stagger Delays ─────────────────────────── */
+[data-delay="100"] { transition-delay: 100ms; }
+[data-delay="200"] { transition-delay: 200ms; }
+[data-delay="300"] { transition-delay: 300ms; }
+[data-delay="400"] { transition-delay: 400ms; }
+[data-delay="500"] { transition-delay: 500ms; }
+[data-delay="600"] { transition-delay: 600ms; }
+[data-delay="700"] { transition-delay: 700ms; }
+[data-delay="800"] { transition-delay: 800ms; }
+
+/* ─── Duration Variants ──────────────────────── */
+[data-duration="fast"] {
+  transition-duration: 0.5s;
+}
+[data-duration="slow"] {
+  transition-duration: 1.2s;
+}
+
+/* ─── Hero Section Enhancements ──────────────── */
+
+/* Ken Burns zoom on hero slides */
+.hero-slide .hero-image {
+  transition: transform 8s ease-out, opacity 1.2s ease;
+}
+
+.hero-slide.active .hero-image {
+  animation: kenBurns 12s ease-in-out infinite alternate;
+}
+
+@keyframes kenBurns {
+  0%   { transform: scale(1) translate(0, 0); }
+  100% { transform: scale(1.08) translate(-1%, -0.5%); }
+}
+
+/* Hero content entrance */
+.hero-content {
+  opacity: 0;
+  transform: translateY(30px);
+  transition: opacity 1s cubic-bezier(0.25, 0.46, 0.45, 0.94) 0.3s,
+              transform 1s cubic-bezier(0.25, 0.46, 0.45, 0.94) 0.3s;
+}
+
+.hero-content.animate,
+.hero-content.is-visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.hero-content .hero-subtitle {
+  opacity: 0;
+  transform: translateY(15px);
+  transition: opacity 0.6s ease 0.4s, transform 0.6s ease 0.4s;
+}
+
+.hero-content.animate .hero-subtitle,
+.hero-content.is-visible .hero-subtitle {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.hero-content .hero-title {
+  opacity: 0;
+  transform: translateY(20px);
+  transition: opacity 0.7s ease 0.6s, transform 0.7s ease 0.6s;
+}
+
+.hero-content.animate .hero-title,
+.hero-content.is-visible .hero-title {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.hero-content .hero-description {
+  opacity: 0;
+  transform: translateY(15px);
+  transition: opacity 0.6s ease 0.8s, transform 0.6s ease 0.8s;
+}
+
+.hero-content.animate .hero-description,
+.hero-content.is-visible .hero-description {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.hero-content .hero-buttons {
+  opacity: 0;
+  transform: translateY(15px);
+  transition: opacity 0.6s ease 1s, transform 0.6s ease 1s;
+}
+
+.hero-content.animate .hero-buttons,
+.hero-content.is-visible .hero-buttons {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* Smoother hero slide crossfade */
+.hero-slide {
+  opacity: 0;
+  transition: opacity 1.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.hero-slide.active {
+  opacity: 1;
+}
+
+/* ─── Product Card Micro-Interactions ────────── */
+.product-card {
+  transition: transform 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94),
+              box-shadow 0.4s ease;
+}
+
+.product-card:hover {
+  transform: translateY(-6px);
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+}
+
+.product-card .product-image img {
+  transition: transform 0.7s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+
+.product-card:hover .product-image img {
+  transform: scale(1.06);
+}
+
+.product-card .product-info {
+  transition: transform 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+
+.product-card:hover .product-info {
+  transform: translateY(-2px);
+}
+
+/* ─── Collection Card Interactions ───────────── */
+.collection-card {
+  transition: transform 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94),
+              box-shadow 0.5s ease;
+}
+
+.collection-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 16px 32px rgba(0, 0, 0, 0.12);
+}
+
+.collection-card .collection-image img {
+  transition: transform 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+
+.collection-card:hover .collection-image img {
+  transform: scale(1.08);
+}
+
+.collection-card .collection-info {
+  transition: opacity 0.4s ease, transform 0.4s ease;
+}
+
+.collection-card:hover .collection-info {
+  transform: translateY(-3px);
+}
+
+/* ─── Category Card Interactions ─────────────── */
+.category-card {
+  transition: transform 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  overflow: hidden;
+}
+
+.category-card:hover {
+  transform: scale(1.02);
+}
+
+.category-card img {
+  transition: transform 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+
+.category-card:hover img {
+  transform: scale(1.1);
+}
+
+.category-card .category-overlay {
+  transition: background 0.5s ease;
+}
+
+.category-card:hover .category-overlay {
+  background: rgba(0, 0, 0, 0.45);
+}
+
+.category-card .category-name {
+  transition: transform 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94),
+              letter-spacing 0.4s ease;
+}
+
+.category-card:hover .category-name {
+  transform: translateY(-2px);
+  letter-spacing: 0.15em;
+}
+
+/* ─── Button Interactions ────────────────────── */
+.btn {
+  transition: all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  position: relative;
+  overflow: hidden;
+}
+
+.btn:active {
+  transform: scale(0.97);
+}
+
+.btn-primary::after,
+.btn-gold::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    120deg,
+    transparent 30%,
+    rgba(255, 255, 255, 0.15) 50%,
+    transparent 70%
+  );
+  transform: translateX(-100%);
+  transition: transform 0.6s ease;
+}
+
+.btn-primary:hover::after,
+.btn-gold:hover::after {
+  transform: translateX(100%);
+}
+
+/* ─── Section Transitions ────────────────────── */
+.section-header .section-title {
+  position: relative;
+}
+
+.section-header .section-title::after {
+  content: '';
+  display: block;
+  width: 40px;
+  height: 2px;
+  background: var(--color-gold, #c9a962);
+  margin: 12px auto 0;
+  transition: width 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+
+[data-animate].is-visible .section-title::after,
+.section-header.revealed .section-title::after {
+  width: 60px;
+}
+
+/* ─── Newsletter Section ─────────────────────── */
+.newsletter-section {
+  position: relative;
+  overflow: hidden;
+}
+
+.newsletter-section::before {
+  content: '';
+  position: absolute;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  background: radial-gradient(
+    circle at 50% 50%,
+    rgba(201, 169, 98, 0.03) 0%,
+    transparent 70%
+  );
+  animation: ambientGlow 8s ease-in-out infinite alternate;
+  pointer-events: none;
+}
+
+@keyframes ambientGlow {
+  0%   { transform: translate(-2%, -2%) scale(1); }
+  100% { transform: translate(2%, 2%) scale(1.1); }
+}
+
+/* ─── Image Loading Transition ───────────────── */
+/* Only target content images, not icons/logos */
+.product-image img,
+.collection-image img,
+.category-card > img,
+.hero-image {
+  transition: opacity 0.5s ease;
+}
+
+/* Smooth fade when images load in dynamically */
+.product-card img[data-src],
+.collection-card img[data-src] {
+  opacity: 0;
+}
+
+.product-card img[data-src].loaded,
+.collection-card img[data-src].loaded {
+  opacity: 1;
+}
+
+/* ─── Parallax Elements ──────────────────────── */
+[data-parallax] {
+  will-change: transform;
+  transition: transform 0.1s linear;
+}
+
+/* ─── Smooth Page Load ───────────────────────── */
+body {
+  animation: pageLoad 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+
+@keyframes pageLoad {
+  from { opacity: 0.85; }
+  to   { opacity: 1; }
+}
+
+/* ─── Accessibility: Reduced Motion ──────────── */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+
+  [data-animate] {
+    opacity: 1 !important;
+    transform: none !important;
+    filter: none !important;
+  }
+
+  .hero-content,
+  .hero-content .hero-subtitle,
+  .hero-content .hero-title,
+  .hero-content .hero-description,
+  .hero-content .hero-buttons {
+    opacity: 1 !important;
+    transform: none !important;
+  }
+
+  img { opacity: 1 !important; }
+}
+
+/* ─── Fallback: No JS ────────────────────────── */
+.no-js [data-animate] {
+  opacity: 1;
+  transform: none;
+  filter: none;
+}

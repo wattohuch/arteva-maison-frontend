@@ -455,35 +455,15 @@ function initWishlist() {
 // Scroll Animations
 // ============================================
 function initAnimations() {
+  // The new animations.js engine handles all scroll reveals via [data-animate].
+  // This function now only handles backward compatibility for elements
+  // that use the old .reveal class but don't have data-animate attributes.
+  
   const observerOptions = {
     threshold: 0.15,
     rootMargin: '0px 0px -80px 0px'
   };
 
-  // Staggered reveal for grids
-  function revealWithStagger(entries, observer) {
-    entries.forEach(entry => {
-      if (entry.isIntersecting) {
-        // Get all siblings in the same grid
-        const parent = entry.target.parentElement;
-        const siblings = parent.querySelectorAll('.product-card, .collection-card, .category-card');
-
-        siblings.forEach((el, index) => {
-          if (el.classList.contains('reveal') && !el.classList.contains('revealed')) {
-            setTimeout(() => {
-              el.classList.add('revealed');
-            }, index * 80); // 80ms stagger
-          }
-        });
-
-        observer.unobserve(entry.target);
-      }
-    });
-  }
-
-  const gridObserver = new IntersectionObserver(revealWithStagger, observerOptions);
-
-  // Single element reveal
   const singleObserver = new IntersectionObserver((entries, observer) => {
     entries.forEach(entry => {
       if (entry.isIntersecting) {
@@ -493,26 +473,9 @@ function initAnimations() {
     });
   }, observerOptions);
 
-  // Apply to grid items (exclude .collection-card — they're in horizontal
-  // scroll containers where IntersectionObserver fails in RTL mode)
-  const gridElements = document.querySelectorAll('.product-card, .category-card');
-  gridElements.forEach(el => {
-    el.classList.add('reveal');
-  });
-
-  // Observe first element of each grid to trigger stagger
-  const grids = document.querySelectorAll('.products-grid, .categories-grid');
-  grids.forEach(grid => {
-    const firstItem = grid.querySelector('.product-card, .category-card');
-    if (firstItem) {
-      gridObserver.observe(firstItem);
-    }
-  });
-
-  // Apply to section headers and other elements
-  const revealElements = document.querySelectorAll('.section-header, .newsletter-section, .footer-brand');
+  // Only observe elements that use .reveal but NOT [data-animate]
+  const revealElements = document.querySelectorAll('.reveal:not([data-animate])');
   revealElements.forEach(el => {
-    el.classList.add('reveal');
     singleObserver.observe(el);
   });
 }
