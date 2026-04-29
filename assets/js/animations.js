@@ -1,7 +1,7 @@
 /**
- * ARTÉVA Maison — Premium Animation Engine
- * Lightweight scroll-reveal, parallax & micro-interactions
- * Zero dependencies · GPU-accelerated · ~3KB
+ * ARTÉVA Maison — Premium Animation Engine v2
+ * Extensive motion system · Every element animated
+ * Zero dependencies · GPU-accelerated · ~5KB
  */
 (function () {
   'use strict';
@@ -12,14 +12,13 @@
   ).matches;
 
   if (prefersReducedMotion) {
-    // Make everything visible immediately
     document.querySelectorAll('[data-animate]').forEach(el => {
       el.classList.add('is-visible');
     });
-    return; // Skip all animation setup
+    return;
   }
 
-  // ── Scroll Reveal ─────────────────────────────
+  // ── Scroll Reveal Engine ──────────────────────
   function initScrollReveal() {
     const elements = document.querySelectorAll('[data-animate]');
     if (!elements.length) return;
@@ -34,48 +33,43 @@
         });
       },
       {
-        threshold: 0.12,
-        rootMargin: '0px 0px -60px 0px'
+        threshold: 0.1,
+        rootMargin: '0px 0px -50px 0px'
       }
     );
 
     elements.forEach(el => observer.observe(el));
   }
 
-  // ── Staggered Grid Reveal ─────────────────────
+  // ── Grid Stagger Reveal ───────────────────────
   function initGridStagger() {
     const grids = document.querySelectorAll(
-      '.products-grid, .categories-grid, .collections-scroll'
+      '.products-grid, .categories-grid, .collections-scroll, .footer-grid'
     );
 
     grids.forEach(grid => {
-      const children = grid.children;
-      if (!children.length) return;
-
       const observer = new IntersectionObserver(
         (entries) => {
           entries.forEach(entry => {
             if (entry.isIntersecting) {
-              // Stagger all children of the grid
-              Array.from(children).forEach((child, i) => {
+              const children = Array.from(entry.target.children);
+              children.forEach((child, i) => {
+                // Add data-animate if not present
                 if (!child.hasAttribute('data-animate')) {
                   child.setAttribute('data-animate', 'fade-up');
                 }
-                // Dynamic stagger delay
-                child.style.transitionDelay = `${i * 100}ms`;
-                // Trigger with small offset for natural feel
+                // Stagger with natural timing
+                const delay = i * 100;
+                child.style.transitionDelay = `${delay}ms`;
                 setTimeout(() => {
                   child.classList.add('is-visible');
-                }, i * 80);
+                }, delay);
               });
               observer.unobserve(entry.target);
             }
           });
         },
-        {
-          threshold: 0.08,
-          rootMargin: '0px 0px -40px 0px'
-        }
+        { threshold: 0.05, rootMargin: '0px 0px -30px 0px' }
       );
 
       observer.observe(grid);
@@ -88,22 +82,20 @@
     if (!elements.length) return;
 
     const intensityMap = {
-      subtle: 0.03,
-      medium: 0.06,
-      strong: 0.1
+      subtle: 0.02,
+      medium: 0.05,
+      strong: 0.09
     };
 
     let ticking = false;
 
     function updateParallax() {
-      const scrollY = window.pageYOffset;
       const viewportHeight = window.innerHeight;
 
       elements.forEach(el => {
         const rect = el.getBoundingClientRect();
-        const intensity = intensityMap[el.dataset.parallax] || 0.03;
+        const intensity = intensityMap[el.dataset.parallax] || 0.02;
 
-        // Only animate when in viewport
         if (rect.bottom > 0 && rect.top < viewportHeight) {
           const center = rect.top + rect.height / 2;
           const offset = (center - viewportHeight / 2) * intensity;
@@ -122,60 +114,145 @@
     }, { passive: true });
   }
 
-  // ── Image Load Transitions ────────────────────
-  function initImageTransitions() {
-    // Handle already-loaded images
-    document.querySelectorAll('img').forEach(img => {
-      if (img.complete && img.naturalWidth > 0) {
-        img.classList.add('loaded');
+  // ── Scroll Progress Bar ───────────────────────
+  function initScrollProgress() {
+    // Don't add on admin or utility pages
+    if (document.querySelector('.admin-body') || 
+        document.querySelector('.btn-print')) return;
+
+    const bar = document.createElement('div');
+    bar.className = 'scroll-progress';
+    document.body.prepend(bar);
+
+    let ticking = false;
+
+    function updateProgress() {
+      const scrollTop = window.pageYOffset;
+      const docHeight = document.documentElement.scrollHeight - window.innerHeight;
+      const progress = docHeight > 0 ? scrollTop / docHeight : 0;
+      bar.style.transform = `scaleX(${progress})`;
+      ticking = false;
+    }
+
+    window.addEventListener('scroll', () => {
+      if (!ticking) {
+        requestAnimationFrame(updateProgress);
+        ticking = true;
       }
+    }, { passive: true });
+  }
+
+  // ── Auto-Animate Sections ─────────────────────
+  // Automatically add data-animate to key elements that don't have it
+  function autoAnimateSections() {
+    // Section headers
+    document.querySelectorAll('.section-header:not([data-animate])').forEach(el => {
+      el.setAttribute('data-animate', 'fade-up');
     });
 
-    // Handle future image loads
-    document.addEventListener('load', (e) => {
-      if (e.target.tagName === 'IMG') {
-        e.target.classList.add('loaded');
-      }
-    }, true);
+    // Footer sections
+    document.querySelectorAll('.footer-brand:not([data-animate])').forEach(el => {
+      el.setAttribute('data-animate', 'fade-up');
+    });
 
-    // MutationObserver for dynamically added images
-    const observer = new MutationObserver(mutations => {
+    document.querySelectorAll('.footer-contact:not([data-animate])').forEach(el => {
+      el.setAttribute('data-animate', 'fade-up');
+      el.setAttribute('data-delay', '200');
+    });
+
+    // Newsletter
+    document.querySelectorAll('.newsletter-section:not([data-animate])').forEach(el => {
+      el.setAttribute('data-animate', 'fade-up');
+    });
+
+    // Page titles / breadcrumbs
+    document.querySelectorAll('.page-title:not([data-animate]), .breadcrumb:not([data-animate])').forEach(el => {
+      el.setAttribute('data-animate', 'fade-in');
+    });
+
+    // Contact form
+    document.querySelectorAll('.contact-form:not([data-animate])').forEach(el => {
+      el.setAttribute('data-animate', 'fade-up');
+      el.setAttribute('data-delay', '200');
+    });
+
+    // Product detail sections
+    document.querySelectorAll('.product-gallery:not([data-animate])').forEach(el => {
+      el.setAttribute('data-animate', 'fade-right');
+    });
+
+    document.querySelectorAll('.product-details:not([data-animate])').forEach(el => {
+      el.setAttribute('data-animate', 'fade-left');
+      el.setAttribute('data-delay', '150');
+    });
+  }
+
+  // ── Legacy .reveal Compatibility ──────────────
+  function initLegacyReveal() {
+    document.querySelectorAll('.reveal:not(.revealed):not([data-animate])').forEach(el => {
+      el.setAttribute('data-animate', 'fade-up');
+    });
+  }
+
+  // ── Dynamic Content Observer ──────────────────
+  // Watch for dynamically added content and animate it
+  function initDynamicObserver() {
+    const mutationObserver = new MutationObserver(mutations => {
+      let hasNewContent = false;
+
       mutations.forEach(mutation => {
         mutation.addedNodes.forEach(node => {
           if (node.nodeType !== 1) return;
-          const imgs = node.tagName === 'IMG' ? [node] :
-            (node.querySelectorAll ? Array.from(node.querySelectorAll('img')) : []);
-          imgs.forEach(img => {
-            if (img.complete && img.naturalWidth > 0) {
-              img.classList.add('loaded');
-            } else {
-              img.addEventListener('load', () => img.classList.add('loaded'), { once: true });
+          
+          // Check if the added node or its children have data-animate
+          if (node.hasAttribute && node.hasAttribute('data-animate')) {
+            hasNewContent = true;
+          }
+          
+          // Auto-animate product cards added dynamically
+          if (node.classList && node.classList.contains('product-card')) {
+            if (!node.hasAttribute('data-animate')) {
+              node.setAttribute('data-animate', 'fade-up');
             }
-          });
+            hasNewContent = true;
+          }
+
+          // Check children
+          if (node.querySelectorAll) {
+            const animatable = node.querySelectorAll('[data-animate], .product-card');
+            if (animatable.length) hasNewContent = true;
+            
+            animatable.forEach(el => {
+              if (el.classList.contains('product-card') && !el.hasAttribute('data-animate')) {
+                el.setAttribute('data-animate', 'fade-up');
+              }
+            });
+          }
         });
       });
+
+      if (hasNewContent) {
+        // Re-run scroll reveal for new elements
+        initScrollReveal();
+        initGridStagger();
+      }
     });
 
-    observer.observe(document.body, { childList: true, subtree: true });
-  }
-
-  // ── Backward Compatibility ────────────────────
-  // Support existing .reveal elements from main.js
-  function initLegacyReveal() {
-    document.querySelectorAll('.reveal:not(.revealed)').forEach(el => {
-      if (!el.hasAttribute('data-animate')) {
-        el.setAttribute('data-animate', 'fade-up');
-      }
+    mutationObserver.observe(document.body, {
+      childList: true,
+      subtree: true
     });
   }
 
   // ── Initialize Everything ─────────────────────
   function init() {
+    autoAnimateSections();
     initLegacyReveal();
     initScrollReveal();
     initGridStagger();
     initParallax();
-    initImageTransitions();
+    initScrollProgress();
+    initDynamicObserver();
   }
 
   // Run on DOM ready
@@ -185,9 +262,12 @@
     init();
   }
 
-  // Re-run for dynamically loaded content
+  // Expose for dynamic content refresh
   window.ArtevaAnimations = {
-    refresh: init,
-    reveal: initScrollReveal
+    refresh() {
+      autoAnimateSections();
+      initScrollReveal();
+      initGridStagger();
+    }
   };
 })();

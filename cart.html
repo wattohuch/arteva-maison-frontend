@@ -17,7 +17,8 @@
     <!-- Stylesheets -->
     <link rel="stylesheet" href="assets/css/main.css">
     <link rel="stylesheet" href="assets/css/components.css">
-    <link rel="stylesheet" href="assets/css/pages.css">`n  <link rel="stylesheet" href="assets/css/animations.css">
+    <link rel="stylesheet" href="assets/css/pages.css">
+  <link rel="stylesheet" href="assets/css/animations.css">
   <link rel="stylesheet" href="assets/css/support-widget.css">
 
     <!-- Flag Icons -->
@@ -56,7 +57,7 @@
                 </nav>
             </div>
             <div class="logo">
-                <a href="index.html"><span class="logo-text"><span class="main">ART�VA</span><span
+                <a href="index.html"><span class="logo-text"><span class="main">ARTÉVA</span><span
                             class="sub">MAISON</span></span></a>
             </div>
             <div class="header-right">
@@ -158,7 +159,7 @@
     <!-- Mobile Menu -->
     <div class="mobile-menu" id="mobileMenu">
         <div class="mobile-menu-header">
-            <div class="logo"><a href="index.html"><span class="logo-text"><span class="main">ART�VA</span><span
+            <div class="logo"><a href="index.html"><span class="logo-text"><span class="main">ARTÉVA</span><span
                             class="sub">MAISON</span></span></a></div>
             <button class="mobile-menu-close" id="mobileMenuClose" aria-label="Close Menu">
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
@@ -313,13 +314,13 @@
                     <div class="logo">
                         <a href="index.html">
                             <span class="logo-text">
-                                <span class="main">ART�VA</span>
+                                <span class="main">ARTÉVA</span>
                                 <span class="sub">MAISON</span>
                             </span>
                         </a>
                     </div>
                     <p data-i18n="footer_desc">Discover the art of luxury living with our exquisite collection of
-                        handcrafted home d�cor and artisan glassware.</p>
+                        handcrafted home décor and artisan glassware.</p>
                     <div class="footer-social">
                         <a href="https://www.instagram.com/arteva.maison" class="social-link" aria-label="Instagram"
                             target="_blank" rel="noopener">
@@ -350,7 +351,7 @@
                             <circle cx="12" cy="10" r="3" />
                         </svg>
                         <div>
-                            <p>ART�VA Maison</p>
+                            <p>ARTÉVA Maison</p>
                             <p>Kuwait City, Kuwait</p>
                         </div>
                     </div>
@@ -368,10 +369,10 @@
             </div>
 
             <div class="footer-bottom">
-                <p class="footer-copyright" data-i18n="footer_copyright">� 2026 ART�VA Maison. All rights reserved.</p>
+                <p class="footer-copyright" data-i18n="footer_copyright">© 2026 ARTÉVA Maison. All rights reserved.</p>
                 <div class="footer-payments">
                     <span style="font-size: 12px; color: rgba(255,255,255,0.5);" data-i18n="footer_payments">We accept:
-                        KNET � Visa � Mastercard</span>
+                        KNET • Visa • Mastercard</span>
                 </div>
 
                 <!-- Mobile Currency Selector (Shows only on mobile) -->
@@ -454,8 +455,8 @@
             // Clear cart button
             document.getElementById('clearCartBtn').addEventListener('click', () => {
                 const lang = localStorage.getItem('site_lang') || 'en';
-                const confirmMsg = lang === 'ar' ? '?? ??? ????? ??? ???? ????? ??? ???????' : 'Are you sure you want to clear your cart?';
-                const successMsg = lang === 'ar' ? '?? ????? ?????' : 'Cart cleared';
+                const confirmMsg = lang === 'ar' ? 'هل أنت متأكد أنك تريد إفراغ سلة التسوق؟' : 'Are you sure you want to clear your cart?';
+                const successMsg = lang === 'ar' ? 'تم إفراغ السلة' : 'Cart cleared';
 
                 if (confirm(confirmMsg)) {
                     window.clearCart();
@@ -467,7 +468,7 @@
             document.getElementById('checkoutBtn').addEventListener('click', () => {
                 if (window.getCartCount && window.getCartCount() === 0) {
                     const lang = localStorage.getItem('site_lang') || 'en';
-                    const errorMsg = lang === 'ar' ? '??? ?????? ?????' : 'Your cart is empty';
+                    const errorMsg = lang === 'ar' ? 'سلة التسوق فارغة' : 'Your cart is empty';
                     window.showNotification(errorMsg, 'error');
                     return;
                 }
@@ -485,7 +486,8 @@
             });
         });
     </script>
+  <script src="assets/js/animations.js"></script>
   <script src="assets/js/support-widget.js"></script>
-  <script src="assets/js/animations.js"></script>`n</body>
+</body>
 
 </html>
