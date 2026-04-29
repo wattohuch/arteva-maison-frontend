@@ -4,7 +4,7 @@
  */
 
 document.addEventListener('DOMContentLoaded', async () => {
-    await loadNewArrivals();
+    await Promise.all([loadNewArrivals(), loadCategories()]);
     // await loadFeatured(); // If there is a featured section
 });
 
@@ -89,4 +89,55 @@ function renderProducts(container, products) {
             if (window.addToCart) window.addToCart(btn.dataset.productId);
         });
     });
+}
+
+// ============================================
+// Dynamic Categories Grid
+// ============================================
+async function loadCategories() {
+    const grid = document.getElementById('categoriesGrid');
+    if (!grid) return;
+
+    // Show shimmer placeholders while loading
+    grid.innerHTML = Array(6).fill(0).map(() => `
+        <div class="category-card" style="pointer-events:none;">
+            <div style="width:100%;height:100%;background:var(--bg-secondary);animation:shimmerAnim 1.5s infinite;"></div>
+        </div>
+    `).join('');
+
+    try {
+        const response = await CategoriesAPI.getAll();
+        if (response.success && response.data.length > 0) {
+            renderCategories(grid, response.data);
+        } else {
+            grid.innerHTML = '<p class="text-center" style="grid-column:1/-1;">No categories available.</p>';
+        }
+    } catch (err) {
+        console.error('Failed to load categories:', err);
+        grid.innerHTML = '<p class="text-center" style="grid-column:1/-1;">Unable to load categories.</p>';
+    }
+}
+
+function renderCategories(grid, categories) {
+    const lang = localStorage.getItem('site_lang') || 'en';
+
+    // Only show active categories
+    const active = categories.filter(c => c.isActive !== false);
+
+    grid.innerHTML = active.map((cat, i) => {
+        const name = lang === 'ar' && cat.nameAr ? cat.nameAr : cat.name;
+        const image = cat.image && !cat.image.includes('undefined')
+            ? cat.image
+            : 'assets/images/products/placeholder.png';
+        const slug = cat.slug || cat._id;
+
+        return `
+        <a href="collection.html?cat=${slug}" class="category-card" data-animate="fade-up" style="animation-delay: ${i * 0.08}s;">
+            <img src="${image}" alt="${name}" loading="lazy"
+                onerror="this.onerror=null; this.src='assets/images/products/placeholder.png';">
+            <div class="category-overlay">
+                <span class="category-name">${name}</span>
+            </div>
+        </a>`;
+    }).join('');
 }
