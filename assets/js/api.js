@@ -190,6 +190,10 @@ const CategoriesAPI = {
         return apiRequest('/categories');
     },
 
+    async getById(id) {
+        return apiRequest(`/categories/${id}`);
+    },
+
     async getBySlug(slug) {
         return apiRequest(`/categories/slug/${slug}`);
     }
