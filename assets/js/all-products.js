@@ -136,12 +136,24 @@
         // Filter by category
         if (currentFilter !== 'all') {
             filtered = filtered.filter(p => {
-                if (!p.category) return false;
+                // Check primary category
                 const cat = typeof p.category === 'object' ? p.category : null;
-                if (cat) {
-                    return cat.slug === currentFilter || cat._id === currentFilter;
+                if (cat && (cat.slug === currentFilter || cat._id === currentFilter)) {
+                    return true;
                 }
-                return p.category === currentFilter;
+                if (!cat && p.category === currentFilter) {
+                    return true;
+                }
+                // Check additionalCategories
+                if (p.additionalCategories && Array.isArray(p.additionalCategories)) {
+                    return p.additionalCategories.some(ac => {
+                        if (typeof ac === 'object') {
+                            return ac.slug === currentFilter || ac._id === currentFilter;
+                        }
+                        return ac === currentFilter;
+                    });
+                }
+                return false;
             });
         }
 
