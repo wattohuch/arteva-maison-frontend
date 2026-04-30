@@ -277,67 +277,8 @@
         <!-- Collections Grid -->
         <section class="categories-section">
             <div class="container">
-                <div class="categories-grid">
-                    <a href="collection.html?cat=new" class="category-card">
-                        <img src="assets/images/products/product-13.png" alt="New Arrivals">
-                        <div class="category-overlay">
-                            <span class="category-name" data-i18n="new_arrivals">New Arrivals</span>
-                        </div>
-                    </a>
-                    <a href="collection.html?cat=crystals" class="category-card">
-                        <img src="assets/images/products/product-01.png" alt="Crystals">
-                        <div class="category-overlay">
-                            <span class="category-name" data-i18n="crystals">Crystals</span>
-                        </div>
-                    </a>
-                    <a href="collection.html?cat=glassware" class="category-card">
-                        <img src="assets/images/products/product-02.png" alt="Glassware">
-                        <div class="category-overlay">
-                            <span class="category-name" data-i18n="category_glassware">Glassware</span>
-                        </div>
-                    </a>
-                    <a href="collection.html?cat=vases" class="category-card">
-                        <img src="assets/images/products/product-03.png" alt="Vases">
-                        <div class="category-overlay">
-                            <span class="category-name" data-i18n="vases">Vases</span>
-                        </div>
-                    </a>
-                    <a href="collection.html?cat=bowls" class="category-card">
-                        <img src="assets/images/products/product-06.png" alt="Bowls">
-                        <div class="category-overlay">
-                            <span class="category-name" data-i18n="collection_bowls">Artisan Bowls</span>
-                        </div>
-                    </a>
-                    <a href="collection.html?cat=plates" class="category-card">
-                        <img src="assets/images/products/product-12.png" alt="Decorative Plates">
-                        <div class="category-overlay">
-                            <span class="category-name" data-i18n="collection_plates">Decorative Plates</span>
-                        </div>
-                    </a>
-                    <a href="collection.html?cat=serveware" class="category-card">
-                        <img src="assets/images/products/product-07.png" alt="Serveware">
-                        <div class="category-overlay">
-                            <span class="category-name" data-i18n="category_serveware">Serveware</span>
-                        </div>
-                    </a>
-                    <a href="collection.html?cat=decor" class="category-card">
-                        <img src="assets/images/products/product-05.png" alt="Décor">
-                        <div class="category-overlay">
-                            <span class="category-name" data-i18n="category_decor">Décor</span>
-                        </div>
-                    </a>
-                    <a href="collection.html?cat=candles" class="category-card">
-                        <img src="assets/images/products/product-04.png" alt="Candle Holders">
-                        <div class="category-overlay">
-                            <span class="category-name" data-i18n="category_candles">Candle Holders</span>
-                        </div>
-                    </a>
-                    <a href="collection.html?cat=outlet" class="category-card">
-                        <img src="assets/images/products/product-10.png" alt="Outlet">
-                        <div class="category-overlay">
-                            <span class="category-name" data-i18n="category_outlet">Outlet</span>
-                        </div>
-                    </a>
+                <div class="categories-grid" id="collectionsGrid">
+                    <!-- Categories loaded dynamically from API -->
                 </div>
             </div>
         </section>
@@ -394,13 +335,11 @@
                         </div>
                     </div>
                     <div class="footer-contact-item">
-                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                            stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                            <path
-                                d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z" />
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+                            <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z" />
                         </svg>
                         <div>
-                            <p>+965 5563 6321</p>
+                            <p><a href="https://wa.me/96555636321" target="_blank" rel="noopener" style="color: inherit; text-decoration: none;">+965 5563 6321</a></p>
                         </div>
                     </div>
                 </div>
@@ -491,6 +430,53 @@
     <script src="assets/js/currency.js"></script>
   <script src="assets/js/animations.js"></script>
   <script src="assets/js/support-widget.js"></script>
+  <script>
+    // Dynamic Collections Grid — loads categories from API
+    document.addEventListener('DOMContentLoaded', async () => {
+        const grid = document.getElementById('collectionsGrid');
+        if (!grid) return;
+
+        // Show shimmer placeholders while loading
+        grid.innerHTML = Array(6).fill(0).map(() => `
+            <div class="category-card" style="pointer-events:none;">
+                <div style="width:100%;height:100%;background:var(--bg-secondary);animation:shimmerAnim 1.5s infinite;"></div>
+            </div>
+        `).join('');
+
+        try {
+            const response = await CategoriesAPI.getAll();
+            if (response && response.success && response.data.length > 0) {
+                const lang = localStorage.getItem('site_lang') || 'en';
+                const active = response.data.filter(c => c.isActive !== false);
+
+                grid.innerHTML = active.map((cat, i) => {
+                    const name = lang === 'ar' && cat.nameAr ? cat.nameAr : cat.name;
+                    const image = cat.image && !cat.image.includes('undefined')
+                        ? cat.image
+                        : 'assets/images/products/placeholder.png';
+                    const slug = cat.slug || cat._id;
+
+                    return `
+                    <a href="collection.html?cat=${slug}" class="category-card" data-animate="fade-up" style="animation-delay: ${i * 0.08}s;">
+                        <img src="${image}" alt="${name}" loading="lazy"
+                            onerror="this.onerror=null; this.src='assets/images/products/placeholder.png';">
+                        <div class="category-overlay">
+                            <span class="category-name">${name}</span>
+                        </div>
+                    </a>`;
+                }).join('');
+
+                // Re-trigger animations if available
+                if (window.initAnimations) window.initAnimations();
+            } else {
+                grid.innerHTML = '<p class="text-center" style="grid-column:1/-1;">No collections available.</p>';
+            }
+        } catch (err) {
+            console.error('Failed to load collections:', err);
+            grid.innerHTML = '<p class="text-center" style="grid-column:1/-1;">Unable to load collections.</p>';
+        }
+    });
+  </script>
 </body>
 
 </html>
