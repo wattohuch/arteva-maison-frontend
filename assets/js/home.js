@@ -98,19 +98,48 @@ function createFallbackHeroSlide(heroSection) {
     const heroContent = document.getElementById('heroContent');
     const heroDots = document.getElementById('heroDots');
     
-    const slideEl = document.createElement('div');
-    slideEl.className = 'hero-slide active';
-    slideEl.innerHTML = `
-        <img src="assets/images/hero/hero-bg.png" alt="ARTEVA Maison Collection" class="hero-image" loading="eager">
-        <div class="hero-overlay"></div>
+    // Original 3 static slides
+    const slidesHTML = `
+        <div class="hero-slide active">
+            <img src="assets/images/hero/hero-bg.png" alt="ARTEVA Maison Collection" class="hero-image" loading="eager">
+            <div class="hero-overlay"></div>
+        </div>
+        <div class="hero-slide">
+            <img src="assets/images/products/product-01.png" alt="Crystal Collection" class="hero-image" loading="lazy">
+            <div class="hero-overlay"></div>
+        </div>
+        <div class="hero-slide">
+            <img src="assets/images/products/product-02.png" alt="Artisan Glassware" class="hero-image" loading="lazy">
+            <div class="hero-overlay"></div>
+        </div>
     `;
-    heroSection.insertBefore(slideEl, heroContent);
+    
+    // Create a temporary container to convert HTML string to nodes
+    const temp = document.createElement('div');
+    temp.innerHTML = slidesHTML;
+    
+    // Insert all slide nodes before the hero content
+    while (temp.firstChild) {
+        heroSection.insertBefore(temp.firstChild, heroContent);
+    }
     
     if (heroDots) {
-        heroDots.innerHTML = '<button class="hero-dot active" aria-label="Go to slide 1"></button>';
+        heroDots.innerHTML = `
+            <button class="hero-dot active" aria-label="Go to slide 1"></button>
+            <button class="hero-dot" aria-label="Go to slide 2"></button>
+            <button class="hero-dot" aria-label="Go to slide 3"></button>
+        `;
     }
 
     if (heroContent) heroContent.classList.add('animate');
+    
+    // Clear out window._heroSlidesData so text doesn't get messed up during switching
+    window._heroSlidesData = null;
+
+    // Initialize the slideshow
+    if (window.initHeroSlideshow) {
+        window.initHeroSlideshow();
+    }
 }
 
 // ============================================
