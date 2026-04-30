@@ -100,35 +100,56 @@ function initHeroSlideshow() {
 
   let currentSlide = 0;
   let slideInterval;
-  const slideDelay = 5000; // 5 seconds between slides
-  const animationResetDelay = 100; // Brief delay before re-animating text
+  const slideDelay = 6000; // 6 seconds between slides for a relaxed luxury feel
 
-  // Animate hero text function
+  // Smooth hero text re-entrance
   function animateHeroText() {
     if (!heroContent) return;
 
-    // Remove animate class to reset
-    heroContent.classList.remove('animate');
+    // Fade out text first
+    heroContent.style.transition = 'opacity 0.5s ease';
+    heroContent.style.opacity = '0';
 
-    // Force reflow to restart animation
-    void heroContent.offsetWidth;
-
-    // Re-add animate class after brief delay
     setTimeout(() => {
+      // Reset animation state
+      heroContent.classList.remove('animate');
+      // Force reflow
+      void heroContent.offsetWidth;
+      // Fade back in with cascading entrance
+      heroContent.style.opacity = '';
+      heroContent.style.transition = '';
       heroContent.classList.add('animate');
-    }, animationResetDelay);
+    }, 500);
   }
 
-  // Go to specific slide
+  // Go to specific slide — true crossfade: image dissolves into next
   function goToSlide(index) {
-    // Wrap around
     if (index >= slides.length) index = 0;
     if (index < 0) index = slides.length - 1;
+    if (index === currentSlide && slides[currentSlide].classList.contains('active')) return;
 
-    // Update slides
-    slides.forEach((slide, i) => {
-      slide.classList.toggle('active', i === index);
-    });
+    const prevSlide = currentSlide;
+
+    // Clean up any previous 'prev' classes
+    slides.forEach(s => s.classList.remove('prev'));
+
+    // Move the current slide to 'prev' — stays fully visible at z-index 1
+    if (slides[prevSlide]) {
+      slides[prevSlide].classList.remove('active');
+      slides[prevSlide].classList.add('prev');
+    }
+
+    // New slide fades in on top at z-index 2
+    slides[index].classList.add('active');
+
+    // After the crossfade completes, demote the prev slide
+    setTimeout(() => {
+      slides.forEach(s => {
+        if (!s.classList.contains('active')) {
+          s.classList.remove('prev');
+        }
+      });
+    }, 2000); // matches the 1.8s CSS transition + buffer
 
     // Update dots
     dots.forEach((dot, i) => {
@@ -137,8 +158,10 @@ function initHeroSlideshow() {
 
     currentSlide = index;
 
-    // Animate text on slide change
-    animateHeroText();
+    // Smooth text re-entrance
+    if (prevSlide !== index) {
+      animateHeroText();
+    }
   }
 
   // Auto-advance slides
@@ -161,7 +184,7 @@ function initHeroSlideshow() {
     });
   });
 
-  // Optional: Pause on hover
+  // Pause on hover
   hero.addEventListener('mouseenter', stopAutoPlay);
   hero.addEventListener('mouseleave', startAutoPlay);
 
@@ -178,8 +201,9 @@ function initHeroSlideshow() {
     }
   });
 
-  // Initialize: Ensure first slide is active and start animation
-  goToSlide(0);
+  // Initialize: first slide active, text animated
+  slides[0].classList.add('active');
+  if (heroContent) heroContent.classList.add('animate');
   startAutoPlay();
 }
 

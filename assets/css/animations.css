@@ -59,28 +59,22 @@ body {
 [data-duration="slow"]   { transition-duration: 1.2s; }
 [data-duration="slower"] { transition-duration: 1.6s; }
 
-/* ─── Hero: Ken Burns + Storytelling ─────────── */
+/* ─── Hero: Smooth Crossfade + Ken Burns ─────── */
+/* Slide transitions handled in components.css —
+   these are overrides for the animation layer only */
+
 .hero-slide .hero-image {
-  transition: opacity 1.4s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: transform 12s cubic-bezier(0.25, 0.46, 0.45, 0.94);
 }
 
+/* Subtle, slow Ken Burns drift on active slide */
 .hero-slide.active .hero-image {
-  animation: kenBurns 14s ease-in-out infinite alternate;
+  animation: kenBurns 18s ease-in-out infinite alternate;
 }
 
 @keyframes kenBurns {
   0%   { transform: scale(1) translate(0, 0); }
-  100% { transform: scale(1.08) translate(-1%, -0.5%); }
-}
-
-/* Hero slide crossfade */
-.hero-slide {
-  opacity: 0;
-  transition: opacity 1.4s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-.hero-slide.active {
-  opacity: 1;
+  100% { transform: scale(1.06) translate(-0.5%, -0.3%); }
 }
 
 /* Hero content cascading entrance */

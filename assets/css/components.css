@@ -454,6 +454,7 @@
     align-items: center;
     justify-content: center;
     overflow: hidden;
+    background-color: #000; /* Prevents white flash during slide crossfade */
     /* No margin-top - hero fills entire viewport including header area */
 }
 
@@ -464,14 +465,20 @@
     width: 100%;
     height: 100%;
     opacity: 0;
-    visibility: hidden;
-    transition: opacity 1.2s cubic-bezier(0.4, 0, 0.2, 1),
-        visibility 1.2s cubic-bezier(0.4, 0, 0.2, 1);
+    z-index: 0;
+    transition: opacity 1.8s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
+/* New slide fades in ON TOP of the previous one */
 .hero-slide.active {
     opacity: 1;
-    visibility: visible;
+    z-index: 2;
+}
+
+/* Previous slide stays fully visible underneath — no fade-out, no flash */
+.hero-slide.prev {
+    opacity: 1;
+    z-index: 1;
 }
 
 .hero-image {
@@ -479,8 +486,8 @@
     height: 100%;
     object-fit: cover;
     object-position: center;
-    transform: scale(1.02);
-    transition: transform 8s cubic-bezier(0.4, 0, 0.2, 1);
+    transform: scale(1.05);
+    transition: transform 12s cubic-bezier(0.25, 0.46, 0.45, 0.94);
 }
 
 .hero-slide.active .hero-image {
