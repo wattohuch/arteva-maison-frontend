@@ -461,44 +461,6 @@ const DriverAPI = {
     }
 };
 
-// ============================================
-// Hero API
-// ============================================
-const HeroAPI = {
-    async getSlides() {
-        return apiRequest('/hero');
-    },
-
-    async getAllSlides() {
-        return apiRequest('/hero/admin');
-    },
-
-    async getSlide(id) {
-        return apiRequest(`/hero/${id}`);
-    },
-
-    async createSlide(formData) {
-        return apiRequest('/hero', {
-            method: 'POST',
-            body: formData,
-            isFormData: true
-        });
-    },
-
-    async updateSlide(id, formData) {
-        return apiRequest(`/hero/${id}`, {
-            method: 'PUT',
-            body: formData,
-            isFormData: true
-        });
-    },
-
-    async deleteSlide(id) {
-        return apiRequest(`/hero/${id}`, {
-            method: 'DELETE'
-        });
-    }
-};
 
 // ============================================
 // Reviews API
