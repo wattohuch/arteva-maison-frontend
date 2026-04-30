@@ -1015,9 +1015,22 @@ document.addEventListener('DOMContentLoaded', () => {
     const langBtnEn = document.getElementById('lang-en');
     const langBtnAr = document.getElementById('lang-ar');
 
-    if (langBtnEn) langBtnEn.addEventListener('click', () => setLanguage('en'));
-    if (langBtnAr) langBtnAr.addEventListener('click', () => setLanguage('ar'));
-
+    if (langBtnEn) {
+        langBtnEn.addEventListener('click', () => {
+            if (localStorage.getItem('site_lang') !== 'en') {
+                localStorage.setItem('site_lang', 'en');
+                window.location.reload();
+            }
+        });
+    }
+    if (langBtnAr) {
+        langBtnAr.addEventListener('click', () => {
+            if (localStorage.getItem('site_lang') !== 'ar') {
+                localStorage.setItem('site_lang', 'ar');
+                window.location.reload();
+            }
+        });
+    }
     // Initialize ScrollReveal only if it's defined
     if (typeof ScrollReveal !== 'undefined') {
         const sr = ScrollReveal({

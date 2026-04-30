@@ -179,6 +179,10 @@ const ProductsAPI = {
 
     async search(query, options = {}) {
         return this.getAll({ search: query, ...options });
+    },
+
+    async getCollectionFeatured(limit = 12) {
+        return apiRequest(`/products/collection-featured?limit=${limit}`);
     }
 };
 
@@ -382,6 +386,62 @@ const AdminAPI = {
 };
 
 // ============================================
+// Hero Slides API
+// ============================================
+const HeroAPI = {
+    async getSlides() {
+        return apiRequest('/hero');
+    },
+
+    async getAllSlides() {
+        return apiRequest('/hero/all');
+    },
+
+    async createSlide(formData) {
+        const url = `${getApiBaseUrl()}/hero`;
+        const response = await fetch(url, {
+            method: 'POST',
+            body: formData,
+            headers: {
+                ...(authToken && { 'Authorization': `Bearer ${authToken}` })
+            }
+        });
+        if (!response.ok) {
+            const data = await response.json();
+            throw new Error(data.message || 'Failed to create hero slide');
+        }
+        return await response.json();
+    },
+
+    async updateSlide(id, formData) {
+        const url = `${getApiBaseUrl()}/hero/${id}`;
+        const response = await fetch(url, {
+            method: 'PUT',
+            body: formData,
+            headers: {
+                ...(authToken && { 'Authorization': `Bearer ${authToken}` })
+            }
+        });
+        if (!response.ok) {
+            const data = await response.json();
+            throw new Error(data.message || 'Failed to update hero slide');
+        }
+        return await response.json();
+    },
+
+    async deleteSlide(id) {
+        return apiRequest(`/hero/${id}`, { method: 'DELETE' });
+    },
+
+    async reorderSlides(items) {
+        return apiRequest('/hero/reorder', {
+            method: 'PUT',
+            body: JSON.stringify({ items })
+        });
+    }
+};
+
+// ============================================
 // Driver API
 // ============================================
 const DriverAPI = {
@@ -494,7 +554,8 @@ window.API = {
     driver: DriverAPI,
     contact: ContactAPI,
     reviews: ReviewsAPI,
-    payments: PaymentsAPI
+    payments: PaymentsAPI,
+    hero: HeroAPI
 };
 
 window.AuthAPI = AuthAPI;
@@ -507,4 +568,5 @@ window.DriverAPI = DriverAPI;
 window.ContactAPI = ContactAPI;
 window.ReviewsAPI = ReviewsAPI;
 window.PaymentsAPI = PaymentsAPI;
+window.HeroAPI = HeroAPI;
 window.apiRequest = apiRequest;

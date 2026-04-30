@@ -87,20 +87,16 @@ function initLanguage() {
 
         // Add click handlers
         langBtnEn.addEventListener('click', () => {
-            if (window.setLanguage) {
-                window.setLanguage('en');
-                langBtnEn.classList.add('active');
-                langBtnAr.classList.remove('active');
-                updateAdminTranslations();
+            if (localStorage.getItem('site_lang') !== 'en') {
+                localStorage.setItem('site_lang', 'en');
+                window.location.reload();
             }
         });
 
         langBtnAr.addEventListener('click', () => {
-            if (window.setLanguage) {
-                window.setLanguage('ar');
-                langBtnAr.classList.add('active');
-                langBtnEn.classList.remove('active');
-                updateAdminTranslations();
+            if (localStorage.getItem('site_lang') !== 'ar') {
+                localStorage.setItem('site_lang', 'ar');
+                window.location.reload();
             }
         });
     }
@@ -374,6 +370,16 @@ function switchToSection(targetId) {
         case 'categories':
             if (typeof initCategoriesManagement === 'function') {
                 initCategoriesManagement();
+            }
+            break;
+        case 'hero-slides':
+            if (typeof loadHeroSlidesAdmin === 'function') {
+                loadHeroSlidesAdmin();
+            }
+            break;
+        case 'browse-collections':
+            if (typeof loadBrowseCollectionsAdmin === 'function') {
+                loadBrowseCollectionsAdmin();
             }
             break;
         case 'orders':
@@ -1891,3 +1897,210 @@ function renderAnalytics(data) {
         `;
     }).join('');
 }
+
+// ==========================================
+// Hero Slides Admin Logic
+// ==========================================
+let heroSlideModal;
+
+async function loadHeroSlidesAdmin() {
+    const grid = document.getElementById('heroSlidesGrid');
+    if (!grid) return;
+
+    try {
+        const response = await HeroAPI.getAllSlides();
+        if (response.success) {
+            window.allHeroSlides = response.data;
+            renderHeroSlidesGrid(window.allHeroSlides);
+        }
+    } catch (err) {
+        console.error('Failed to load hero slides:', err);
+        grid.innerHTML = '<div style="grid-column: 1/-1; text-align: center;">Failed to load slides</div>';
+    }
+}
+
+function renderHeroSlidesGrid(slides) {
+    const grid = document.getElementById('heroSlidesGrid');
+    if (!grid) return;
+
+    if (slides.length === 0) {
+        grid.innerHTML = '<div style="grid-column: 1/-1; text-align: center; color: var(--admin-text-muted);">No hero slides yet. Click + Add Slide to create one.</div>';
+        return;
+    }
+
+    grid.innerHTML = slides.map(slide => `
+        <div class="admin-card" style="position: relative; overflow: hidden; border-radius: 12px; background: var(--admin-surface); box-shadow: 0 4px 12px rgba(0,0,0,0.05); border: 1px solid var(--admin-border);">
+            <div style="height: 160px; background-image: url('${resolveImageUrl(slide.image)}'); background-size: cover; background-position: center;"></div>
+            <div style="padding: 16px;">
+                <h3 style="margin: 0 0 4px 0; font-size: 16px; color: var(--admin-text);">${slide.title || 'Untitled Slide'}</h3>
+                <p style="margin: 0 0 12px 0; font-size: 13px; color: var(--admin-text-muted);">${slide.subtitle || 'No subtitle'}</p>
+                <div style="display: flex; justify-content: space-between; align-items: center;">
+                    <span style="font-size: 12px; padding: 4px 8px; border-radius: 4px; background: ${slide.isActive ? '#e0f2fe' : '#f1f5f9'}; color: ${slide.isActive ? '#0284c7' : '#64748b'};">
+                        ${slide.isActive ? 'Active' : 'Inactive'} • Order: ${slide.order}
+                    </span>
+                    <div>
+                        <button class="admin-btn-icon" onclick="editHeroSlide('${slide._id}')" title="Edit">✏️</button>
+                        <button class="admin-btn-icon delete" onclick="deleteHeroSlide('${slide._id}')" title="Delete">🗑️</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    `).join('');
+}
+
+window.openAddHeroSlideModal = () => {
+    heroSlideModal = document.getElementById('heroSlideModal');
+    const form = document.getElementById('heroSlideForm');
+    if (!form || !heroSlideModal) return;
+
+    form.reset();
+    document.getElementById('heroSlideId').value = '';
+    document.getElementById('heroSlideModalTitle').textContent = 'Add Hero Slide';
+    document.getElementById('heroSlideImagePreview').style.display = 'none';
+    document.getElementById('existingHeroSlideImage').innerHTML = '';
+
+    heroSlideModal.classList.remove('hidden');
+};
+
+window.closeHeroSlideModal = () => {
+    if (heroSlideModal) heroSlideModal.classList.add('hidden');
+};
+
+window.previewHeroSlideImage = (event) => {
+    const preview = document.getElementById('heroSlideImagePreview');
+    const file = event.target.files[0];
+    if (file) {
+        preview.src = URL.createObjectURL(file);
+        preview.style.display = 'block';
+    } else {
+        preview.style.display = 'none';
+    }
+};
+
+document.getElementById('heroSlideForm')?.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const id = document.getElementById('heroSlideId').value;
+    const formData = new FormData(e.target);
+    formData.set('isActive', e.target.isActive.checked);
+
+    if (!id && !document.getElementById('heroSlideImageInput').files[0]) {
+        return showToast('Error', 'Image is required for new slides', 'error');
+    }
+
+    try {
+        if (id) {
+            await HeroAPI.updateSlide(id, formData);
+            showToast('Success', 'Slide updated successfully', 'success');
+        } else {
+            await HeroAPI.createSlide(formData);
+            showToast('Success', 'Slide created successfully', 'success');
+        }
+        closeHeroSlideModal();
+        loadHeroSlidesAdmin();
+    } catch (err) {
+        showToast('Error', err.message, 'error');
+    }
+});
+
+window.editHeroSlide = async (id) => {
+    const slide = window.allHeroSlides.find(s => s._id === id);
+    if (!slide) return;
+
+    openAddHeroSlideModal();
+    document.getElementById('heroSlideModalTitle').textContent = 'Edit Hero Slide';
+    document.getElementById('heroSlideId').value = slide._id;
+
+    const form = document.getElementById('heroSlideForm');
+    if (form.title) form.title.value = slide.title || '';
+    if (form.titleAr) form.titleAr.value = slide.titleAr || '';
+    if (form.subtitle) form.subtitle.value = slide.subtitle || '';
+    if (form.subtitleAr) form.subtitleAr.value = slide.subtitleAr || '';
+    if (form.description) form.description.value = slide.description || '';
+    if (form.descriptionAr) form.descriptionAr.value = slide.descriptionAr || '';
+    if (form.buttonText) form.buttonText.value = slide.buttonText || '';
+    if (form.buttonTextAr) form.buttonTextAr.value = slide.buttonTextAr || '';
+    if (form.buttonLink) form.buttonLink.value = slide.buttonLink || '';
+    if (form.order) form.order.value = slide.order || 0;
+    if (form.isActive) form.isActive.checked = slide.isActive;
+
+    const existingContainer = document.getElementById('existingHeroSlideImage');
+    existingContainer.innerHTML = `<img src="${resolveImageUrl(slide.image)}" style="max-width: 100%; height: 100px; object-fit: cover; border-radius: 8px;">`;
+};
+
+window.deleteHeroSlide = async (id) => {
+    if (!confirm('Are you sure you want to delete this slide?')) return;
+    try {
+        await HeroAPI.deleteSlide(id);
+        showToast('Success', 'Slide deleted successfully', 'success');
+        loadHeroSlidesAdmin();
+    } catch (err) {
+        showToast('Error', err.message, 'error');
+    }
+};
+
+// ==========================================
+// Browse Collections Admin Logic
+// ==========================================
+async function loadBrowseCollectionsAdmin() {
+    try {
+        const response = await AdminAPI.getProducts();
+        if (response.success) {
+            window.allCollectionProducts = response.data;
+            renderCollectionProductsTable(window.allCollectionProducts);
+        }
+    } catch (err) {
+        console.error('Failed to load products for collection:', err);
+    }
+}
+
+function renderCollectionProductsTable(products, isFiltered = false) {
+    const tbody = document.getElementById('collectionProductsTableBody');
+    if (!tbody) return;
+
+    if (products.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="4" style="text-align: center; padding: 32px;">No products found</td></tr>`;
+        return;
+    }
+
+    tbody.innerHTML = products.map(p => `
+        <tr>
+            <td><img src="${resolveImageUrl(p.images[0]?.url)}" class="product-thumb" alt="${p.name}" onerror="this.src='assets/images/products/placeholder.png';"></td>
+            <td><strong>${p.name}</strong></td>
+            <td>${p.category?.name || '-'}</td>
+            <td>
+                <label class="toggle-switch">
+                    <input type="checkbox" onchange="toggleCollectionFeatured('${p._id}', this.checked)" ${p.isCollectionFeatured ? 'checked' : ''}>
+                    <span class="toggle-slider"></span>
+                </label>
+            </td>
+        </tr>
+    `).join('');
+}
+
+window.toggleCollectionFeatured = async (id, isFeatured) => {
+    try {
+        const formData = new FormData();
+        formData.append('isCollectionFeatured', isFeatured);
+        await AdminAPI.updateProduct(id, formData);
+        showToast('Success', 'Collection status updated', 'success');
+        
+        // Update local state so search maintains state
+        const p = window.allCollectionProducts.find(p => p._id === id);
+        if (p) p.isCollectionFeatured = isFeatured;
+        
+    } catch (err) {
+        showToast('Error', 'Failed to update collection status', 'error');
+        // Revert toggle visually
+        loadBrowseCollectionsAdmin();
+    }
+};
+
+document.getElementById('collectionProductSearch')?.addEventListener('input', (e) => {
+    const q = e.target.value.toLowerCase();
+    const filtered = window.allCollectionProducts.filter(p =>
+        p.name.toLowerCase().includes(q) ||
+        (p.nameAr && p.nameAr.toLowerCase().includes(q)) ||
+        (p.category?.name || '').toLowerCase().includes(q)
+    );
+    renderCollectionProductsTable(filtered, true);
+});

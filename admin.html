@@ -41,6 +41,10 @@
                         class="icon">📊</span> <span class="nav-text">Dashboard</span></a></li>
             <li><a href="#products" class="sidebar-link" data-i18n="admin_products"><span class="icon">📦</span> <span
                         class="nav-text">Products</span></a></li>
+            <li><a href="#hero-slides" class="sidebar-link" data-i18n="admin_hero_slides"><span class="icon">🖼️</span> <span
+                        class="nav-text">Hero Slides</span></a></li>
+            <li><a href="#browse-collections" class="sidebar-link" data-i18n="admin_browse_collections"><span class="icon">✨</span> <span
+                        class="nav-text">Browse Collections</span></a></li>
             <li><a href="#categories" class="sidebar-link" data-i18n="admin_categories"><span class="icon">📁</span>
                     <span class="nav-text">Categories</span></a></li>
             <li><a href="#orders" class="sidebar-link" data-i18n="admin_orders"><span class="icon">🛍️</span> <span
@@ -155,6 +159,51 @@
                         </thead>
                         <tbody id="productsTableBody">
                             <!-- Populated by JS -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- ========== HERO SLIDES ========== -->
+        <div id="hero-slides" class="admin-section hidden">
+            <div class="admin-page-header">
+                <h1 class="admin-page-title" data-i18n="admin_hero_slides">Hero Slides</h1>
+                <button class="admin-btn admin-btn-primary" onclick="openAddHeroSlideModal()">+ Add Slide</button>
+            </div>
+
+            <div class="hero-slides-grid" id="heroSlidesGrid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 20px;">
+                <!-- Populated by JS -->
+                <div style="grid-column: 1/-1; padding: 40px; text-align: center; color: var(--admin-text-muted);">Loading hero slides...</div>
+            </div>
+        </div>
+
+        <!-- ========== BROWSE COLLECTIONS ========== -->
+        <div id="browse-collections" class="admin-section hidden">
+            <div class="admin-page-header">
+                <h1 class="admin-page-title" data-i18n="admin_browse_collections">Browse Collections</h1>
+            </div>
+
+            <div class="admin-search-wrap">
+                <span class="admin-search-icon">🔍</span>
+                <input type="text" class="admin-search" id="collectionProductSearch" placeholder="Search products...">
+            </div>
+
+            <div class="admin-table-wrap">
+                <div class="admin-table-scroll">
+                    <table class="admin-table">
+                        <thead>
+                            <tr>
+                                <th>Image</th>
+                                <th>Name</th>
+                                <th>Category</th>
+                                <th>Collection Featured</th>
+                            </tr>
+                        </thead>
+                        <tbody id="collectionProductsTableBody">
+                            <tr>
+                                <td colspan="4" style="text-align: center; padding: 32px;">Loading products...</td>
+                            </tr>
                         </tbody>
                     </table>
                 </div>
@@ -729,6 +778,100 @@
                     <button type="submit" class="admin-btn admin-btn-primary">Save Category</button>
                 </div>
             </form>
+        </div>
+    </div>
+
+    <!-- ========== HERO SLIDE MODAL ========== -->
+    <div id="heroSlideModal" class="admin-modal hidden">
+        <div class="admin-modal-content" style="max-width: 700px;">
+            <div class="admin-modal-header">
+                <h2 id="heroSlideModalTitle">Add Hero Slide</h2>
+                <button class="admin-btn-icon" onclick="closeHeroSlideModal()">✕</button>
+            </div>
+            <div class="admin-modal-body">
+                <form id="heroSlideForm" enctype="multipart/form-data">
+                    <input type="hidden" id="heroSlideId">
+
+                    <div class="admin-form-row">
+                        <div class="admin-form-group">
+                            <label>Hero Image *</label>
+                            <div id="existingHeroSlideImage" style="margin-bottom: 10px;"></div>
+                            <input type="file" name="image" id="heroSlideImageInput" accept="image/*" class="admin-input" onchange="previewHeroSlideImage(event)">
+                            <small style="color: #666; display: block; margin-top: 4px;">Recommended: High resolution, landscape (e.g., 1920x1080px)</small>
+                            <img id="heroSlideImagePreview" style="max-width: 100%; height: 200px; object-fit: cover; margin-top: 10px; display: none; border-radius: 8px; border: 1px solid #ddd;">
+                        </div>
+                    </div>
+
+                    <div class="admin-form-row">
+                        <div class="admin-form-group">
+                            <label>Title (English)</label>
+                            <input type="text" name="title" class="admin-input" placeholder="e.g., Artisan Crafted Home Décor">
+                        </div>
+                        <div class="admin-form-group">
+                            <label>Title (Arabic)</label>
+                            <input type="text" name="titleAr" class="admin-input" dir="rtl" placeholder="ديكور منزلي مصنوع بحرفية">
+                        </div>
+                    </div>
+
+                    <div class="admin-form-row">
+                        <div class="admin-form-group">
+                            <label>Subtitle (English)</label>
+                            <input type="text" name="subtitle" class="admin-input" placeholder="e.g., Luxury Collection">
+                        </div>
+                        <div class="admin-form-group">
+                            <label>Subtitle (Arabic)</label>
+                            <input type="text" name="subtitleAr" class="admin-input" dir="rtl" placeholder="مجموعة فاخرة">
+                        </div>
+                    </div>
+
+                    <div class="admin-form-row">
+                        <div class="admin-form-group">
+                            <label>Description (English)</label>
+                            <textarea name="description" class="admin-input" rows="2" placeholder="Short description..."></textarea>
+                        </div>
+                        <div class="admin-form-group">
+                            <label>Description (Arabic)</label>
+                            <textarea name="descriptionAr" class="admin-input" rows="2" dir="rtl" placeholder="وصف قصير..."></textarea>
+                        </div>
+                    </div>
+
+                    <div class="admin-form-row">
+                        <div class="admin-form-group">
+                            <label>Button Text (English)</label>
+                            <input type="text" name="buttonText" class="admin-input" placeholder="e.g., Shop Collection">
+                        </div>
+                        <div class="admin-form-group">
+                            <label>Button Text (Arabic)</label>
+                            <input type="text" name="buttonTextAr" class="admin-input" dir="rtl" placeholder="تسوق المجموعة">
+                        </div>
+                    </div>
+
+                    <div class="admin-form-row">
+                        <div class="admin-form-group">
+                            <label>Button Link</label>
+                            <input type="text" name="buttonLink" class="admin-input" placeholder="e.g., collections.html">
+                        </div>
+                        <div class="admin-form-group">
+                            <label>Display Order</label>
+                            <input type="number" name="order" class="admin-input" value="0">
+                        </div>
+                    </div>
+
+                    <div class="admin-form-row">
+                        <div class="admin-form-group">
+                            <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
+                                <input type="checkbox" name="isActive" checked style="width: auto;">
+                                <span>Active (visible on homepage)</span>
+                            </label>
+                        </div>
+                    </div>
+
+                    <div class="admin-form-actions">
+                        <button type="button" class="admin-btn-cancel" onclick="closeHeroSlideModal()">Cancel</button>
+                        <button type="submit" class="admin-btn admin-btn-primary">Save Slide</button>
+                    </div>
+                </form>
+            </div>
         </div>
     </div>
 

@@ -1358,3 +1358,101 @@
         height: 44px;
     }
 }
+
+/* ======== BROWSE COLLECTIONS SECTION ======== */
+.browse-collections-section {
+    padding: var(--space-16) 0 0 0;
+    background-color: var(--bg-primary);
+}
+
+.collections-scroll {
+    display: flex;
+    overflow-x: auto;
+    gap: var(--space-6);
+    padding: var(--space-4) 0 var(--space-8);
+    scroll-snap-type: x mandatory;
+    scrollbar-width: none; /* Firefox */
+    -ms-overflow-style: none;  /* IE and Edge */
+}
+
+.collections-scroll::-webkit-scrollbar {
+    display: none; /* Chrome, Safari and Opera */
+}
+
+.browse-collection-card {
+    flex: 0 0 calc(25% - var(--space-6) * 3/4);
+    min-width: 280px;
+    scroll-snap-align: start;
+    display: flex;
+    flex-direction: column;
+    group: relative;
+    border-radius: var(--radius-lg);
+    background-color: var(--bg-secondary);
+    transition: transform var(--transition-medium);
+}
+
+.browse-collection-card:hover {
+    transform: translateY(-8px);
+}
+
+.browse-collection-image {
+    width: 100%;
+    aspect-ratio: 4/5;
+    border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+    overflow: hidden;
+    position: relative;
+}
+
+.browse-collection-image img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 1.2s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+.browse-collection-card:hover .browse-collection-image img {
+    transform: scale(1.05);
+}
+
+.browse-collection-info {
+    padding: var(--space-5);
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-2);
+}
+
+.browse-collection-category {
+    font-size: var(--fs-xs);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--color-gold);
+}
+
+.browse-collection-name {
+    font-size: var(--fs-lg);
+    font-weight: var(--fw-medium);
+    font-family: var(--font-display);
+    color: var(--text-primary);
+}
+
+.browse-collection-price {
+    font-size: var(--fs-base);
+    color: var(--text-secondary);
+}
+
+@media (max-width: 1024px) {
+    .browse-collection-card {
+        flex: 0 0 calc(33.333% - var(--space-6) * 2/3);
+    }
+}
+
+@media (max-width: 768px) {
+    .browse-collection-card {
+        flex: 0 0 calc(60%);
+        min-width: 240px;
+    }
+    
+    .browse-collections-section {
+        padding: var(--space-12) 0 0 0;
+    }
+}

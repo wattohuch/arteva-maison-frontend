@@ -294,41 +294,39 @@
 
   <!-- ========== MAIN CONTENT ========== -->
   <main>
-    <!-- Hero Section -->
-    <section class="hero">
-      <!-- Slide 1 -->
-      <div class="hero-slide active">
-        <img src="assets/images/hero/hero-bg.png" alt="ARTEVA Maison Collection" class="hero-image" loading="eager">
-        <div class="hero-overlay"></div>
-      </div>
-      <!-- Slide 2 -->
-      <div class="hero-slide">
-        <img src="assets/images/products/product-01.png" alt="Crystal Collection" class="hero-image" loading="lazy">
-        <div class="hero-overlay"></div>
-      </div>
-      <!-- Slide 3 -->
-      <div class="hero-slide">
-        <img src="assets/images/products/product-02.png" alt="Artisan Glassware" class="hero-image" loading="lazy">
-        <div class="hero-overlay"></div>
-      </div>
+    <!-- Hero Section — slides loaded dynamically from API -->
+    <section class="hero" id="heroSection">
+      <!-- Slides injected dynamically by home.js -->
 
-      <div class="hero-content">
-        <p class="hero-subtitle" data-i18n="hero_subtitle">Luxury Collection</p>
-        <h1 class="hero-title" data-i18n="hero_title">Artisan Crafted<br>Home Décor</h1>
-        <p class="hero-description" data-i18n="hero_desc">Discover our exquisite collection of handcrafted glassware,
+      <div class="hero-content" id="heroContent">
+        <p class="hero-subtitle" id="heroSubtitle" data-i18n="hero_subtitle">Luxury Collection</p>
+        <h1 class="hero-title" id="heroTitle" data-i18n="hero_title">Artisan Crafted<br>Home Décor</h1>
+        <p class="hero-description" id="heroDescription" data-i18n="hero_desc">Discover our exquisite collection of handcrafted glassware,
           decorative pieces, and
           luxury home accessories.</p>
         <div class="hero-buttons">
-          <a href="collections.html" class="btn btn-white btn-lg" data-i18n="shop_collection">Shop Collection</a>
+          <a href="collections.html" class="btn btn-white btn-lg" id="heroBtn" data-i18n="shop_collection">Shop Collection</a>
           <a href="#featured" class="btn btn-secondary btn-lg" style="border-color: white; color: white;"
             data-i18n="explore">Explore</a>
         </div>
       </div>
 
-      <div class="hero-dots">
-        <button class="hero-dot active" aria-label="Go to slide 1"></button>
-        <button class="hero-dot" aria-label="Go to slide 2"></button>
-        <button class="hero-dot" aria-label="Go to slide 3"></button>
+      <div class="hero-dots" id="heroDots">
+        <!-- Dots injected dynamically by home.js -->
+      </div>
+    </section>
+
+    <!-- Browse Collections -->
+    <section class="browse-collections-section" id="browseCollectionsSection" style="display: none;">
+      <div class="container">
+        <div class="section-header" data-animate="fade-up">
+          <h2 class="section-title" data-i18n="browse_collections_title">Browse Collections</h2>
+          <p class="section-subtitle"><a href="collections.html" style="color: var(--color-gold);"
+              data-i18n="view_all">View all</a></p>
+        </div>
+        <div class="collections-scroll" id="browseCollectionsScroll">
+          <!-- Populated dynamically by home.js -->
+        </div>
       </div>
     </section>
 

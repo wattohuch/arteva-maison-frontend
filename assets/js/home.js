@@ -1,13 +1,167 @@
 /**
  * Home Page Script
- * Fetches and renders New Arrivals and Featured products
+ * Fetches and renders Hero Slides, Browse Collections, New Arrivals, and Categories
  */
 
 document.addEventListener('DOMContentLoaded', async () => {
-    await Promise.all([loadNewArrivals(), loadCategories()]);
-    // await loadFeatured(); // If there is a featured section
+    await Promise.all([
+        loadHeroSlides(),
+        loadBrowseCollections(),
+        loadNewArrivals(),
+        loadCategories()
+    ]);
 });
 
+// ============================================
+// Dynamic Hero Slides
+// ============================================
+async function loadHeroSlides() {
+    const heroSection = document.getElementById('heroSection');
+    const heroDots = document.getElementById('heroDots');
+    if (!heroSection) return;
+
+    try {
+        const response = await HeroAPI.getSlides();
+        if (response.success && response.data.length > 0) {
+            const slides = response.data;
+            const lang = localStorage.getItem('site_lang') || 'en';
+
+            // Inject slide elements BEFORE the hero-content div
+            const heroContent = document.getElementById('heroContent');
+            
+            // Remove any existing slides
+            heroSection.querySelectorAll('.hero-slide').forEach(s => s.remove());
+
+            slides.forEach((slide, i) => {
+                const slideEl = document.createElement('div');
+                slideEl.className = 'hero-slide' + (i === 0 ? ' active' : '');
+                slideEl.dataset.slideIndex = i;
+                slideEl.innerHTML = `
+                    <img src="${slide.image}" alt="${slide.title || 'ARTEVA Maison'}" class="hero-image" loading="${i === 0 ? 'eager' : 'lazy'}">
+                    <div class="hero-overlay"></div>
+                `;
+                heroSection.insertBefore(slideEl, heroContent);
+            });
+
+            // Inject dots
+            heroDots.innerHTML = slides.map((_, i) => 
+                `<button class="hero-dot${i === 0 ? ' active' : ''}" aria-label="Go to slide ${i + 1}"></button>`
+            ).join('');
+
+            // Set initial hero text from first slide
+            updateHeroText(slides[0], lang);
+
+            // Store slides data for text switching
+            window._heroSlidesData = slides;
+
+            // Initialize the slideshow
+            if (window.initHeroSlideshow) {
+                window.initHeroSlideshow();
+            }
+        } else {
+            // Fallback: create a single default slide
+            createFallbackHeroSlide(heroSection);
+        }
+    } catch (err) {
+        console.error('Failed to load hero slides:', err);
+        createFallbackHeroSlide(document.getElementById('heroSection'));
+    }
+}
+
+function updateHeroText(slide, lang) {
+    const subtitle = document.getElementById('heroSubtitle');
+    const title = document.getElementById('heroTitle');
+    const description = document.getElementById('heroDescription');
+    const btn = document.getElementById('heroBtn');
+
+    if (subtitle) {
+        const text = lang === 'ar' && slide.subtitleAr ? slide.subtitleAr : slide.subtitle;
+        if (text) subtitle.textContent = text;
+    }
+    if (title) {
+        const text = lang === 'ar' && slide.titleAr ? slide.titleAr : slide.title;
+        if (text) title.innerHTML = text.replace(/\n/g, '<br>');
+    }
+    if (description) {
+        const text = lang === 'ar' && slide.descriptionAr ? slide.descriptionAr : slide.description;
+        if (text) description.textContent = text;
+    }
+    if (btn) {
+        const text = lang === 'ar' && slide.buttonTextAr ? slide.buttonTextAr : slide.buttonText;
+        if (text) btn.textContent = text;
+        if (slide.buttonLink) btn.href = slide.buttonLink;
+    }
+}
+
+function createFallbackHeroSlide(heroSection) {
+    if (!heroSection) return;
+    const heroContent = document.getElementById('heroContent');
+    const heroDots = document.getElementById('heroDots');
+    
+    const slideEl = document.createElement('div');
+    slideEl.className = 'hero-slide active';
+    slideEl.innerHTML = `
+        <img src="assets/images/hero/hero-bg.png" alt="ARTEVA Maison Collection" class="hero-image" loading="eager">
+        <div class="hero-overlay"></div>
+    `;
+    heroSection.insertBefore(slideEl, heroContent);
+    
+    if (heroDots) {
+        heroDots.innerHTML = '<button class="hero-dot active" aria-label="Go to slide 1"></button>';
+    }
+
+    if (heroContent) heroContent.classList.add('animate');
+}
+
+// ============================================
+// Browse Collections
+// ============================================
+async function loadBrowseCollections() {
+    const section = document.getElementById('browseCollectionsSection');
+    const container = document.getElementById('browseCollectionsScroll');
+    if (!section || !container) return;
+
+    try {
+        const response = await ProductsAPI.getCollectionFeatured(12);
+        if (response.success && response.data.length > 0) {
+            section.style.display = '';
+            renderBrowseCollections(container, response.data);
+        }
+    } catch (err) {
+        // Silently fail — section stays hidden
+        console.error('Failed to load browse collections:', err);
+    }
+}
+
+function renderBrowseCollections(container, products) {
+    const lang = localStorage.getItem('site_lang') || 'en';
+
+    container.innerHTML = products.map(product => {
+        const name = lang === 'ar' && product.nameAr ? product.nameAr : product.name;
+        const currency = lang === 'ar' ? 'د.ك' : 'KWD';
+        const image = product.images[0]?.url || 'assets/images/products/placeholder.png';
+        const categoryName = product.category?.name || '';
+
+        return `
+        <a href="product.html?id=${product._id}" class="browse-collection-card">
+            <div class="browse-collection-image">
+                <img src="${image}" alt="${name}" loading="lazy"
+                    onerror="if(typeof handleImageError==='function') handleImageError(this); else this.src='assets/images/products/placeholder.png';">
+            </div>
+            <div class="browse-collection-info">
+                <span class="browse-collection-category">${categoryName}</span>
+                <h4 class="browse-collection-name">${name}</h4>
+                <span class="browse-collection-price" data-base-price="${product.price.toFixed(3)}">${product.price.toFixed(3)} ${currency}</span>
+            </div>
+        </a>`;
+    }).join('');
+
+    if (window.CurrencyAPI) window.CurrencyAPI.updatePagePrices();
+}
+
+// ============================================
+// New Arrivals
+// ============================================
 async function loadNewArrivals() {
     const container = document.getElementById('newArrivalsGrid');
     if (!container) return;
@@ -20,8 +174,6 @@ async function loadNewArrivals() {
             container.innerHTML = '<p class="text-center">No new arrivals yet.</p>';
         }
     } catch (err) {
-        // Silently fail - new arrivals section will remain empty
-        // This is acceptable as it's not critical functionality
         container.innerHTML = '<p class="text-center">Unable to load new arrivals.</p>';
     }
 }

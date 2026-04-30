@@ -90,7 +90,15 @@ function initImageErrorHandling() {
 // ============================================
 // Hero Slideshow
 // ============================================
+let _heroSlideInterval = null;
+
 function initHeroSlideshow() {
+  // Clean up any previous interval (re-init safe)
+  if (_heroSlideInterval) {
+    clearInterval(_heroSlideInterval);
+    _heroSlideInterval = null;
+  }
+
   const hero = document.querySelector('.hero');
   const slides = document.querySelectorAll('.hero-slide');
   const dots = document.querySelectorAll('.hero-dot');
@@ -99,26 +107,27 @@ function initHeroSlideshow() {
   if (!hero || slides.length === 0) return;
 
   let currentSlide = 0;
-  let slideInterval;
+  let slideInterval = null;
   const slideDelay = 6000; // 6 seconds between slides for a relaxed luxury feel
 
-  // Smooth hero text re-entrance
+  // Text animation
   function animateHeroText() {
     if (!heroContent) return;
-
-    // Fade out text first
-    heroContent.style.transition = 'opacity 0.5s ease';
+    heroContent.classList.remove('animate');
     heroContent.style.opacity = '0';
+    heroContent.style.transition = 'opacity 0.5s ease';
 
     setTimeout(() => {
-      // Reset animation state
-      heroContent.classList.remove('animate');
-      // Force reflow
-      void heroContent.offsetWidth;
-      // Fade back in with cascading entrance
-      heroContent.style.opacity = '';
-      heroContent.style.transition = '';
+      // Update text per slide if dynamic data exists
+      if (window._heroSlidesData && window._heroSlidesData[currentSlide]) {
+        const lang = localStorage.getItem('site_lang') || 'en';
+        if (typeof updateHeroText === 'function') {
+          updateHeroText(window._heroSlidesData[currentSlide], lang);
+        }
+      }
+
       heroContent.classList.add('animate');
+      heroContent.style.opacity = '1';
     }, 500);
   }
 
@@ -169,6 +178,7 @@ function initHeroSlideshow() {
     slideInterval = setInterval(() => {
       goToSlide(currentSlide + 1);
     }, slideDelay);
+    _heroSlideInterval = slideInterval;
   }
 
   function stopAutoPlay() {
@@ -206,6 +216,9 @@ function initHeroSlideshow() {
   if (heroContent) heroContent.classList.add('animate');
   startAutoPlay();
 }
+
+// Expose globally for dynamic initialization from home.js
+window.initHeroSlideshow = initHeroSlideshow;
 
 // ============================================
 // Header Scroll Effect
