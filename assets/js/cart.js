@@ -116,6 +116,13 @@ function addToCart(productId, quantity = 1, productData = null) {
     updateCartCount();
     updateCartDisplay();
 
+    // Also add to server cart if logged in
+    if (window.AuthAPI && window.AuthAPI.isLoggedIn() && window.CartAPI) {
+        window.CartAPI.add(productId, quantity).catch(err => {
+            console.error('Failed to add item to server cart:', err);
+        });
+    }
+
     // Show notification
     if (window.showNotification) {
         const lang = localStorage.getItem('site_lang') || 'en';
@@ -144,6 +151,13 @@ function removeFromCart(productId) {
         updateCartCount();
         updateCartDisplay();
 
+        // Also remove from server cart if logged in
+        if (window.AuthAPI && window.AuthAPI.isLoggedIn() && window.CartAPI) {
+            window.CartAPI.remove(productId).catch(err => {
+                console.error('Failed to remove item from server cart:', err);
+            });
+        }
+
         if (window.showNotification) {
             const lang = localStorage.getItem('site_lang') || 'en';
             const itemName = (lang === 'ar' && item.nameAr) ? item.nameAr : item.name;
@@ -166,6 +180,13 @@ function updateQuantity(productId, quantity) {
             saveCart();
             updateCartCount();
             updateCartDisplay();
+
+            // Also update server cart if logged in
+            if (window.AuthAPI && window.AuthAPI.isLoggedIn() && window.CartAPI) {
+                window.CartAPI.update(productId, quantity).catch(err => {
+                    console.error('Failed to update server cart quantity:', err);
+                });
+            }
         }
     }
 }
@@ -178,6 +199,13 @@ function clearCart() {
     saveCart();
     updateCartCount();
     updateCartDisplay();
+
+    // Also clear server cart if logged in
+    if (window.AuthAPI && window.AuthAPI.isLoggedIn() && window.CartAPI) {
+        window.CartAPI.clear().catch(err => {
+            console.error('Failed to clear server cart:', err);
+        });
+    }
 }
 
 // ============================================
