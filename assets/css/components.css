@@ -222,6 +222,16 @@
     margin-top: 2px;
 }
 
+/* RTL: Flip dropdown position for Arabic */
+[dir="rtl"] .dropdown-menu {
+    left: auto;
+    right: 0;
+}
+
+[dir="rtl"] .dropdown-item {
+    text-align: right;
+}
+
 /* Header Right - Icons */
 .header-right {
     display: flex;

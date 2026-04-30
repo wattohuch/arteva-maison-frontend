@@ -1696,3 +1696,186 @@ body.admin-body {
     border-top: 1px solid var(--admin-border);
     margin-top: 8px;
 }
+
+/* ============================================
+   REVENUE DASHBOARD
+   ============================================ */
+
+/* Revenue card blurred state */
+.revenue-blurred #statRevenue {
+    filter: blur(8px);
+    transition: filter 0.3s ease;
+}
+
+.revenue-blurred:hover {
+    border-color: var(--admin-gold) !important;
+    box-shadow: 0 0 0 2px var(--admin-gold-glow);
+}
+
+/* Loading spinner */
+.revenue-loading-spinner {
+    width: 36px;
+    height: 36px;
+    border: 3px solid var(--admin-border);
+    border-top-color: var(--admin-gold);
+    border-radius: 50%;
+    animation: revenueSpin 0.8s linear infinite;
+    margin: 0 auto;
+}
+
+@keyframes revenueSpin {
+    to { transform: rotate(360deg); }
+}
+
+/* Summary Cards Grid */
+.revenue-summary-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
+    margin-bottom: 24px;
+}
+
+.revenue-summary-card {
+    background: var(--admin-card);
+    border: 1px solid var(--admin-border);
+    border-radius: var(--admin-radius);
+    padding: 16px;
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    position: relative;
+    overflow: hidden;
+    transition: var(--admin-transition);
+}
+
+.revenue-summary-card::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    height: 3px;
+    border-radius: 0 0 var(--admin-radius) var(--admin-radius);
+}
+
+.revenue-today::after { background: linear-gradient(90deg, #c9a962, #e5d4a8); }
+.revenue-week::after { background: linear-gradient(90deg, #4ade80, #22c55e); }
+.revenue-month::after { background: linear-gradient(90deg, #60a5fa, #3b82f6); }
+.revenue-alltime::after { background: linear-gradient(90deg, #c084fc, #a855f7); }
+
+.revenue-summary-icon {
+    font-size: 24px;
+    width: 44px;
+    height: 44px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: var(--admin-radius-sm);
+    background: var(--admin-gold-glow);
+    flex-shrink: 0;
+}
+
+.revenue-today .revenue-summary-icon { background: rgba(201, 169, 98, 0.15); }
+.revenue-week .revenue-summary-icon { background: rgba(74, 222, 128, 0.12); }
+.revenue-month .revenue-summary-icon { background: rgba(96, 165, 250, 0.12); }
+.revenue-alltime .revenue-summary-icon { background: rgba(192, 132, 252, 0.12); }
+
+.revenue-summary-info {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    min-width: 0;
+}
+
+.revenue-summary-label {
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--admin-text-muted);
+    font-weight: 600;
+}
+
+.revenue-summary-value {
+    font-family: 'Playfair Display', serif;
+    font-size: 20px;
+    font-weight: 700;
+    color: var(--admin-text);
+    line-height: 1.2;
+}
+
+.revenue-summary-value small {
+    font-size: 12px;
+    font-weight: 400;
+    color: var(--admin-text-muted);
+    font-family: 'Inter', sans-serif;
+}
+
+.revenue-summary-orders {
+    font-size: 12px;
+    color: var(--admin-text-secondary);
+}
+
+/* Tab Navigation */
+.revenue-tabs {
+    display: flex;
+    gap: 4px;
+    margin-bottom: 16px;
+    background: var(--admin-surface);
+    border-radius: var(--admin-radius-sm);
+    padding: 4px;
+    border: 1px solid var(--admin-border);
+}
+
+.revenue-tab {
+    flex: 1;
+    padding: 10px 16px;
+    background: transparent;
+    border: none;
+    color: var(--admin-text-muted);
+    font-size: 13px;
+    font-weight: 600;
+    font-family: inherit;
+    cursor: pointer;
+    border-radius: var(--admin-radius-xs);
+    transition: var(--admin-transition);
+    min-height: 40px;
+    -webkit-tap-highlight-color: transparent;
+}
+
+.revenue-tab:hover {
+    color: var(--admin-text-secondary);
+    background: rgba(255, 255, 255, 0.03);
+}
+
+.revenue-tab.active {
+    background: linear-gradient(135deg, rgba(201, 169, 98, 0.15), rgba(201, 169, 98, 0.08));
+    color: var(--admin-gold);
+}
+
+/* Revenue Table */
+.revenue-table tbody tr {
+    cursor: default;
+}
+
+.revenue-best-day td {
+    background: rgba(201, 169, 98, 0.06) !important;
+}
+
+.revenue-best-badge {
+    display: inline-block;
+    font-size: 10px;
+    padding: 2px 8px;
+    border-radius: 10px;
+    background: linear-gradient(135deg, rgba(201, 169, 98, 0.2), rgba(201, 169, 98, 0.1));
+    color: var(--admin-gold);
+    font-weight: 700;
+    margin-left: 8px;
+    vertical-align: middle;
+}
+
+/* Desktop: 4-col summary grid */
+@media (min-width: 768px) {
+    .revenue-summary-grid {
+        grid-template-columns: repeat(4, 1fr);
+    }
+}

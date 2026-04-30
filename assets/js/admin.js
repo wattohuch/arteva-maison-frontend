@@ -515,7 +515,7 @@ async function loadDashboard() {
             document.getElementById('statOrders').textContent = totalOrders;
 
             // Revenue handling
-            const revenueCard = document.querySelector('.stat-card:has(#statRevenue)');
+            const revenueCard = document.querySelector('.admin-stat-card:has(#statRevenue)');
             const revenueValue = document.getElementById('statRevenue');
 
             if (user.role === 'owner') {
@@ -712,7 +712,7 @@ async function loadCategories() {
             const addCatContainer = document.getElementById('additionalCategoriesContainer');
             if (addCatContainer) {
                 addCatContainer.innerHTML = response.data.map(cat => `
-                    <label style="display: flex; align-items: center; gap: 6px; cursor: pointer; font-size: 14px; padding: 4px 8px; border-radius: 6px; background: #fff; border: 1px solid #e0e0e0;">
+                    <label style="display: flex; align-items: center; gap: 6px; cursor: pointer; font-size: 14px; padding: 4px 8px; border-radius: 6px; background: var(--admin-surface-3); border: 1px solid var(--admin-border); color: var(--admin-text);">
                         <input type="checkbox" value="${cat._id}" style="accent-color: #c9a962;">
                         ${cat.name}
                     </label>

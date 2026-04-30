@@ -1099,6 +1099,9 @@ function setLanguage(lang) {
 
     // Force horizontal scroll in Arabic mode based on user request
     forceScrollOnLoad(lang);
+
+    // Notify other modules that language changed (e.g., nav-categories re-render)
+    window.dispatchEvent(new CustomEvent('languageChanged', { detail: { lang } }));
 }
 
 function forceScrollOnLoad(lang) {
