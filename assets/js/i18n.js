@@ -1020,21 +1020,20 @@ document.addEventListener('DOMContentLoaded', () => {
     const langBtnAr = document.getElementById('lang-ar');
 
     const handleLangSwitch = (lang) => {
-        if (localStorage.getItem('site_lang') !== lang) {
-            localStorage.setItem('site_lang', lang);
-            
-            // Update the user object in localStorage so the reload picks it up
-            const userString = localStorage.getItem('arteva_user');
-            if (userString) {
-                try {
-                    const user = JSON.parse(userString);
-                    user.language = lang;
-                    localStorage.setItem('arteva_user', JSON.stringify(user));
-                } catch(e) {}
-            }
-            
-            window.location.reload();
+        localStorage.setItem('site_lang', lang);
+        
+        // Update the user object in localStorage
+        const userString = localStorage.getItem('arteva_user');
+        if (userString) {
+            try {
+                const user = JSON.parse(userString);
+                user.language = lang;
+                localStorage.setItem('arteva_user', JSON.stringify(user));
+            } catch(e) {}
         }
+        
+        // Apply language smoothly without reload
+        setLanguage(lang);
     };
 
     if (langBtnEn) {
@@ -1122,43 +1121,8 @@ function setLanguage(lang) {
         window.CurrencyAPI.updatePagePrices();
     }
 
-    // Force horizontal scroll in Arabic mode based on user request
-    forceScrollOnLoad(lang);
-
     // Notify other modules that language changed (e.g., nav-categories re-render)
     window.dispatchEvent(new CustomEvent('languageChanged', { detail: { lang } }));
-}
-
-function forceScrollOnLoad(lang) {
-    const doScroll = () => {
-        document.querySelectorAll('.collections-scroll, .categories-grid').forEach(container => {
-            if (lang === 'ar') {
-                // User favor: force scroll 2000px horizontally on Arabic reload
-                // Forcing negative scrollLeft pushes the viewport to the far left edge
-                // where the initial images (Crystal) are sitting in RTL. 
-                // This universally hits the left edge across Chrome/Safari.
-                container.scrollLeft = -2000;
-                
-                // Fallback: If browser clamped to 0 and 0 isn't the left edge natively,
-                // some really old Safaris used 0 as the left edge anyway.
-                if (container.scrollLeft > 0) {
-                    container.scrollLeft = 0;
-                }
-            } else {
-                // English: reset to 0 (native left edge)
-                container.scrollLeft = 0;
-            }
-            
-            // Wake up scroll animations
-            container.dispatchEvent(new Event('scroll'));
-        });
-    };
-
-    // Execute immediately and after layout
-    doScroll();
-    requestAnimationFrame(doScroll);
-    setTimeout(doScroll, 100);
-    setTimeout(doScroll, 500);
 }
 
 

@@ -322,3 +322,11 @@ function renderCategories(grid, categories) {
         </a>`;
     }).join('');
 }
+
+// Listen for language changes to re-render dynamic content smoothly without reload
+window.addEventListener('languageChanged', () => {
+    if (typeof loadHeroSlides === 'function') loadHeroSlides();
+    if (typeof loadBrowseCollections === 'function') loadBrowseCollections();
+    if (typeof loadNewArrivals === 'function') loadNewArrivals();
+    if (typeof loadCategories === 'function') loadCategories();
+});

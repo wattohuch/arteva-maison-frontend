@@ -87,19 +87,22 @@ function initLanguage() {
 
         // Add click handlers
         const handleAdminLangSwitch = (lang) => {
-            if (localStorage.getItem('site_lang') !== lang) {
-                localStorage.setItem('site_lang', lang);
-                
-                // Update the user object in localStorage so the reload picks it up
-                const userString = localStorage.getItem('arteva_user');
-                if (userString) {
-                    try {
-                        const user = JSON.parse(userString);
-                        user.language = lang;
-                        localStorage.setItem('arteva_user', JSON.stringify(user));
-                    } catch(e) {}
-                }
-                
+            localStorage.setItem('site_lang', lang);
+            
+            // Update the user object in localStorage
+            const userString = localStorage.getItem('arteva_user');
+            if (userString) {
+                try {
+                    const user = JSON.parse(userString);
+                    user.language = lang;
+                    localStorage.setItem('arteva_user', JSON.stringify(user));
+                } catch(e) {}
+            }
+            
+            // Apply language smoothly without reload if setLanguage is available
+            if (typeof setLanguage === 'function') {
+                setLanguage(lang);
+            } else {
                 window.location.reload();
             }
         };
