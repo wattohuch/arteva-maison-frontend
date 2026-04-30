@@ -24,6 +24,8 @@ const translations = {
         hero_desc: "Discover our exquisite collection of handcrafted glassware, decorative pieces, and luxury home accessories.",
         shop_collection: "Shop Collection",
         explore: "Explore",
+        admin_hero_slides: "Hero Slides",
+        admin_browse_collections: "Browse Collections",
 
         // Featured Collections
         featured_collections_title: "Featured Collections",
@@ -517,6 +519,8 @@ const translations = {
         hero_desc: "اكتشف مجموعتنا الرائعة من الأواني الزجاجية المصنوعة يدوياً، والقطع الزخرفية، وإكسسوارات المنزل الفاخرة.",
         shop_collection: "تسوق المجموعة",
         explore: "استكشف",
+        admin_hero_slides: "شرائح البداية",
+        admin_browse_collections: "تصفح المجموعات",
 
         // Featured Collections
         featured_collections_title: "مجموعات مختارة",
@@ -1015,21 +1019,29 @@ document.addEventListener('DOMContentLoaded', () => {
     const langBtnEn = document.getElementById('lang-en');
     const langBtnAr = document.getElementById('lang-ar');
 
-    if (langBtnEn) {
-        langBtnEn.addEventListener('click', () => {
-            if (localStorage.getItem('site_lang') !== 'en') {
-                localStorage.setItem('site_lang', 'en');
-                window.location.reload();
+    const handleLangSwitch = (lang) => {
+        if (localStorage.getItem('site_lang') !== lang) {
+            localStorage.setItem('site_lang', lang);
+            
+            // Update the user object in localStorage so the reload picks it up
+            const userString = localStorage.getItem('arteva_user');
+            if (userString) {
+                try {
+                    const user = JSON.parse(userString);
+                    user.language = lang;
+                    localStorage.setItem('arteva_user', JSON.stringify(user));
+                } catch(e) {}
             }
-        });
+            
+            window.location.reload();
+        }
+    };
+
+    if (langBtnEn) {
+        langBtnEn.addEventListener('click', () => handleLangSwitch('en'));
     }
     if (langBtnAr) {
-        langBtnAr.addEventListener('click', () => {
-            if (localStorage.getItem('site_lang') !== 'ar') {
-                localStorage.setItem('site_lang', 'ar');
-                window.location.reload();
-            }
-        });
+        langBtnAr.addEventListener('click', () => handleLangSwitch('ar'));
     }
     // Initialize ScrollReveal only if it's defined
     if (typeof ScrollReveal !== 'undefined') {
