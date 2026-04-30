@@ -17,6 +17,7 @@
     <link rel="icon" type="image/png" href="assets/images/favicon.png">
     <style>
         /* All Products Page — Inline Styles */
+        html, body { overflow-x: hidden; }
         .all-products-page { padding: var(--space-12) 0; margin-top: var(--header-height); min-height: 80vh; }
         .all-products-header { text-align: center; margin-bottom: var(--space-10); }
         .all-products-header h1 { font-family: var(--font-display); font-size: var(--fs-3xl); margin-bottom: var(--space-2); letter-spacing: 0.04em; }
@@ -32,11 +33,11 @@
         .filter-pill.active { background: var(--color-gold); color: #fff; border-color: var(--color-gold); box-shadow: 0 4px 12px rgba(201, 169, 98, 0.3); }
 
         .products-toolbar-right { display: flex; align-items: center; gap: var(--space-3); }
-        .products-search { padding: 10px 16px 10px 40px; border: 1px solid var(--border-light); border-radius: var(--radius-md); background: var(--bg-secondary); color: var(--text-primary); font-size: var(--fs-sm); font-family: inherit; width: 220px; transition: all 0.3s ease; }
-        .products-search:focus { outline: none; border-color: var(--color-gold); box-shadow: 0 0 0 3px rgba(201, 169, 98, 0.1); width: 280px; }
-        .search-wrapper { position: relative; }
+        .products-search { padding: 10px 16px 10px 40px; border: 1px solid var(--border-light); border-radius: var(--radius-md); background: var(--bg-secondary); color: var(--text-primary); font-size: var(--fs-sm); font-family: inherit; width: 220px; max-width: 100%; transition: all 0.3s ease; box-sizing: border-box; }
+        .products-search:focus { outline: none; border-color: var(--color-gold); box-shadow: 0 0 0 3px rgba(201, 169, 98, 0.1); width: 280px; max-width: 100%; }
+        .search-wrapper { position: relative; width: 100%; }
         .search-wrapper svg { position: absolute; left: 12px; top: 50%; transform: translateY(-50%); width: 16px; height: 16px; color: var(--text-muted); pointer-events: none; }
-        .products-sort { padding: 10px 16px; border: 1px solid var(--border-light); border-radius: var(--radius-md); background: var(--bg-secondary); color: var(--text-primary); font-size: var(--fs-sm); font-family: inherit; cursor: pointer; }
+        .products-sort { padding: 10px 16px; border: 1px solid var(--border-light); border-radius: var(--radius-md); background: var(--bg-secondary); color: var(--text-primary); font-size: var(--fs-sm); font-family: inherit; cursor: pointer; max-width: 100%; box-sizing: border-box; }
         .products-sort:focus { outline: none; border-color: var(--color-gold); }
 
         /* Shimmer Skeleton */
@@ -53,11 +54,12 @@
 
         @media (max-width: 768px) {
             .products-toolbar { flex-direction: column; align-items: stretch; }
-            .products-toolbar-right { flex-direction: column; }
+            .products-toolbar-right { flex-direction: column; width: 100%; }
             .products-search, .products-search:focus { width: 100%; }
             .all-products-header h1 { font-size: var(--fs-2xl); }
             .all-products-page { padding: var(--space-6) 0; }
             .all-products-header { margin-bottom: var(--space-6); }
+            .products-sort { width: 100%; }
         }
 
         @media (max-width: 480px) {
