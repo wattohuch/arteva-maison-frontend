@@ -136,6 +136,10 @@
         // Filter by category
         if (currentFilter !== 'all') {
             filtered = filtered.filter(p => {
+                // Special case: "new-arrivals" also matches isNewArrival flag
+                if (currentFilter === 'new-arrivals' && (p.isNewArrival || p.isNew)) {
+                    return true;
+                }
                 // Check primary category
                 const cat = typeof p.category === 'object' ? p.category : null;
                 if (cat && (cat.slug === currentFilter || cat._id === currentFilter)) {
