@@ -460,54 +460,60 @@
             });
 
             // Register form submission
-            document.getElementById('registerFormElement').addEventListener('submit', async function (e) {
-                e.preventDefault();
-                const name = document.getElementById('regName').value;
-                const email = document.getElementById('regEmail').value;
-                const phone = document.getElementById('regPhone').value;
-                const pass = document.getElementById('regPassword').value;
-                const confirm = document.getElementById('regConfirm').value;
-                const btn = this.querySelector('button[type="submit"]');
+            const registerFormElement = document.getElementById('registerFormElement');
+            if (registerFormElement) {
+                registerFormElement.addEventListener('submit', async function (e) {
+                    e.preventDefault();
+                    const name = document.getElementById('regName').value;
+                    const email = document.getElementById('regEmail').value;
+                    const phone = document.getElementById('regPhone').value;
+                    const pass = document.getElementById('regPassword').value;
+                    const confirm = document.getElementById('regConfirm').value;
+                    const btn = this.querySelector('button[type="submit"]');
 
-                if (pass !== confirm) {
-                    window.showNotification(window.getTranslation ? window.getTranslation('passwords_mismatch') : 'Passwords do not match', 'error');
-                    return;
-                }
+                    if (pass !== confirm) {
+                        window.showNotification(window.getTranslation ? window.getTranslation('passwords_mismatch') : 'Passwords do not match', 'error');
+                        return;
+                    }
 
-                btn.disabled = true;
-                btn.textContent = window.getTranslation ? window.getTranslation('creating_account') : 'Creating account...';
+                    btn.disabled = true;
+                    btn.textContent = window.getTranslation ? window.getTranslation('creating_account') : 'Creating account...';
 
-                try {
-                    await window.AuthAPI.register(name, email, pass, phone);
-                    window.showNotification(window.getTranslation ? window.getTranslation('account_created') : 'Account created successfully!', 'success');
-                    handleRedirect();
-                } catch (error) {
-                    window.showNotification(error.message || (window.getTranslation ? window.getTranslation('registration_failed') : 'Registration failed'), 'error');
-                    btn.disabled = false;
-                    btn.textContent = window.getTranslation ? window.getTranslation('create_account') : 'Create Account';
-                }
-            });
+                    try {
+                        await window.AuthAPI.register(name, email, pass, phone);
+                        window.showNotification(window.getTranslation ? window.getTranslation('account_created') : 'Account created successfully!', 'success');
+                        handleRedirect();
+                    } catch (error) {
+                        window.showNotification(error.message || (window.getTranslation ? window.getTranslation('registration_failed') : 'Registration failed'), 'error');
+                        btn.disabled = false;
+                        btn.textContent = window.getTranslation ? window.getTranslation('create_account') : 'Create Account';
+                    }
+                });
+            }
 
             // Login form submission
-            document.getElementById('loginFormElement').addEventListener('submit', async function (e) {
-                e.preventDefault();
-                const email = document.getElementById('loginEmail').value;
-                const password = document.getElementById('loginPassword').value;
-                const btn = this.querySelector('button[type="submit"]');
+            const loginFormElement = document.getElementById('loginFormElement');
+            if (loginFormElement) {
+                loginFormElement.addEventListener('submit', async function (e) {
+                    e.preventDefault();
+                    const email = document.getElementById('loginEmail').value;
+                    const password = document.getElementById('loginPassword').value;
+                    const btn = this.querySelector('button[type="submit"]');
 
-                btn.disabled = true;
-                btn.textContent = window.getTranslation ? window.getTranslation('signing_in') : 'Signing in...';
+                    btn.disabled = true;
+                    btn.textContent = window.getTranslation ? window.getTranslation('signing_in') : 'Signing in...';
 
-                try {
-                    await window.AuthAPI.login(email, password);
-                    window.showNotification(window.getTranslation ? window.getTranslation('login_success') : 'Login successful! Welcome back.', 'success');
-                    handleRedirect();
-                } catch (error) {
-                    window.showNotification(error.message || (window.getTranslation ? window.getTranslation('login_failed') : 'Login failed'), 'error');
-                    btn.disabled = false;
-                    btn.textContent = window.getTranslation ? window.getTranslation('sign_in') : 'Sign In';
-                }
-            });
+                    try {
+                        await window.AuthAPI.login(email, password);
+                        window.showNotification(window.getTranslation ? window.getTranslation('login_success') : 'Login successful! Welcome back.', 'success');
+                        handleRedirect();
+                    } catch (error) {
+                        window.showNotification(error.message || (window.getTranslation ? window.getTranslation('login_failed') : 'Login failed'), 'error');
+                        btn.disabled = false;
+                        btn.textContent = window.getTranslation ? window.getTranslation('sign_in') : 'Sign In';
+                    }
+                });
+            }
 
             // Handle post-auth redirect
             function handleRedirect() {
