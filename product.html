@@ -40,13 +40,8 @@
                                 stroke-width="2">
                                 <path d="M6 9l6 6 6-6" />
                             </svg></a>
-                        <div class="dropdown-menu">
-                            <a href="collection.html?cat=crystals" class="dropdown-item"
-                                data-i18n="crystals">Crystals</a>
-                            <a href="collection.html?cat=glassware" class="dropdown-item"
-                                data-i18n="glassware">Glassware</a>
-                            <a href="collection.html?cat=vases" class="dropdown-item" data-i18n="vases">Vases</a>
-                            <a href="collections.html" class="dropdown-item" data-i18n="view_all">View All</a>
+                        <div class="dropdown-menu" id="categoryDropdown">
+                            <!-- Categories loaded dynamically from API -->
                         </div>
                     </div>
                     <div class="nav-item"><a href="collections.html" class="nav-link"
@@ -169,6 +164,12 @@
         </div>
         <nav class="mobile-nav">
             <div class="mobile-nav-item"><a href="index.html" class="mobile-nav-link" data-i18n="home">Home</a></div>
+            <div class="mobile-nav-item has-submenu">
+                <a href="#" class="mobile-nav-link"><span data-i18n="categories">Categories</span><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6" /></svg></a>
+                <div class="mobile-submenu" id="mobileCategorySubmenu">
+                    <!-- Categories loaded dynamically from API -->
+                </div>
+            </div>
             <div class="mobile-nav-item"><a href="collections.html" class="mobile-nav-link"
                     data-i18n="collections">Collections</a></div>
             <div class="mobile-nav-item"><a href="contact.html" class="mobile-nav-link" data-i18n="contact">Contact</a>
@@ -514,6 +515,7 @@
     <script src="assets/js/config.js"></script>
     <script src="assets/js/keep-alive.js"></script>
     <script src="assets/js/api.js"></script>
+    <script src="assets/js/nav-categories.js"></script>
     <script src="assets/js/i18n.js"></script>
     <script src="assets/js/main.js"></script>
     <script src="assets/js/cart.js"></script>

@@ -637,6 +637,13 @@ function initUI() {
             formData.set('isNewArrival', productForm.isNewArrival.checked);
             formData.set('isComingSoon', productForm.isComingSoon.checked);
 
+            // Collect additional categories
+            const additionalCats = [];
+            document.querySelectorAll('#additionalCategoriesContainer input[type="checkbox"]:checked').forEach(cb => {
+                additionalCats.push(cb.value);
+            });
+            formData.set('additionalCategories', JSON.stringify(additionalCats));
+
             // Add images to delete
             if (productImagesToDelete.length > 0) {
                 formData.append('imagesToDelete', JSON.stringify(productImagesToDelete));
@@ -700,6 +707,17 @@ async function loadCategories() {
             });
             select.innerHTML = options;
             if (selectedValue) select.value = selectedValue;
+
+            // Populate additional categories checkboxes
+            const addCatContainer = document.getElementById('additionalCategoriesContainer');
+            if (addCatContainer) {
+                addCatContainer.innerHTML = response.data.map(cat => `
+                    <label style="display: flex; align-items: center; gap: 6px; cursor: pointer; font-size: 14px; padding: 4px 8px; border-radius: 6px; background: #fff; border: 1px solid #e0e0e0;">
+                        <input type="checkbox" value="${cat._id}" style="accent-color: #c9a962;">
+                        ${cat.name}
+                    </label>
+                `).join('');
+            }
         }
     } catch (err) {
         console.error('Failed to load categories', err);
@@ -736,6 +754,12 @@ window.editProduct = async (id) => {
             if (productForm.isFeatured) productForm.isFeatured.checked = !!p.isFeatured;
             if (productForm.isNewArrival) productForm.isNewArrival.checked = !!p.isNewArrival;
             if (productForm.isComingSoon) productForm.isComingSoon.checked = !!p.isComingSoon;
+
+            // Check additional categories
+            const addCatIds = (p.additionalCategories || []).map(ac => typeof ac === 'object' ? ac._id : ac);
+            document.querySelectorAll('#additionalCategoriesContainer input[type="checkbox"]').forEach(cb => {
+                cb.checked = addCatIds.includes(cb.value);
+            });
 
             // Display existing images with delete buttons
             displayExistingProductImages(p.images || []);

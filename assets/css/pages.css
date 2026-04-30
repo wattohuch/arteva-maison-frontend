@@ -706,6 +706,16 @@
     .cart-table td:nth-child(3) {
         display: none;
     }
+
+    /* Sticky checkout on mobile — always visible above Safari toolbar */
+    .cart-summary {
+        position: sticky;
+        bottom: 0;
+        z-index: 10;
+        border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+        box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.1);
+        padding-bottom: calc(var(--space-8) + env(safe-area-inset-bottom, 0px));
+    }
 }
 
 @media (max-width: 768px) {
@@ -1235,15 +1245,13 @@
     }
 
     .cart-summary {
-        border-radius: var(--radius-md);
+        border-radius: var(--radius-md) var(--radius-md) 0 0;
         padding: var(--space-6);
-        /* Extra bottom padding to prevent Safari bottom toolbar from covering the checkout button */
-        padding-bottom: calc(var(--space-6) + env(safe-area-inset-bottom, 20px));
-        margin-bottom: calc(env(safe-area-inset-bottom, 20px) + 16px);
+        padding-bottom: calc(var(--space-8) + env(safe-area-inset-bottom, 20px));
     }
 
     .cart-summary .btn {
-        /* Ensure checkout button is not clipped by Safari UI */
+        /* Ensure checkout button has extra space on iPhone */
         margin-bottom: env(safe-area-inset-bottom, 12px);
     }
 

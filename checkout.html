@@ -3,7 +3,7 @@
 
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <meta name="description" content="Checkout - Complete your order at ARTEVA Maison">
     <title data-i18n="checkout">Checkout | ARTEVA Maison</title>
 
@@ -53,6 +53,23 @@
                 position: static;
                 /* Remove sticky on mobile */
                 margin-top: var(--space-4);
+            }
+
+            /* Sticky Place Order on mobile — always visible above Safari toolbar */
+            .order-summary-wrapper {
+                position: sticky;
+                bottom: 0;
+                z-index: 10;
+            }
+
+            .order-summary-wrapper .checkout-section {
+                border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+                box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.1);
+                margin-bottom: 0;
+            }
+
+            .checkout-btn {
+                margin-bottom: env(safe-area-inset-bottom, 0px);
             }
 
             .checkout-section {

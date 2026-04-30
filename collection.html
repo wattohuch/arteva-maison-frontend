@@ -43,21 +43,8 @@
                                 stroke-width="2">
                                 <path d="M6 9l6 6 6-6" />
                             </svg></a>
-                        <div class="dropdown-menu">
-                            <a href="collection.html?cat=new" class="dropdown-item" data-i18n="new_arrivals">New
-                                Arrivals</a>
-                            <a href="collection.html?cat=crystals" class="dropdown-item"
-                                data-i18n="crystals">Crystals</a>
-                            <a href="collection.html?cat=glassware" class="dropdown-item"
-                                data-i18n="glassware">Glassware</a>
-                            <a href="collection.html?cat=vases" class="dropdown-item" data-i18n="vases">Vases</a>
-                            <a href="collection.html?cat=bowls" class="dropdown-item"
-                                data-i18n="collection_bowls">Bowls</a>
-                            <a href="collection.html?cat=plates" class="dropdown-item"
-                                data-i18n="collection_plates">Plates</a>
-                            <a href="collection.html?cat=lighting" class="dropdown-item"
-                                data-i18n="category_lighting">Lighting</a>
-                            <a href="collections.html" class="dropdown-item" data-i18n="view_all">View All</a>
+                        <div class="dropdown-menu" id="categoryDropdown">
+                            <!-- Categories loaded dynamically from API -->
                         </div>
                     </div>
                     <div class="nav-item"><a href="collections.html" class="nav-link"
@@ -186,12 +173,8 @@
                         stroke-width="2">
                         <path d="M6 9l6 6 6-6" />
                     </svg></a>
-                <div class="mobile-submenu">
-                    <a href="collection.html?cat=crystals">Crystals</a>
-                    <a href="collection.html?cat=glassware">Glassware</a>
-                    <a href="collection.html?cat=vases">Vases</a>
-                    <a href="collection.html?cat=bowls">Bowls</a>
-                    <a href="collection.html?cat=plates">Plates</a>
+                <div class="mobile-submenu" id="mobileCategorySubmenu">
+                    <!-- Categories loaded dynamically from API -->
                 </div>
             </div>
             <div class="mobile-nav-item"><a href="collections.html" class="mobile-nav-link"
@@ -455,6 +438,7 @@
     <script src="assets/js/config.js"></script>
     <script src="assets/js/keep-alive.js"></script>
     <script src="assets/js/api.js"></script>
+    <script src="assets/js/nav-categories.js"></script>
     <script src="assets/js/i18n.js"></script>
     <script src="assets/js/main.js"></script>
     <script src="assets/js/cart.js"></script>
@@ -547,13 +531,24 @@
                     allProducts = response.data;
                     // Client-side category filtering fallback
                     if (category && category !== 'new' && allProducts.length > 0) {
+                        const catLower = category.toLowerCase();
                         const catFiltered = allProducts.filter(p => {
+                            // Check primary category
                             if (p.category && typeof p.category === 'object') {
-                                return p.category.slug === category;
+                                if ((p.category.slug || '').toLowerCase() === catLower) return true;
+                            }
+                            // Check additionalCategories
+                            if (p.additionalCategories && Array.isArray(p.additionalCategories)) {
+                                return p.additionalCategories.some(ac => {
+                                    if (typeof ac === 'object' && ac.slug) {
+                                        return ac.slug.toLowerCase() === catLower;
+                                    }
+                                    return false;
+                                });
                             }
                             return false;
                         });
-                        // Only apply filter if it matches something (otherwise show all)
+                        // Only apply filter if it matched something
                         if (catFiltered.length > 0) allProducts = catFiltered;
                     }
                 } else {

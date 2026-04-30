@@ -49,16 +49,8 @@
                                 <path d="M6 9l6 6 6-6" />
                             </svg>
                         </a>
-                        <div class="dropdown-menu">
-                            <a href="collection.html?cat=new" class="dropdown-item" data-i18n="new_arrivals">New
-                                Arrivals</a>
-                            <a href="collection.html?cat=crystals" class="dropdown-item"
-                                data-i18n="crystals">Crystals</a>
-                            <a href="collection.html?cat=glassware" class="dropdown-item"
-                                data-i18n="glassware">Glassware</a>
-                            <a href="collection.html?cat=vases" class="dropdown-item" data-i18n="vases_bowls">Vases &
-                                Bowls</a>
-                            <a href="collections.html" class="dropdown-item" data-i18n="view_all">View All</a>
+                        <div class="dropdown-menu" id="categoryDropdown">
+                            <!-- Categories loaded dynamically from API -->
                         </div>
                     </div>
                     <div class="nav-item">
@@ -196,11 +188,8 @@
                         stroke-linejoin="round">
                         <path d="M6 9l6 6 6-6" />
                     </svg></a>
-                <div class="mobile-submenu">
-                    <a href="collection.html?cat=crystals">Crystals</a>
-                    <a href="collection.html?cat=glassware">Glassware</a>
-                    <a href="collection.html?cat=vases">Vases</a>
-                    <a href="collection.html?cat=bowls">Bowls</a>
+                <div class="mobile-submenu" id="mobileCategorySubmenu">
+                    <!-- Categories loaded dynamically from API -->
                 </div>
             </div>
             <div class="mobile-nav-item"><a href="collections.html" class="mobile-nav-link"
@@ -495,6 +484,7 @@
     <script src="assets/js/config.js"></script>
     <script src="assets/js/keep-alive.js"></script>
     <script src="assets/js/api.js"></script>
+    <script src="assets/js/nav-categories.js"></script>
     <script src="assets/js/i18n.js"></script>
     <script src="assets/js/main.js"></script>
     <script src="assets/js/cart.js"></script>
