@@ -86,19 +86,26 @@ function initLanguage() {
         }
 
         // Add click handlers
-        langBtnEn.addEventListener('click', () => {
-            if (localStorage.getItem('site_lang') !== 'en') {
-                localStorage.setItem('site_lang', 'en');
+        const handleAdminLangSwitch = (lang) => {
+            if (localStorage.getItem('site_lang') !== lang) {
+                localStorage.setItem('site_lang', lang);
+                
+                // Update the user object in localStorage so the reload picks it up
+                const userString = localStorage.getItem('arteva_user');
+                if (userString) {
+                    try {
+                        const user = JSON.parse(userString);
+                        user.language = lang;
+                        localStorage.setItem('arteva_user', JSON.stringify(user));
+                    } catch(e) {}
+                }
+                
                 window.location.reload();
             }
-        });
+        };
 
-        langBtnAr.addEventListener('click', () => {
-            if (localStorage.getItem('site_lang') !== 'ar') {
-                localStorage.setItem('site_lang', 'ar');
-                window.location.reload();
-            }
-        });
+        langBtnEn.addEventListener('click', () => handleAdminLangSwitch('en'));
+        langBtnAr.addEventListener('click', () => handleAdminLangSwitch('ar'));
     }
 
     // Initial translation update
