@@ -548,8 +548,8 @@
                 const manageAddressesText = window.getTranslation ? window.getTranslation('manage_addresses') : 'Manage Addresses';
                 const logoutText = window.getTranslation ? window.getTranslation('logout') : 'Logout';
 
-                // Owner and admin both see the admin dashboard
-                const isAdmin = user?.role === 'admin' || user?.role === 'owner';
+                // Owner, admin, and superuser all see the admin dashboard
+                const isAdmin = user?.role === 'admin' || user?.role === 'owner' || user?.role === 'superuser';
                 const isDriver = user?.role === 'driver';
 
                 authContainer.innerHTML = `

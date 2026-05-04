@@ -690,7 +690,7 @@ function initUI() {
     }
 }
 
-window.openAddProductModal = () => {
+window.openAddProductModal = async () => {
     if (!productForm || !productModal) initUI();
     if (!productForm) return;
 
@@ -698,8 +698,22 @@ window.openAddProductModal = () => {
     document.getElementById('modalTitle').textContent = 'Add New Product';
     document.getElementById('productId').value = '';
 
+    if (document.getElementById('categorySelect').options.length <= 1) {
+        await loadCategories();
+    }
+
     const catSelect = document.getElementById('categorySelect');
     if (catSelect) catSelect.value = '';
+
+    // Uncheck all additional categories checkboxes
+    document.querySelectorAll('#additionalCategoriesContainer input[type="checkbox"]').forEach(cb => {
+        cb.checked = false;
+    });
+
+    // Reset images to delete array
+    productImagesToDelete = [];
+    const imagesContainer = document.getElementById('existingProductImages');
+    if (imagesContainer) imagesContainer.innerHTML = '';
 
     productModal.classList.remove('hidden');
 };

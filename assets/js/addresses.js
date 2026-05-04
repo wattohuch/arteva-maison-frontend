@@ -140,12 +140,17 @@ document.addEventListener('DOMContentLoaded', async () => {
                 zipCode: formData.get('zipCode'),
                 phone: formData.get('phone'),
                 country: 'Kuwait', // Default for now
-                isDefault: formData.get('isDefault') === 'on',
-                coordinates: {
-                    lat: parseFloat(formData.get('lat')),
-                    lng: parseFloat(formData.get('lng'))
-                }
+                isDefault: formData.get('isDefault') === 'on'
             };
+
+            const latStr = formData.get('lat');
+            const lngStr = formData.get('lng');
+            if (latStr && lngStr && !isNaN(parseFloat(latStr)) && !isNaN(parseFloat(lngStr))) {
+                address.coordinates = {
+                    lat: parseFloat(latStr),
+                    lng: parseFloat(lngStr)
+                };
+            }
 
             try {
                 await AuthAPI.addAddress(address);
