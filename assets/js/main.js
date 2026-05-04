@@ -8,7 +8,7 @@
 // ============================================
 document.addEventListener('DOMContentLoaded', function () {
   initHeader();
-  initHeroSlideshow();
+  // initHeroSlideshow(); // Removed - home.js will initialize after loading slides dynamically
   initMobileMenu();
   initSearch();
   initCartDrawer();
@@ -108,7 +108,7 @@ function initHeroSlideshow() {
 
   let currentSlide = 0;
   let slideInterval = null;
-  const slideDelay = 6000; // 6 seconds between slides for a relaxed luxury feel
+  const slideDelay = 8000; // 8 seconds between slides for a more relaxed luxury feel
 
   // Text animation
   function animateHeroText() {
@@ -158,7 +158,7 @@ function initHeroSlideshow() {
           s.classList.remove('prev');
         }
       });
-    }, 2000); // matches the 1.8s CSS transition + buffer
+    }, 2500); // matches the 2.2s CSS transition + buffer
 
     // Update dots
     dots.forEach((dot, i) => {

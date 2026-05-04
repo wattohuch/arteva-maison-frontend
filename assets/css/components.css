@@ -466,7 +466,7 @@
     height: 100%;
     opacity: 0;
     z-index: 0;
-    transition: opacity 1.8s cubic-bezier(0.4, 0, 0.2, 1);
+    transition: opacity 2.2s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 /* New slide fades in ON TOP of the previous one */
