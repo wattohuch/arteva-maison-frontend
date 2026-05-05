@@ -430,6 +430,10 @@ const AdminAPI = {
         return apiRequest('/admin/revenue-history');
     },
 
+    async getRevenueAnalytics() {
+        return apiRequest('/admin/revenue-analytics');
+    },
+
     async getReceipt(orderId) {
         const url = `${getApiBaseUrl()}/admin/receipt/${orderId}`;
         const response = await fetch(url, {

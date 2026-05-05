@@ -57,6 +57,8 @@
                         class="nav-text">Marketing</span></a></li>
             <li><a href="#analytics" class="sidebar-link"><span class="icon">📈</span> <span
                         class="nav-text">Analytics</span></a></li>
+            <li><a href="#discounts" class="sidebar-link"><span class="icon">🏷️</span> <span
+                        class="nav-text">Discounts</span></a></li>
             <li><a href="#" id="logoutBtn" class="sidebar-link" data-i18n="admin_logout"><span class="icon">🚪</span>
                     <span class="nav-text">Logout</span></a></li>
         </ul>
@@ -441,6 +443,40 @@
                         <tbody id="analyticsTableBody">
                             <tr>
                                 <td colspan="5" style="text-align: center; padding: 40px; color: var(--admin-text-muted);">Loading analytics...</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- ========== DISCOUNTS ========== -->
+        <div id="discounts" class="admin-section hidden">
+            <div class="admin-page-header">
+                <h1 class="admin-page-title">Discounts & Pricing</h1>
+            </div>
+
+            <div class="admin-search-wrap">
+                <span class="admin-search-icon">🔍</span>
+                <input type="text" class="admin-search" id="discountProductSearch" placeholder="Search products to apply discounts...">
+            </div>
+
+            <div class="admin-table-wrap">
+                <div class="admin-table-scroll">
+                    <table class="admin-table">
+                        <thead>
+                            <tr>
+                                <th>Image</th>
+                                <th>Product</th>
+                                <th>Original Price</th>
+                                <th>Discounted Price</th>
+                                <th>Discount %</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="discountProductsTableBody">
+                            <tr>
+                                <td colspan="6" style="text-align: center; padding: 40px; color: var(--admin-text-muted);">Loading products...</td>
                             </tr>
                         </tbody>
                     </table>

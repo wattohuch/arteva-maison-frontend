@@ -18,7 +18,7 @@ function resolveImageUrl(url, fallback) {
 // ==========================================
 document.addEventListener('DOMContentLoaded', async () => {
     const user = AuthAPI.getUser();
-    if (!AuthAPI.isLoggedIn() || !user || (user.role !== 'admin' && user.role !== 'owner')) {
+    if (!AuthAPI.isLoggedIn() || !user || (user.role !== 'admin' && user.role !== 'owner' && user.role !== 'superuser')) {
         window.location.href = 'account.html';
         return;
     }
@@ -46,6 +46,11 @@ document.addEventListener('DOMContentLoaded', async () => {
 
         loadCategories();
         initSocket();
+
+        // Initialize real-time order notifications (sound + push + polling)
+        if (typeof initOrderNotifications === 'function') {
+            initOrderNotifications();
+        }
 
         // Auto-refresh dashboard every 30s
         setInterval(() => {
@@ -404,6 +409,7 @@ function switchToSection(targetId) {
         case 'drivers': loadDrivers(); break;
         case 'settings': loadSettings(); break;
         case 'analytics': loadAnalytics(); break;
+        case 'discounts': loadDiscountsPage(); break;
     }
 }
 
@@ -534,7 +540,7 @@ async function loadDashboard() {
             const revenueCard = document.querySelector('.admin-stat-card:has(#statRevenue)');
             const revenueValue = document.getElementById('statRevenue');
 
-            if (user.role === 'owner' || user.role === 'superuser') {
+            if (user.role === 'superuser') {
                 // Show revenue card for owner
                 if (revenueCard) revenueCard.style.display = '';
 
@@ -553,7 +559,7 @@ async function loadDashboard() {
                     }
                 }
             } else {
-                // Hide revenue for non-owners/superusers
+                // Hide revenue for non-superusers
                 if (revenueCard) revenueCard.style.display = 'none';
             }
 
@@ -561,7 +567,7 @@ async function loadDashboard() {
             renderRecentOrders(recentOrders);
 
             // Initialize revenue protection after dashboard loads
-            if ((user.role === 'owner' || user.role === 'superuser') && typeof initRevenueProtection === 'function') {
+            if (user.role === 'superuser' && typeof initRevenueProtection === 'function') {
                 setTimeout(() => initRevenueProtection(), 100);
             }
         }
@@ -2128,3 +2134,155 @@ document.getElementById('collectionProductSearch')?.addEventListener('input', (e
     );
     renderCollectionProductsTable(filtered, true);
 });
+
+// ==========================================
+// Discounts & Pricing Management
+// ==========================================
+window.allDiscountProducts = [];
+
+async function loadDiscountsPage() {
+    try {
+        const response = await AdminAPI.getProducts();
+        if (response.success) {
+            window.allDiscountProducts = response.data || response.products || [];
+            renderDiscountProductsTable(window.allDiscountProducts);
+        }
+    } catch (err) {
+        console.error('Failed to load products for discounts', err);
+        showToast('Error', 'Failed to load products', 'error');
+    }
+}
+
+function renderDiscountProductsTable(products) {
+    const tbody = document.getElementById('discountProductsTableBody');
+    if (!tbody) return;
+
+    if (!products || products.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="6" style="text-align: center; padding: 40px; color: var(--admin-text-muted);">No products found</td></tr>';
+        return;
+    }
+
+    tbody.innerHTML = products.map(function(p) {
+        const currentPrice = p.price || 0;
+        const compareAt = p.compareAtPrice || 0;
+        const hasDiscount = compareAt > 0 && compareAt > currentPrice;
+        const discountPct = hasDiscount ? Math.round(((compareAt - currentPrice) / compareAt) * 100) : 0;
+        const imgSrc = (p.images && p.images.length > 0) ? p.images[0] : 'assets/images/logo.png';
+
+        return '<tr>' +
+            '<td><img src="' + imgSrc + '" class="product-thumb" onerror="this.src=\'assets/images/logo.png\'"></td>' +
+            '<td><strong style="color: var(--admin-text);">' + p.name + '</strong>' +
+                (p.nameAr ? '<br><span style="font-size:11px;color:var(--admin-text-muted);">' + p.nameAr + '</span>' : '') +
+            '</td>' +
+            '<td>' +
+                (hasDiscount
+                    ? '<span style="text-decoration: line-through; color: var(--admin-text-muted);">' + compareAt.toFixed(3) + ' KWD</span>'
+                    : '<span style="color: var(--admin-text);">' + currentPrice.toFixed(3) + ' KWD</span>') +
+            '</td>' +
+            '<td>' +
+                (hasDiscount
+                    ? '<span style="color: #ef4444; font-weight: 700;">' + currentPrice.toFixed(3) + ' KWD</span>'
+                    : '<span style="color: var(--admin-text-muted);">—</span>') +
+            '</td>' +
+            '<td>' +
+                (hasDiscount
+                    ? '<span style="background: rgba(239,68,68,0.12); color: #ef4444; padding: 3px 10px; border-radius: 12px; font-size: 12px; font-weight: 700;">-' + discountPct + '%</span>'
+                    : '<span style="color: var(--admin-text-muted);">—</span>') +
+            '</td>' +
+            '<td style="white-space: nowrap;">' +
+                (hasDiscount
+                    ? '<button onclick="removeDiscount(\'' + p._id + '\')" class="admin-btn-icon delete" title="Remove discount" style="width:32px;height:32px;font-size:14px;">✕</button>'
+                    : '<button onclick="showDiscountPrompt(\'' + p._id + '\', ' + currentPrice + ', \'' + p.name.replace(/'/g, "\\'") + '\')" class="admin-btn-icon" title="Add discount" style="width:32px;height:32px;font-size:14px;">🏷️</button>') +
+            '</td>' +
+        '</tr>';
+    }).join('');
+}
+
+window.showDiscountPrompt = function(productId, currentPrice, productName) {
+    const discountedPrice = prompt('Set discounted price for "' + productName + '"\n\nCurrent price: ' + currentPrice.toFixed(3) + ' KWD\n\nEnter new discounted price (KWD):');
+    if (discountedPrice === null) return;
+
+    const newPrice = parseFloat(discountedPrice);
+    if (isNaN(newPrice) || newPrice <= 0) {
+        showToast('Error', 'Please enter a valid price', 'error');
+        return;
+    }
+    if (newPrice >= currentPrice) {
+        showToast('Error', 'Discounted price must be less than current price (' + currentPrice.toFixed(3) + ')', 'error');
+        return;
+    }
+
+    applyDiscount(productId, newPrice, currentPrice);
+};
+
+async function applyDiscount(productId, discountedPrice, originalPrice) {
+    try {
+        const token = localStorage.getItem('arteva_token');
+        const res = await fetch((window.API_BASE_URL || 'https://arteva-maison-backend-gy1x.onrender.com/api') + '/admin/products/' + productId + '/discount', {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': 'Bearer ' + token
+            },
+            body: JSON.stringify({
+                discountedPrice: discountedPrice,
+                compareAtPrice: originalPrice
+            })
+        });
+        const data = await res.json();
+        if (data.success) {
+            showToast('Success', 'Discount applied successfully', 'success');
+            loadDiscountsPage();
+        } else {
+            showToast('Error', data.message || 'Failed to apply discount', 'error');
+        }
+    } catch (err) {
+        console.error(err);
+        showToast('Error', 'Failed to apply discount', 'error');
+    }
+}
+
+window.removeDiscount = async function(productId) {
+    if (!confirm('Remove discount from this product? Price will be restored to the compare-at price.')) return;
+
+    try {
+        // Find the product to get its compareAtPrice
+        const product = window.allDiscountProducts.find(function(p) { return p._id === productId; });
+        if (!product) return;
+
+        const originalPrice = product.compareAtPrice || product.price;
+        const token = localStorage.getItem('arteva_token');
+        const res = await fetch((window.API_BASE_URL || 'https://arteva-maison-backend-gy1x.onrender.com/api') + '/admin/products/' + productId + '/discount', {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': 'Bearer ' + token
+            },
+            body: JSON.stringify({
+                discountedPrice: originalPrice,
+                compareAtPrice: 0
+            })
+        });
+        const data = await res.json();
+        if (data.success) {
+            showToast('Success', 'Discount removed', 'success');
+            loadDiscountsPage();
+        } else {
+            showToast('Error', data.message || 'Failed to remove discount', 'error');
+        }
+    } catch (err) {
+        console.error(err);
+        showToast('Error', 'Failed to remove discount', 'error');
+    }
+};
+
+// Discount search filter
+document.getElementById('discountProductSearch')?.addEventListener('input', function(e) {
+    const q = e.target.value.toLowerCase();
+    const filtered = window.allDiscountProducts.filter(function(p) {
+        return p.name.toLowerCase().includes(q) ||
+            (p.nameAr && p.nameAr.toLowerCase().includes(q));
+    });
+    renderDiscountProductsTable(filtered);
+});
+

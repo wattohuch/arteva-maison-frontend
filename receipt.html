@@ -10,7 +10,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link
-        href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600;700&family=Montserrat:wght@300;400;500;600&display=swap"
+        href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600;700&family=Montserrat:wght@300;400;500;600&family=Noto+Sans+Arabic:wght@300;400;500;600&display=swap"
         rel="stylesheet">
 
     <style>
@@ -21,6 +21,7 @@
             --color-gold: #D4AF37;
             --font-display: 'Cormorant Garamond', serif;
             --font-body: 'Montserrat', sans-serif;
+            --font-arabic: 'Noto Sans Arabic', sans-serif;
         }
 
         body {
@@ -55,6 +56,27 @@
             color: var(--color-text-light);
         }
 
+        .receipt-title-ar {
+            font-family: var(--font-arabic);
+            font-size: 14px;
+            color: var(--color-text-light);
+            margin-top: 4px;
+            direction: rtl;
+        }
+
+        .bilingual-label {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .bilingual-label .ar {
+            font-family: var(--font-arabic);
+            color: var(--color-text-light);
+            font-size: 11px;
+            direction: rtl;
+        }
+
         .order-meta {
             display: flex;
             justify-content: space-between;
@@ -67,6 +89,14 @@
             letter-spacing: 1px;
             color: var(--color-text-light);
             margin: 0 0 5px 0;
+        }
+
+        .meta-group .ar-label {
+            font-family: var(--font-arabic);
+            font-size: 11px;
+            color: #999;
+            direction: rtl;
+            display: block;
         }
 
         .meta-group p {
@@ -123,15 +153,6 @@
             font-size: 18px;
         }
 
-        .footer {
-            margin-top: 60px;
-            text-align: center;
-            font-size: 12px;
-            color: var(--color-text-light);
-            border-top: 1px solid var(--color-border);
-            padding-top: 20px;
-        }
-
         .status-badge {
             display: inline-block;
             padding: 3px 10px;
@@ -144,10 +165,83 @@
         .status-pending { background: #fef3c7; color: #92400e; }
         .status-failed { background: #fee2e2; color: #991b1b; }
 
+        /* Return Policy Section */
+        .return-policy {
+            margin-top: 40px;
+            padding: 20px;
+            background: #fffbeb;
+            border: 1px solid #f59e0b33;
+            border-radius: 8px;
+            border-left: 4px solid var(--color-gold);
+        }
+
+        .return-policy h4 {
+            font-family: var(--font-display);
+            font-size: 18px;
+            margin: 0 0 8px;
+            color: var(--color-text);
+        }
+
+        .return-policy .ar-title {
+            font-family: var(--font-arabic);
+            font-size: 16px;
+            direction: rtl;
+            margin: 0 0 12px;
+            color: var(--color-text);
+            font-weight: 600;
+        }
+
+        .return-policy p {
+            margin: 4px 0;
+            font-size: 13px;
+            color: var(--color-text-light);
+            line-height: 1.6;
+        }
+
+        .return-policy .ar-text {
+            font-family: var(--font-arabic);
+            direction: rtl;
+            text-align: right;
+        }
+
+        .return-deadline {
+            margin-top: 12px;
+            padding: 10px 14px;
+            background: #fff;
+            border-radius: 6px;
+            border: 1px solid var(--color-border);
+            font-weight: 600;
+            font-size: 13px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .return-deadline .ar {
+            font-family: var(--font-arabic);
+            direction: rtl;
+        }
+
+        .footer {
+            margin-top: 40px;
+            text-align: center;
+            font-size: 12px;
+            color: var(--color-text-light);
+            border-top: 1px solid var(--color-border);
+            padding-top: 20px;
+        }
+
+        .footer .ar-footer {
+            font-family: var(--font-arabic);
+            direction: rtl;
+            margin-top: 8px;
+        }
+
         @media print {
             body { padding: 0; }
             .no-print { display: none; }
             .info-grid { background: #fff; border: 1px solid #ddd; }
+            .return-policy { background: #fff; }
         }
 
         @media (max-width: 600px) {
@@ -174,28 +268,29 @@
 </head>
 
 <body>
-    <button class="btn-print no-print" onclick="window.print()" data-i18n="admin_receipt">Print Receipt</button>
+    <button class="btn-print no-print" onclick="window.print()">Print Receipt / طباعة الإيصال</button>
 
     <div class="header">
         <div class="logo">ARTÉVA MAISON</div>
         <div class="receipt-title">Order Receipt</div>
+        <div class="receipt-title-ar">إيصال الطلب</div>
     </div>
 
-    <div class="loading" id="loading">Loading receipt details...</div>
+    <div class="loading" id="loading">Loading receipt details... / جاري تحميل تفاصيل الإيصال...</div>
 
     <div id="receiptContent" style="display: none;">
         <!-- Order Info Row -->
         <div class="order-meta">
             <div class="meta-group">
-                <h3>Order Number</h3>
+                <h3>Order Number <span class="ar-label">رقم الطلب</span></h3>
                 <p id="orderNumber">...</p>
             </div>
             <div class="meta-group">
-                <h3>Date</h3>
+                <h3>Date <span class="ar-label">التاريخ</span></h3>
                 <p id="orderDate">...</p>
             </div>
             <div class="meta-group">
-                <h3>Order Status</h3>
+                <h3>Order Status <span class="ar-label">حالة الطلب</span></h3>
                 <p><span id="orderStatus" class="status-badge">...</span></p>
             </div>
         </div>
@@ -203,13 +298,13 @@
         <!-- Customer & Shipping Details -->
         <div class="info-grid">
             <div class="meta-group">
-                <h3>Customer Details</h3>
+                <h3>Customer Details <span class="ar-label">بيانات العميل</span></h3>
                 <p id="customerName" style="font-weight: 600; margin-bottom: 4px;">...</p>
                 <p id="customerEmail" style="font-size: 13px; color: #666; font-weight: 400;">...</p>
                 <p id="customerPhone" style="font-size: 13px; color: #666; font-weight: 400;">...</p>
             </div>
             <div class="meta-group">
-                <h3>Shipping Address</h3>
+                <h3>Shipping Address <span class="ar-label">عنوان الشحن</span></h3>
                 <p id="shippingAddress" style="white-space: pre-line; line-height: 1.6; font-weight: 400;"></p>
             </div>
         </div>
@@ -217,11 +312,11 @@
         <!-- Payment Info -->
         <div class="info-grid">
             <div class="meta-group">
-                <h3>Payment Method</h3>
+                <h3>Payment Method <span class="ar-label">طريقة الدفع</span></h3>
                 <p id="paymentMethod" style="text-transform: uppercase;">...</p>
             </div>
             <div class="meta-group">
-                <h3>Payment Status</h3>
+                <h3>Payment Status <span class="ar-label">حالة الدفع</span></h3>
                 <p><span id="paymentStatus" class="status-badge">...</span></p>
             </div>
         </div>
@@ -230,10 +325,10 @@
         <table class="items-table">
             <thead>
                 <tr>
-                    <th width="50%">Item</th>
-                    <th width="20%">Unit Price</th>
-                    <th width="10%" style="text-align: center;">Qty</th>
-                    <th width="20%" style="text-align: right;">Total</th>
+                    <th width="50%">Item / المنتج</th>
+                    <th width="20%">Unit Price / السعر</th>
+                    <th width="10%" style="text-align: center;">Qty / الكمية</th>
+                    <th width="20%" style="text-align: right;">Total / المجموع</th>
                 </tr>
             </thead>
             <tbody id="itemsList">
@@ -244,23 +339,39 @@
         <!-- Price Breakdown -->
         <div class="total-section">
             <div class="total-row">
-                <span>Subtotal</span>
+                <span>Subtotal / المجموع الفرعي</span>
                 <span id="subtotal">0.000 KWD</span>
             </div>
             <div class="total-row">
-                <span>Delivery Fee (Kuwait)</span>
+                <span>Delivery / التوصيل</span>
                 <span id="shipping">0.000 KWD</span>
             </div>
             <div class="total-row final">
-                <span>Total Paid</span>
+                <span>Total Paid / المبلغ المدفوع</span>
                 <span id="total">0.000 KWD</span>
+            </div>
+        </div>
+
+        <!-- Return Policy Section -->
+        <div class="return-policy">
+            <h4>Return & Exchange Policy</h4>
+            <div class="ar-title">سياسة الإرجاع والاستبدال</div>
+            <p>Products may be returned or exchanged within <strong>14 days</strong> of delivery, provided they are <strong>unopened</strong> and in their <strong>original condition and packaging</strong>.</p>
+            <p class="ar-text">يمكن إرجاع أو استبدال المنتجات خلال <strong>١٤ يومًا</strong> من التسليم، بشرط أن تكون <strong>غير مفتوحة</strong> وفي <strong>حالتها وتغليفها الأصلي</strong>.</p>
+            <p style="margin-top: 8px;">To initiate a return, please contact us via WhatsApp at <strong>+965 5563 6321</strong>.</p>
+            <p class="ar-text">لبدء عملية الإرجاع، يرجى التواصل معنا عبر واتساب على الرقم <strong>٩٦٥٥٥٦٣٦٣٢١+</strong>.</p>
+            <div class="return-deadline" id="returnDeadline" style="display: none;">
+                <span id="returnDeadlineEn"></span>
+                <span class="ar" id="returnDeadlineAr"></span>
             </div>
         </div>
     </div>
 
     <div class="footer">
         <p>Thank you for shopping with ARTÉVA Maison.</p>
+        <p class="ar-footer">شكراً لتسوقكم مع أرتيفا ميزون</p>
         <p>For any questions, contact us at artevamaison@gmail.com</p>
+        <p class="ar-footer">لأي استفسارات، تواصلوا معنا على artevamaison@gmail.com</p>
         <p>www.artevamaisonkw.com</p>
     </div>
 
@@ -282,8 +393,8 @@
 
                 if (orderNumber) {
                     const token = localStorage.getItem('arteva_token');
-                    const res = await fetch(`${window.API_BASE_URL || 'https://arteva-maison-backend-gy1x.onrender.com/api'}/orders/by-number/${orderNumber}`, {
-                        headers: token ? { 'Authorization': `Bearer ${token}` } : {}
+                    const res = await fetch((window.API_BASE_URL || 'https://arteva-maison-backend-gy1x.onrender.com/api') + '/orders/by-number/' + orderNumber, {
+                        headers: token ? { 'Authorization': 'Bearer ' + token } : {}
                     });
                     if (!res.ok) {
                         document.getElementById('loading').textContent = 'Order not found.';
@@ -313,7 +424,7 @@
                         '<div style="text-align:center; padding: 40px;">' +
                         '<h2 style="color: #dc2626; font-family: var(--font-display);">Receipt Unavailable</h2>' +
                         '<p style="color: #666; margin-top: 10px;">This receipt cannot be displayed because payment has not been confirmed.</p>' +
-                        '<p style="color: #888; font-size: 13px; margin-top: 8px;">Payment Status: ' + (order.paymentStatus || 'unknown') + '</p>' +
+                        '<p style="font-family: var(--font-arabic); direction: rtl; color: #666; margin-top: 8px;">لا يمكن عرض الإيصال لأن الدفع لم يتم تأكيده.</p>' +
                         '<a href="account.html" style="display:inline-block; margin-top:20px; color: var(--color-gold);">View My Orders</a>' +
                         '</div>';
                     return;
@@ -355,11 +466,11 @@
 
                 // Payment info
                 const paymentMethodNames = {
-                    'cod': 'Cash on Delivery',
-                    'knet': 'KNET',
-                    'card': 'Credit/Debit Card',
-                    'applepay': 'Apple Pay',
-                    'myfatoorah': 'Online Payment'
+                    'cod': 'Cash on Delivery / الدفع عند الاستلام',
+                    'knet': 'KNET / كي نت',
+                    'card': 'Credit/Debit Card / بطاقة ائتمان',
+                    'applepay': 'Apple Pay / أبل باي',
+                    'myfatoorah': 'Online Payment / دفع إلكتروني'
                 };
                 document.getElementById('paymentMethod').textContent = paymentMethodNames[order.paymentMethod] || order.paymentMethod || 'N/A';
 
@@ -375,22 +486,41 @@
 
                 // Items
                 const tbody = document.getElementById('itemsList');
-                tbody.innerHTML = order.items.map(item => `
-                    <tr>
-                        <td>
-                            <div style="font-weight: 500;">${item.name}</div>
-                            <div style="font-size: 12px; color: #888;">${item.variant ? item.variant : ''}</div>
-                        </td>
-                        <td>${item.price.toFixed(3)} KWD</td>
-                        <td style="text-align: center;">${item.quantity}</td>
-                        <td style="text-align: right;">${(item.price * item.quantity).toFixed(3)} KWD</td>
-                    </tr>
-                `).join('');
+                tbody.innerHTML = order.items.map(function(item) {
+                    return '<tr>' +
+                        '<td>' +
+                            '<div style="font-weight: 500;">' + item.name + '</div>' +
+                            (item.nameAr ? '<div style="font-size: 12px; color: #888; font-family: var(--font-arabic); direction: rtl;">' + item.nameAr + '</div>' : '') +
+                            (item.variant ? '<div style="font-size: 12px; color: #888;">' + item.variant + '</div>' : '') +
+                        '</td>' +
+                        '<td>' + item.price.toFixed(3) + ' KWD</td>' +
+                        '<td style="text-align: center;">' + item.quantity + '</td>' +
+                        '<td style="text-align: right;">' + (item.price * item.quantity).toFixed(3) + ' KWD</td>' +
+                    '</tr>';
+                }).join('');
 
                 // Totals
                 document.getElementById('subtotal').textContent = order.subtotal.toFixed(3) + ' KWD';
                 document.getElementById('shipping').textContent = (order.shippingCost || 0).toFixed(3) + ' KWD';
                 document.getElementById('total').textContent = order.total.toFixed(3) + ' KWD';
+
+                // Return deadline calculation
+                if (order.deliveredAt) {
+                    const deliveredDate = new Date(order.deliveredAt);
+                    const deadlineDate = new Date(deliveredDate.getTime() + 14 * 24 * 60 * 60 * 1000);
+                    const now = new Date();
+                    const returnDeadlineEl = document.getElementById('returnDeadline');
+                    const deadlineDateStr = deadlineDate.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
+                    
+                    if (now <= deadlineDate) {
+                        document.getElementById('returnDeadlineEn').innerHTML = '✅ Return eligible until: <strong>' + deadlineDateStr + '</strong>';
+                        document.getElementById('returnDeadlineAr').innerHTML = '✅ مؤهل للإرجاع حتى: <strong>' + deadlineDateStr + '</strong>';
+                    } else {
+                        document.getElementById('returnDeadlineEn').innerHTML = '❌ Return period ended: <strong>' + deadlineDateStr + '</strong>';
+                        document.getElementById('returnDeadlineAr').innerHTML = '❌ انتهت فترة الإرجاع: <strong>' + deadlineDateStr + '</strong>';
+                    }
+                    returnDeadlineEl.style.display = 'flex';
+                }
 
                 // Show content
                 document.getElementById('loading').style.display = 'none';

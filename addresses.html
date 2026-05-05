@@ -21,94 +21,129 @@
     <style>
         .address-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
-            gap: var(--space-4);
+            grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+            gap: var(--space-5);
         }
 
         .address-card {
-            background: var(--bg-primary);
-            border: 1px solid var(--border-light);
-            border-radius: var(--radius-md);
-            padding: var(--space-4);
+            background: #fff;
+            border: 1px solid rgba(0,0,0,0.06);
+            border-radius: 16px;
+            padding: var(--space-5);
             position: relative;
-            transition: border-color var(--transition-fast);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 0 1px 3px rgba(0,0,0,0.04), 0 1px 2px rgba(0,0,0,0.02);
         }
 
         .address-card:hover {
-            border-color: var(--color-gold);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.08);
+            border-color: rgba(201, 169, 98, 0.3);
+            transform: translateY(-2px);
         }
 
         .address-card.default {
             border-color: var(--color-gold);
-            background-color: rgba(201, 169, 98, 0.05);
+            background: linear-gradient(135deg, rgba(201, 169, 98, 0.04), rgba(201, 169, 98, 0.02));
+            box-shadow: 0 0 0 1px rgba(201, 169, 98, 0.15), 0 2px 8px rgba(201, 169, 98, 0.08);
         }
 
         .address-label {
-            font-weight: var(--fw-bold);
-            margin-bottom: var(--space-2);
+            font-weight: 700;
+            margin-bottom: var(--space-3);
             display: flex;
             justify-content: space-between;
             align-items: center;
+            font-size: var(--fs-base);
+            color: var(--text-primary);
         }
 
         .default-badge {
-            font-size: 10px;
-            background: var(--color-gold);
+            font-size: 9px;
+            background: linear-gradient(135deg, var(--color-gold), #b8972e);
             color: #fff;
-            padding: 2px 6px;
-            border-radius: 4px;
+            padding: 3px 10px;
+            border-radius: 20px;
             text-transform: uppercase;
+            letter-spacing: 0.08em;
+            font-weight: 700;
         }
 
         .address-details {
             color: var(--text-secondary);
             font-size: var(--fs-sm);
-            line-height: 1.6;
+            line-height: 1.7;
             margin-bottom: var(--space-4);
         }
 
         .address-actions {
             display: flex;
-            gap: var(--space-2);
-            border-top: 1px solid var(--border-light);
-            padding-top: var(--space-2);
+            gap: var(--space-3);
+            border-top: 1px solid rgba(0,0,0,0.04);
+            padding-top: var(--space-3);
         }
 
         .btn-text-sm {
             font-size: var(--fs-xs);
-            font-weight: var(--fw-medium);
+            font-weight: 600;
             cursor: pointer;
-            transition: color var(--transition-fast);
+            transition: all 0.2s ease;
+            padding: 6px 12px;
+            border-radius: 8px;
+            background: rgba(0,0,0,0.03);
         }
 
         .btn-text-sm:hover {
-            text-decoration: underline;
+            background: rgba(201, 169, 98, 0.1);
+            color: var(--color-gold);
         }
 
         .text-danger {
             color: #dc3545;
         }
 
+        .text-danger:hover {
+            background: rgba(220, 53, 69, 0.08) !important;
+            color: #dc3545 !important;
+        }
+
         .add-address-card {
-            border: 2px dashed var(--border-light);
+            border: 2px dashed rgba(201, 169, 98, 0.3);
+            background: rgba(201, 169, 98, 0.02);
             display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: center;
             min-height: 200px;
             cursor: pointer;
-            transition: all var(--transition-fast);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            border-radius: 16px;
         }
 
         .add-address-card:hover {
             border-color: var(--color-gold);
-            background-color: var(--bg-secondary);
+            background: rgba(201, 169, 98, 0.06);
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(201, 169, 98, 0.1);
         }
 
         .add-icon {
-            font-size: 24px;
+            font-size: 28px;
             margin-bottom: var(--space-2);
             color: var(--color-gold);
+            width: 48px;
+            height: 48px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            background: rgba(201, 169, 98, 0.1);
+            transition: all 0.2s ease;
+        }
+
+        .add-address-card:hover .add-icon {
+            background: var(--color-gold);
+            color: #fff;
+            transform: scale(1.1);
         }
 
         /* Modal Styles */
@@ -120,7 +155,9 @@
             top: 0;
             width: 100%;
             height: 100%;
-            background-color: rgba(0, 0, 0, 0.5);
+            background-color: rgba(0, 0, 0, 0.6);
+            backdrop-filter: blur(4px);
+            -webkit-backdrop-filter: blur(4px);
             transform: none;
             overflow-y: auto;
             -webkit-overflow-scrolling: touch;
@@ -130,13 +167,14 @@
             background-color: var(--bg-primary);
             margin: 3% auto;
             padding: var(--space-6);
-            border-radius: var(--radius-lg);
+            border-radius: 20px;
             max-width: 500px;
             width: 90%;
             position: relative;
             max-height: 92vh;
             overflow-y: auto;
             margin-bottom: 3%;
+            box-shadow: 0 25px 50px rgba(0,0,0,0.15);
         }
 
         .close-modal {
@@ -145,6 +183,23 @@
             right: var(--space-4);
             font-size: 24px;
             cursor: pointer;
+            width: 36px;
+            height: 36px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            transition: all 0.2s ease;
+        }
+
+        .close-modal:hover {
+            background: rgba(0,0,0,0.05);
+        }
+
+        @media (max-width: 480px) {
+            .address-grid {
+                grid-template-columns: 1fr;
+            }
         }
     </style>
 </head>

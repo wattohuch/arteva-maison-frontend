@@ -16,8 +16,8 @@ const MONTH_NAMES = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Se
 function initRevenueProtection() {
     const user = AuthAPI.getUser();
     
-    // Only apply to owner and superuser
-    if (!user || (user.role !== 'owner' && user.role !== 'superuser')) {
+    // Only apply to superuser
+    if (!user || user.role !== 'superuser') {
         return;
     }
 
@@ -242,9 +242,9 @@ async function showRevenueHistoryModal() {
     modal.id = 'revenueHistoryModal';
     modal.className = 'admin-modal';
     modal.innerHTML = `
-        <div class="admin-modal-content" style="max-width: 900px;">
+        <div class="admin-modal-content" style="max-width: 960px;">
             <div class="admin-modal-header">
-                <h2>💰 Revenue Dashboard</h2>
+                <h2>💰 Revenue Analytics</h2>
                 <button class="admin-btn-icon" onclick="closeRevenueHistoryModal()">✕</button>
             </div>
             <div class="admin-modal-body" id="revenueHistoryBody">
@@ -258,39 +258,39 @@ async function showRevenueHistoryModal() {
 
     document.body.appendChild(modal);
 
-    // Fetch revenue data
+    // Fetch both endpoints
     try {
-        const response = await fetch(`${API_BASE_URL}/admin/revenue-history`, {
-            headers: {
-                'Authorization': `Bearer ${localStorage.getItem('arteva_token')}`
-            }
-        });
+        const token = localStorage.getItem('arteva_token');
+        const headers = { 'Authorization': 'Bearer ' + token };
 
-        const result = await response.json();
+        const [historyRes, analyticsRes] = await Promise.all([
+            fetch(API_BASE_URL + '/admin/revenue-history', { headers }),
+            fetch(API_BASE_URL + '/admin/revenue-analytics', { headers }).catch(() => null)
+        ]);
 
-        if (result.success) {
-            renderRevenueHistory(result.data);
+        const historyResult = await historyRes.json();
+        let analyticsResult = null;
+        if (analyticsRes && analyticsRes.ok) {
+            analyticsResult = await analyticsRes.json();
+        }
+
+        if (historyResult.success) {
+            renderRevenueHistory(historyResult.data, analyticsResult ? analyticsResult.data : null);
         } else {
-            document.getElementById('revenueHistoryBody').innerHTML = `
-                <div style="text-align: center; padding: 40px; color: #f87171;">
-                    <p>Failed to load revenue data</p>
-                </div>
-            `;
+            document.getElementById('revenueHistoryBody').innerHTML = 
+                '<div style="text-align: center; padding: 40px; color: #f87171;"><p>Failed to load revenue data</p></div>';
         }
     } catch (error) {
         console.error('Revenue history error:', error);
-        document.getElementById('revenueHistoryBody').innerHTML = `
-            <div style="text-align: center; padding: 40px; color: #f87171;">
-                <p>Failed to load revenue data</p>
-            </div>
-        `;
+        document.getElementById('revenueHistoryBody').innerHTML = 
+            '<div style="text-align: center; padding: 40px; color: #f87171;"><p>Failed to load revenue data</p></div>';
     }
 }
 
 /**
  * Render the revenue history data into the modal
  */
-function renderRevenueHistory(data) {
+function renderRevenueHistory(data, analytics) {
     const body = document.getElementById('revenueHistoryBody');
     if (!body) return;
 
@@ -298,126 +298,153 @@ function renderRevenueHistory(data) {
 
     // Find best day
     const bestDay = dailyBreakdown.length > 0 
-        ? dailyBreakdown.reduce((max, d) => d.revenue > max.revenue ? d : max, dailyBreakdown[0])
+        ? dailyBreakdown.reduce(function(max, d) { return d.revenue > max.revenue ? d : max; }, dailyBreakdown[0])
         : null;
 
-    body.innerHTML = `
-        <!-- Summary Cards -->
-        <div class="revenue-summary-grid">
-            <div class="revenue-summary-card revenue-today">
-                <div class="revenue-summary-icon">📅</div>
-                <div class="revenue-summary-info">
-                    <span class="revenue-summary-label">Today</span>
-                    <span class="revenue-summary-value">${summary.today.revenue.toFixed(3)} <small>KWD</small></span>
-                    <span class="revenue-summary-orders">${summary.today.orders} order${summary.today.orders !== 1 ? 's' : ''}</span>
-                </div>
-            </div>
-            <div class="revenue-summary-card revenue-week">
-                <div class="revenue-summary-icon">📊</div>
-                <div class="revenue-summary-info">
-                    <span class="revenue-summary-label">This Week</span>
-                    <span class="revenue-summary-value">${summary.thisWeek.revenue.toFixed(3)} <small>KWD</small></span>
-                    <span class="revenue-summary-orders">${summary.thisWeek.orders} order${summary.thisWeek.orders !== 1 ? 's' : ''}</span>
-                </div>
-            </div>
-            <div class="revenue-summary-card revenue-month">
-                <div class="revenue-summary-icon">📈</div>
-                <div class="revenue-summary-info">
-                    <span class="revenue-summary-label">This Month</span>
-                    <span class="revenue-summary-value">${summary.thisMonth.revenue.toFixed(3)} <small>KWD</small></span>
-                    <span class="revenue-summary-orders">${summary.thisMonth.orders} order${summary.thisMonth.orders !== 1 ? 's' : ''}</span>
-                </div>
-            </div>
-            <div class="revenue-summary-card revenue-alltime">
-                <div class="revenue-summary-icon">💎</div>
-                <div class="revenue-summary-info">
-                    <span class="revenue-summary-label">All Time</span>
-                    <span class="revenue-summary-value">${summary.allTime.revenue.toFixed(3)} <small>KWD</small></span>
-                    <span class="revenue-summary-orders">${summary.allTime.orders} order${summary.allTime.orders !== 1 ? 's' : ''}</span>
-                </div>
-            </div>
-        </div>
+    // Build products tab HTML
+    let productsTabHtml = '<p style="text-align: center; padding: 32px; color: var(--admin-text-muted);">No product analytics available</p>';
+    
+    if (analytics && analytics.products && analytics.products.length > 0) {
+        productsTabHtml = '<div class="admin-table-wrap"><div class="admin-table-scroll"><table class="admin-table revenue-table">' +
+            '<thead><tr>' +
+            '<th>Product</th>' +
+            '<th style="text-align:center;">Sold</th>' +
+            '<th style="text-align:center;">Orders</th>' +
+            '<th style="text-align:right;">Revenue (KWD)</th>' +
+            '<th>Price Points</th>' +
+            '</tr></thead><tbody>' +
+            analytics.products.map(function(p, idx) {
+                var pricePointsHtml = p.pricePoints.map(function(pp) {
+                    return '<div style="font-size:11px;color:var(--admin-text-muted);line-height:1.6;">' +
+                        '<span style="font-weight:600;color:var(--admin-text);">' + pp.price.toFixed(3) + '</span> KWD × ' + pp.quantity + 
+                        ' = <span style="color:var(--admin-gold);">' + pp.revenue.toFixed(3) + '</span>' +
+                    '</div>';
+                }).join('');
 
-        <!-- Tab Navigation -->
-        <div class="revenue-tabs">
-            <button class="revenue-tab active" onclick="switchRevenueTab('daily', this)">Daily (30 days)</button>
-            <button class="revenue-tab" onclick="switchRevenueTab('monthly', this)">Monthly (12 months)</button>
-        </div>
+                var rankBadge = idx === 0 ? ' <span class="revenue-best-badge">🏆 #1</span>' : 
+                    (idx < 3 ? ' <span style="font-size:10px;background:rgba(201,169,98,0.15);color:var(--admin-gold);padding:2px 6px;border-radius:8px;">#' + (idx+1) + '</span>' : '');
 
-        <!-- Daily Breakdown Table -->
-        <div id="revenueTabDaily" class="revenue-tab-content">
-            ${dailyBreakdown.length === 0 
+                return '<tr>' +
+                    '<td><strong style="color:var(--admin-text);">' + p.name + '</strong>' + rankBadge + '</td>' +
+                    '<td style="text-align:center;">' + p.totalQuantitySold + '</td>' +
+                    '<td style="text-align:center;">' + p.orderCount + '</td>' +
+                    '<td style="text-align:right;font-weight:700;font-family:Playfair Display,serif;color:var(--admin-gold);">' + p.totalRevenue.toFixed(3) + '</td>' +
+                    '<td>' + pricePointsHtml + '</td>' +
+                '</tr>';
+            }).join('') +
+            '</tbody></table></div></div>';
+        
+        // Add summary insight
+        if (analytics.summary) {
+            var s = analytics.summary;
+            productsTabHtml = '<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:20px;">' +
+                '<div style="background:var(--admin-surface-2);padding:14px;border-radius:12px;border:1px solid var(--admin-border);">' +
+                    '<div style="font-size:11px;text-transform:uppercase;letter-spacing:0.06em;color:var(--admin-text-muted);margin-bottom:4px;">Total Products Sold</div>' +
+                    '<div style="font-size:20px;font-weight:700;font-family:Playfair Display,serif;color:var(--admin-text);">' + s.totalProducts + '</div>' +
+                '</div>' +
+                '<div style="background:var(--admin-surface-2);padding:14px;border-radius:12px;border:1px solid var(--admin-border);">' +
+                    '<div style="font-size:11px;text-transform:uppercase;letter-spacing:0.06em;color:var(--admin-text-muted);margin-bottom:4px;">Best Product</div>' +
+                    '<div style="font-size:13px;font-weight:600;color:var(--admin-gold);">' + (s.bestProduct ? s.bestProduct.name : 'N/A') + '</div>' +
+                    '<div style="font-size:11px;color:var(--admin-text-muted);">' + (s.bestProduct ? s.bestProduct.revenue.toFixed(3) + ' KWD' : '') + '</div>' +
+                '</div>' +
+                '<div style="background:var(--admin-surface-2);padding:14px;border-radius:12px;border:1px solid var(--admin-border);">' +
+                    '<div style="font-size:11px;text-transform:uppercase;letter-spacing:0.06em;color:var(--admin-text-muted);margin-bottom:4px;">Avg Order Value</div>' +
+                    '<div style="font-size:20px;font-weight:700;font-family:Playfair Display,serif;color:var(--admin-text);">' + s.averageOrderValue.toFixed(3) + '</div>' +
+                '</div>' +
+            '</div>' + productsTabHtml;
+        }
+    }
+
+    body.innerHTML = 
+        '<!-- Summary Cards -->' +
+        '<div class="revenue-summary-grid">' +
+            '<div class="revenue-summary-card revenue-today">' +
+                '<div class="revenue-summary-icon">📅</div>' +
+                '<div class="revenue-summary-info">' +
+                    '<span class="revenue-summary-label">Today</span>' +
+                    '<span class="revenue-summary-value">' + summary.today.revenue.toFixed(3) + ' <small>KWD</small></span>' +
+                    '<span class="revenue-summary-orders">' + summary.today.orders + ' order' + (summary.today.orders !== 1 ? 's' : '') + '</span>' +
+                '</div>' +
+            '</div>' +
+            '<div class="revenue-summary-card revenue-week">' +
+                '<div class="revenue-summary-icon">📊</div>' +
+                '<div class="revenue-summary-info">' +
+                    '<span class="revenue-summary-label">This Week</span>' +
+                    '<span class="revenue-summary-value">' + summary.thisWeek.revenue.toFixed(3) + ' <small>KWD</small></span>' +
+                    '<span class="revenue-summary-orders">' + summary.thisWeek.orders + ' order' + (summary.thisWeek.orders !== 1 ? 's' : '') + '</span>' +
+                '</div>' +
+            '</div>' +
+            '<div class="revenue-summary-card revenue-month">' +
+                '<div class="revenue-summary-icon">📈</div>' +
+                '<div class="revenue-summary-info">' +
+                    '<span class="revenue-summary-label">This Month</span>' +
+                    '<span class="revenue-summary-value">' + summary.thisMonth.revenue.toFixed(3) + ' <small>KWD</small></span>' +
+                    '<span class="revenue-summary-orders">' + summary.thisMonth.orders + ' order' + (summary.thisMonth.orders !== 1 ? 's' : '') + '</span>' +
+                '</div>' +
+            '</div>' +
+            '<div class="revenue-summary-card revenue-alltime">' +
+                '<div class="revenue-summary-icon">💎</div>' +
+                '<div class="revenue-summary-info">' +
+                    '<span class="revenue-summary-label">All Time</span>' +
+                    '<span class="revenue-summary-value">' + summary.allTime.revenue.toFixed(3) + ' <small>KWD</small></span>' +
+                    '<span class="revenue-summary-orders">' + summary.allTime.orders + ' order' + (summary.allTime.orders !== 1 ? 's' : '') + '</span>' +
+                '</div>' +
+            '</div>' +
+        '</div>' +
+
+        '<!-- Tab Navigation -->' +
+        '<div class="revenue-tabs">' +
+            '<button class="revenue-tab active" onclick="switchRevenueTab(\'daily\', this)">Daily (30 days)</button>' +
+            '<button class="revenue-tab" onclick="switchRevenueTab(\'monthly\', this)">Monthly</button>' +
+            '<button class="revenue-tab" onclick="switchRevenueTab(\'products\', this)">📦 Products</button>' +
+        '</div>' +
+
+        '<!-- Daily Breakdown Table -->' +
+        '<div id="revenueTabDaily" class="revenue-tab-content">' +
+            (dailyBreakdown.length === 0 
                 ? '<p style="text-align: center; padding: 32px; color: var(--admin-text-muted);">No revenue data yet</p>'
-                : `<div class="admin-table-wrap">
-                    <div class="admin-table-scroll">
-                        <table class="admin-table revenue-table">
-                            <thead>
-                                <tr>
-                                    <th>Date</th>
-                                    <th style="text-align: center;">Orders</th>
-                                    <th style="text-align: right;">Revenue (KWD)</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                ${dailyBreakdown.map(d => {
-                                    const dateObj = new Date(d.date + 'T00:00:00');
-                                    const dayName = dateObj.toLocaleDateString('en-US', { weekday: 'short' });
-                                    const formatted = dateObj.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
-                                    const isBest = bestDay && d.date === bestDay.date;
-                                    return `
-                                        <tr class="${isBest ? 'revenue-best-day' : ''}">
-                                            <td>
-                                                <span style="color: var(--admin-text-muted); font-size: 11px; margin-right: 6px;">${dayName}</span>
-                                                ${formatted}
-                                                ${isBest ? '<span class="revenue-best-badge">🏆 Best</span>' : ''}
-                                            </td>
-                                            <td style="text-align: center;">${d.orders}</td>
-                                            <td style="text-align: right; font-weight: 600; font-family: 'Playfair Display', serif;">${d.revenue.toFixed(3)}</td>
-                                        </tr>
-                                    `;
-                                }).join('')}
-                            </tbody>
-                        </table>
-                    </div>
-                </div>`
-            }
-        </div>
+                : '<div class="admin-table-wrap"><div class="admin-table-scroll"><table class="admin-table revenue-table">' +
+                    '<thead><tr><th>Date</th><th style="text-align: center;">Orders</th><th style="text-align: right;">Revenue (KWD)</th></tr></thead>' +
+                    '<tbody>' +
+                    dailyBreakdown.map(function(d) {
+                        var dateObj = new Date(d.date + 'T00:00:00');
+                        var dayName = dateObj.toLocaleDateString('en-US', { weekday: 'short' });
+                        var formatted = dateObj.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+                        var isBest = bestDay && d.date === bestDay.date;
+                        return '<tr class="' + (isBest ? 'revenue-best-day' : '') + '">' +
+                            '<td><span style="color: var(--admin-text-muted); font-size: 11px; margin-right: 6px;">' + dayName + '</span> ' + formatted +
+                            (isBest ? ' <span class="revenue-best-badge">🏆 Best</span>' : '') + '</td>' +
+                            '<td style="text-align: center;">' + d.orders + '</td>' +
+                            '<td style="text-align: right; font-weight: 600; font-family: Playfair Display, serif;">' + d.revenue.toFixed(3) + '</td></tr>';
+                    }).join('') +
+                    '</tbody></table></div></div>'
+            ) +
+        '</div>' +
 
-        <!-- Monthly Breakdown Table -->
-        <div id="revenueTabMonthly" class="revenue-tab-content" style="display: none;">
-            ${monthlyBreakdown.length === 0 
+        '<!-- Monthly Breakdown Table -->' +
+        '<div id="revenueTabMonthly" class="revenue-tab-content" style="display: none;">' +
+            (monthlyBreakdown.length === 0 
                 ? '<p style="text-align: center; padding: 32px; color: var(--admin-text-muted);">No revenue data yet</p>'
-                : `<div class="admin-table-wrap">
-                    <div class="admin-table-scroll">
-                        <table class="admin-table revenue-table">
-                            <thead>
-                                <tr>
-                                    <th>Month</th>
-                                    <th style="text-align: center;">Orders</th>
-                                    <th style="text-align: right;">Revenue (KWD)</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                ${monthlyBreakdown.map(m => `
-                                    <tr>
-                                        <td style="font-weight: 500;">${MONTH_NAMES[m.month - 1]} ${m.year}</td>
-                                        <td style="text-align: center;">${m.orders}</td>
-                                        <td style="text-align: right; font-weight: 600; font-family: 'Playfair Display', serif;">${m.revenue.toFixed(3)}</td>
-                                    </tr>
-                                `).join('')}
-                            </tbody>
-                        </table>
-                    </div>
-                </div>`
-            }
-        </div>
+                : '<div class="admin-table-wrap"><div class="admin-table-scroll"><table class="admin-table revenue-table">' +
+                    '<thead><tr><th>Month</th><th style="text-align: center;">Orders</th><th style="text-align: right;">Revenue (KWD)</th></tr></thead>' +
+                    '<tbody>' +
+                    monthlyBreakdown.map(function(m) {
+                        return '<tr><td style="font-weight: 500;">' + MONTH_NAMES[m.month - 1] + ' ' + m.year + '</td>' +
+                            '<td style="text-align: center;">' + m.orders + '</td>' +
+                            '<td style="text-align: right; font-weight: 600; font-family: Playfair Display, serif;">' + m.revenue.toFixed(3) + '</td></tr>';
+                    }).join('') +
+                    '</tbody></table></div></div>'
+            ) +
+        '</div>' +
 
-        <div style="text-align: center; margin-top: 16px;">
-            <p style="color: var(--admin-text-muted); font-size: 11px;">
-                🔒 Auto-locks in 5 minutes • Revenue data from paid orders only
-            </p>
-        </div>
-    `;
+        '<!-- Products Breakdown Tab -->' +
+        '<div id="revenueTabProducts" class="revenue-tab-content" style="display: none;">' +
+            productsTabHtml +
+        '</div>' +
+
+        '<div style="text-align: center; margin-top: 16px;">' +
+            '<p style="color: var(--admin-text-muted); font-size: 11px;">🔒 Auto-locks in 5 minutes • Revenue data from paid orders only</p>' +
+        '</div>';
 }
 
 /**
@@ -425,12 +452,17 @@ function renderRevenueHistory(data) {
  */
 window.switchRevenueTab = function(tab, btn) {
     // Update tab buttons
-    document.querySelectorAll('.revenue-tab').forEach(t => t.classList.remove('active'));
+    document.querySelectorAll('.revenue-tab').forEach(function(t) { t.classList.remove('active'); });
     btn.classList.add('active');
 
     // Show/hide content
-    document.getElementById('revenueTabDaily').style.display = tab === 'daily' ? 'block' : 'none';
-    document.getElementById('revenueTabMonthly').style.display = tab === 'monthly' ? 'block' : 'none';
+    var daily = document.getElementById('revenueTabDaily');
+    var monthly = document.getElementById('revenueTabMonthly');
+    var products = document.getElementById('revenueTabProducts');
+    
+    if (daily) daily.style.display = tab === 'daily' ? 'block' : 'none';
+    if (monthly) monthly.style.display = tab === 'monthly' ? 'block' : 'none';
+    if (products) products.style.display = tab === 'products' ? 'block' : 'none';
 };
 
 /**
