@@ -183,10 +183,6 @@ const ProductsAPI = {
 
     async search(query, options = {}) {
         return this.getAll({ search: query, ...options });
-    },
-
-    async getCollectionFeatured(limit = 12) {
-        return apiRequest(`/products/collection-featured?limit=${limit}`);
     }
 };
 
@@ -274,6 +270,17 @@ const OrdersAPI = {
 
     async getById(id) {
         return apiRequest(`/orders/${id}`);
+    },
+
+    async cancelOrder(id, reason) {
+        return apiRequest(`/orders/${id}/cancel`, {
+            method: 'POST',
+            body: JSON.stringify({ reason })
+        });
+    },
+
+    async checkCanCancel(id) {
+        return apiRequest(`/orders/${id}/can-cancel`);
     }
 };
 
@@ -386,6 +393,54 @@ const AdminAPI = {
             throw new Error(data.message || 'Failed to send email');
         }
         return await response.json();
+    },
+
+    async checkSuperuser() {
+        return apiRequest('/admin/check-superuser');
+    },
+
+    async setRevenuePassword(revenuePassword) {
+        return apiRequest('/admin/set-revenue-password', {
+            method: 'POST',
+            body: JSON.stringify({ revenuePassword })
+        });
+    },
+
+    async authenticateRevenueAccess(revenuePassword) {
+        return apiRequest('/admin/revenue-auth', {
+            method: 'POST',
+            body: JSON.stringify({ revenuePassword })
+        });
+    },
+
+    async requestRevenueOTP() {
+        return apiRequest('/admin/revenue-otp/request', {
+            method: 'POST'
+        });
+    },
+
+    async verifyRevenueOTP(otp) {
+        return apiRequest('/admin/revenue-otp/verify', {
+            method: 'POST',
+            body: JSON.stringify({ otp })
+        });
+    },
+
+    async getRevenueHistory() {
+        return apiRequest('/admin/revenue-history');
+    },
+
+    async getReceipt(orderId) {
+        const url = `${getApiBaseUrl()}/admin/receipt/${orderId}`;
+        const response = await fetch(url, {
+            headers: {
+                ...(authToken && { 'Authorization': `Bearer ${authToken}` })
+            }
+        });
+        if (!response.ok) {
+            throw new Error('Failed to generate receipt');
+        }
+        return await response.text();
     }
 };
 

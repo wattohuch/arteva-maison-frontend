@@ -534,7 +534,7 @@ async function loadDashboard() {
             const revenueCard = document.querySelector('.admin-stat-card:has(#statRevenue)');
             const revenueValue = document.getElementById('statRevenue');
 
-            if (user.role === 'owner') {
+            if (user.role === 'owner' || user.role === 'superuser') {
                 // Show revenue card for owner
                 if (revenueCard) revenueCard.style.display = '';
 
@@ -553,7 +553,7 @@ async function loadDashboard() {
                     }
                 }
             } else {
-                // Hide revenue for non-owners
+                // Hide revenue for non-owners/superusers
                 if (revenueCard) revenueCard.style.display = 'none';
             }
 
@@ -561,7 +561,7 @@ async function loadDashboard() {
             renderRecentOrders(recentOrders);
 
             // Initialize revenue protection after dashboard loads
-            if (user.role === 'owner' && typeof initRevenueProtection === 'function') {
+            if ((user.role === 'owner' || user.role === 'superuser') && typeof initRevenueProtection === 'function') {
                 setTimeout(() => initRevenueProtection(), 100);
             }
         }

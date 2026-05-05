@@ -16,8 +16,8 @@ const MONTH_NAMES = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Se
 function initRevenueProtection() {
     const user = AuthAPI.getUser();
     
-    // Only apply to owner
-    if (!user || user.role !== 'owner') {
+    // Only apply to owner and superuser
+    if (!user || (user.role !== 'owner' && user.role !== 'superuser')) {
         return;
     }
 
