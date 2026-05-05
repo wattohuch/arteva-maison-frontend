@@ -1231,36 +1231,126 @@
 
 /* ===== DESKTOP: Orders page sidebar layout ===== */
 @media (min-width: 1025px) {
-    .orders-layout {
-        display: grid;
-        grid-template-columns: 220px 1fr;
-        gap: var(--space-8);
+    .orders-page {
+        padding: var(--space-12) 0 var(--space-16);
     }
 
+    .orders-page > .container {
+        max-width: 1200px;
+    }
+
+    .orders-layout {
+        display: grid;
+        grid-template-columns: 240px 1fr;
+        gap: var(--space-10);
+        align-items: start;
+    }
+
+    /* Vertical Sidebar */
     .account-sidebar {
-        position: static;
-        margin-bottom: var(--space-8);
+        position: sticky;
+        top: calc(var(--header-height) + var(--space-8));
+        overflow-x: visible;
+        background: #fff;
+        border-radius: 16px;
+        padding: var(--space-4);
+        box-shadow: 0 1px 3px rgba(0,0,0,0.04), 0 1px 2px rgba(0,0,0,0.02);
+        border: 1px solid rgba(0,0,0,0.06);
     }
 
     .account-menu {
-        flex-direction: row;
-        overflow-x: auto;
-        padding-bottom: var(--space-2);
-    }
-
-    .account-menu li {
-        flex: 0 0 auto;
-    }
-
-    .order-header {
         flex-direction: column;
-        align-items: flex-start;
-        gap: var(--space-2);
+        gap: 0;
+        padding: 0;
+        border-bottom: none;
+        white-space: normal;
+    }
+
+    .account-menu li a {
+        display: flex;
+        align-items: center;
+        width: 100%;
+        padding: var(--space-3) var(--space-4);
+        font-size: var(--fs-sm);
+        font-weight: var(--fw-medium);
+        text-transform: none;
+        letter-spacing: 0.01em;
+        border-bottom: none;
+        border-radius: 10px;
+        margin-bottom: 2px;
+        color: var(--text-secondary);
+        transition: all 0.2s ease;
+    }
+
+    .account-menu li a:hover {
+        background: rgba(0,0,0,0.03);
+        color: var(--text-primary);
+    }
+
+    .account-menu li a.active {
+        background: linear-gradient(135deg, rgba(201,169,98,0.1), rgba(201,169,98,0.06));
+        color: var(--color-gold);
+        font-weight: var(--fw-semibold);
+        border-bottom: none;
+    }
+
+    /* Wider content area */
+    .orders-content {
+        max-width: none;
+    }
+
+    .orders-content h1 {
+        font-size: var(--fs-3xl);
+        margin-bottom: var(--space-8);
+    }
+
+    .orders-list {
+        gap: var(--space-5);
+    }
+
+    /* Desktop Order Card — Horizontal Layout */
+    .order-header {
+        flex-direction: row;
+        align-items: center;
+        justify-content: space-between;
+        padding: var(--space-5) var(--space-6);
     }
 
     .order-header-info {
-        width: 100%;
-        justify-content: space-between;
+        width: auto;
+        gap: var(--space-4);
+    }
+
+    .order-body {
+        padding: var(--space-5) var(--space-6);
+    }
+
+    .order-item-thumb {
+        width: 76px;
+        height: 76px;
+        border-radius: 14px;
+    }
+
+    .order-footer {
+        flex-wrap: nowrap;
+        align-items: center;
+        padding-top: var(--space-5);
+        margin-top: var(--space-5);
+    }
+
+    .order-total {
+        font-size: var(--fs-xl);
+        white-space: nowrap;
+    }
+
+    .order-actions {
+        gap: 8px;
+    }
+
+    .btn-view-order {
+        padding: 9px 18px;
+        font-size: 13px;
+        border-radius: 10px;
     }
 }
 

@@ -2169,7 +2169,7 @@ function renderDiscountProductsTable(products) {
         const compareAt = p.compareAtPrice || 0;
         const hasDiscount = compareAt > 0 && compareAt > currentPrice;
         const discountPct = hasDiscount ? Math.round(((compareAt - currentPrice) / compareAt) * 100) : 0;
-        const imgSrc = (p.images && p.images.length > 0) ? p.images[0] : 'assets/images/logo.png';
+        const imgSrc = (p.images && p.images.length > 0) ? resolveImageUrl(p.images[0]?.url) : 'assets/images/logo.png';
 
         return '<tr>' +
             '<td><img src="' + imgSrc + '" class="product-thumb" onerror="this.src=\'assets/images/logo.png\'"></td>' +
