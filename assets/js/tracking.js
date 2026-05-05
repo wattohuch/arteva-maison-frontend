@@ -253,9 +253,8 @@ function buildTimeline(statusHistory, currentStatus) {
  */
 function updatePilotInfo(pilot) {
     if (pilot && pilot.name) {
-        const firstName = pilot.name.split(' ')[0];
-        pilotName.textContent = firstName;
-        pilotPhone.textContent = window.getTranslation ? window.getTranslation('your_driver') : 'Your Driver';
+        pilotName.textContent = pilot.name;
+        pilotPhone.textContent = pilot.phone || (window.getTranslation ? window.getTranslation('no_phone') : 'No phone provided');
         pilotAvatar.textContent = pilot.name.charAt(0).toUpperCase();
 
         // If pilot has location, update marker
