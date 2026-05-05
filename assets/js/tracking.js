@@ -13,7 +13,7 @@ const STATUS_CONFIG = {
     confirmed: { name: 'Confirmed', icon: '✓', order: 2 },
     packed: { name: 'Packed', icon: '📦', order: 3 },
     processing: { name: 'Processing', icon: '⚙️', order: 4 },
-    handed_over: { name: 'Handed to Pilot', icon: '🤝', order: 5 },
+    handed_over: { name: 'Handed to Driver', icon: '🤝', order: 5 },
     out_for_delivery: { name: 'Out for Delivery', icon: '🚗', order: 6 },
     delivered: { name: 'Delivered', icon: '✅', order: 7 },
     cancelled: { name: 'Cancelled', icon: '❌', order: -1 }
@@ -253,8 +253,9 @@ function buildTimeline(statusHistory, currentStatus) {
  */
 function updatePilotInfo(pilot) {
     if (pilot && pilot.name) {
-        pilotName.textContent = pilot.name;
-        pilotPhone.textContent = pilot.phone || (window.getTranslation ? window.getTranslation('no_phone') : 'No phone available');
+        const firstName = pilot.name.split(' ')[0];
+        pilotName.textContent = firstName;
+        pilotPhone.textContent = window.getTranslation ? window.getTranslation('your_driver') : 'Your Driver';
         pilotAvatar.textContent = pilot.name.charAt(0).toUpperCase();
 
         // If pilot has location, update marker
@@ -291,7 +292,7 @@ function initializeMap(orderData) {
             attribution: '© OpenStreetMap'
         });
 
-        const googleHybrid = L.tileLayer('http://{s}.google.com/vt/lyrs=s,h&x={x}&y={y}&z={z}', {
+        const googleHybrid = L.tileLayer('https://{s}.google.com/vt/lyrs=s,h&x={x}&y={y}&z={z}', {
             maxZoom: 20,
             subdomains: ['mt0', 'mt1', 'mt2', 'mt3'],
             attribution: '© Google Maps'

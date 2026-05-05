@@ -11,7 +11,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link
-        href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600;700&family=Montserrat:wght@300;400;500;600&display=swap"
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:wght@400;500;600;700&family=Noto+Sans+Arabic:wght@300;400;500;600;700&display=swap"
         rel="stylesheet">
 
     <!-- Leaflet CSS for map -->
@@ -405,14 +405,14 @@
 <body>
     <!-- Header -->
     <header class="header" id="header">
-        <div class="header-container">
-            <div class="header-left">
-                <a href="index.html" class="logo">ARTÉVA</a>
+        <div class="header-inner" style="display:flex;align-items:center;justify-content:space-between;padding:0 var(--space-6);max-width:var(--container-xl);margin:0 auto;height:var(--header-height);">
+            <div class="logo">
+                <a href="index.html"><span class="logo-text"><span class="main">ARTÉVA</span><span class="sub">MAISON</span></span></a>
             </div>
-            <div class="header-actions">
-                <a href="cart.html" class="header-icon" id="cart-icon">
-                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                        stroke-width="1.5">
+            <div style="display:flex;align-items:center;gap:var(--space-4);">
+                <a href="index.html" style="font-size:var(--fs-sm);color:var(--text-secondary);text-decoration:none;font-weight:500;">← Back to Shop</a>
+                <a href="cart.html" class="header-icon" aria-label="Cart">
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
                         <path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"></path>
                         <line x1="3" y1="6" x2="21" y2="6"></line>
                         <path d="M16 10a4 4 0 01-8 0"></path>
@@ -498,7 +498,7 @@
                     <div class="pilot-info" id="pilotInfo">
                         <div class="pilot-avatar" id="pilotAvatar">?</div>
                         <div class="pilot-details">
-                            <h4 id="pilotName" data-i18n="no_pilot">No pilot assigned</h4>
+                            <h4 id="pilotName" data-i18n="no_driver">No driver assigned</h4>
                             <p id="pilotPhone" data-i18n="waiting_assignment">Waiting for assignment...</p>
                         </div>
                     </div>
@@ -511,7 +511,7 @@
     </main>
 
     <!-- Footer with Currency Selector (Mobile Only) -->
-    <footer style="background: #1a1a1a; padding: 20px; text-align: center; margin-top: 40px;">
+    <footer style="background: #1a1a1a; padding: 16px 20px; text-align: center; margin-top: 40px; font-size: 12px; color: rgba(255,255,255,0.4);">
         <div class="footer-currency-selector">
             <div class="currency-selector">
                 <button class="currency-trigger" aria-label="Select Currency">
