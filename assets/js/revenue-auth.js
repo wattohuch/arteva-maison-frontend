@@ -10,6 +10,9 @@ const REVENUE_TIMEOUT = 5 * 60 * 1000; // 5 minutes
 
 const MONTH_NAMES = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
 
+// Cache analytics data for drill-down
+let _revenueAnalyticsCache = null;
+
 /**
  * Initialize revenue protection
  */
@@ -275,7 +278,8 @@ async function showRevenueHistoryModal() {
         }
 
         if (historyResult.success) {
-            renderRevenueHistory(historyResult.data, analyticsResult ? analyticsResult.data : null);
+            _revenueAnalyticsCache = analyticsResult ? analyticsResult.data : null;
+            renderRevenueHistory(historyResult.data, _revenueAnalyticsCache);
         } else {
             document.getElementById('revenueHistoryBody').innerHTML = 
                 '<div style="text-align: center; padding: 40px; color: #f87171;"><p>Failed to load revenue data</p></div>';
@@ -311,25 +315,18 @@ function renderRevenueHistory(data, analytics) {
             '<th style="text-align:center;">Sold</th>' +
             '<th style="text-align:center;">Orders</th>' +
             '<th style="text-align:right;">Revenue (KWD)</th>' +
-            '<th>Price Points</th>' +
+            '<th style="text-align:center;">Details</th>' +
             '</tr></thead><tbody>' +
             analytics.products.map(function(p, idx) {
-                var pricePointsHtml = p.pricePoints.map(function(pp) {
-                    return '<div style="font-size:11px;color:var(--admin-text-muted);line-height:1.6;">' +
-                        '<span style="font-weight:600;color:var(--admin-text);">' + pp.price.toFixed(3) + '</span> KWD × ' + pp.quantity + 
-                        ' = <span style="color:var(--admin-gold);">' + pp.revenue.toFixed(3) + '</span>' +
-                    '</div>';
-                }).join('');
-
                 var rankBadge = idx === 0 ? ' <span class="revenue-best-badge">🏆 #1</span>' : 
                     (idx < 3 ? ' <span style="font-size:10px;background:rgba(201,169,98,0.15);color:var(--admin-gold);padding:2px 6px;border-radius:8px;">#' + (idx+1) + '</span>' : '');
 
-                return '<tr>' +
+                return '<tr onclick="window.showProductDrillDown(' + idx + ')" style="cursor:pointer;" title="Click to view details">' +
                     '<td><strong style="color:var(--admin-text);">' + p.name + '</strong>' + rankBadge + '</td>' +
                     '<td style="text-align:center;">' + p.totalQuantitySold + '</td>' +
                     '<td style="text-align:center;">' + p.orderCount + '</td>' +
                     '<td style="text-align:right;font-weight:700;font-family:Playfair Display,serif;color:var(--admin-gold);">' + p.totalRevenue.toFixed(3) + '</td>' +
-                    '<td>' + pricePointsHtml + '</td>' +
+                    '<td style="text-align:center;"><span style="font-size:18px;">›</span></td>' +
                 '</tr>';
             }).join('') +
             '</tbody></table></div></div>';
@@ -479,6 +476,167 @@ window.closeRevenueHistoryModal = function() {
 function isRevenueUnlocked() {
     return revenueUnlocked;
 }
+
+/**
+ * Show product drill-down: price history, orders grouped by price
+ */
+window.showProductDrillDown = function(productIndex) {
+    if (!_revenueAnalyticsCache || !_revenueAnalyticsCache.products) return;
+    var product = _revenueAnalyticsCache.products[productIndex];
+    if (!product) return;
+
+    var container = document.getElementById('revenueTabProducts');
+    if (!container) return;
+
+    // Price points with expandable orders
+    var pricePointsHtml = product.pricePoints.map(function(pp, ppIdx) {
+        var ordersHtml = '';
+        if (pp.orders && pp.orders.length > 0) {
+            ordersHtml = '<div id="ppOrders_' + ppIdx + '" style="display:none;margin-top:10px;">' +
+                '<table class="admin-table" style="min-width:auto;">' +
+                '<thead><tr>' +
+                '<th>Order #</th><th>Date</th><th>Qty</th><th>Customer</th><th style="text-align:center;">Info</th>' +
+                '</tr></thead><tbody>' +
+                pp.orders.map(function(o, oIdx) {
+                    var dateStr = new Date(o.date).toLocaleDateString('en-US', {month:'short',day:'numeric',year:'numeric'});
+                    return '<tr style="cursor:pointer;" onclick="window.showOrderCustomerInfo(' + productIndex + ',' + ppIdx + ',' + oIdx + ')">' +
+                        '<td style="color:var(--admin-gold);font-weight:600;">' + o.orderNumber + '</td>' +
+                        '<td>' + dateStr + '</td>' +
+                        '<td style="text-align:center;">' + o.quantity + '</td>' +
+                        '<td>' + (o.customer ? o.customer.name : 'Guest') + '</td>' +
+                        '<td style="text-align:center;"><span style="font-size:16px;">👤</span></td>' +
+                    '</tr>';
+                }).join('') +
+                '</tbody></table></div>';
+        }
+
+        return '<div style="background:var(--admin-surface-2);border:1px solid var(--admin-border);border-radius:12px;padding:14px;margin-bottom:8px;">' +
+            '<div onclick="var el=document.getElementById(\'ppOrders_' + ppIdx + '\');if(el)el.style.display=el.style.display===\'none\'?\'block\':\'none\';" style="cursor:pointer;display:flex;justify-content:space-between;align-items:center;">' +
+                '<div>' +
+                    '<span style="font-size:18px;font-weight:700;font-family:Playfair Display,serif;color:var(--admin-text);">' + pp.price.toFixed(3) + '</span>' +
+                    ' <span style="font-size:12px;color:var(--admin-text-muted);">KWD</span>' +
+                '</div>' +
+                '<div style="display:flex;gap:16px;align-items:center;">' +
+                    '<div style="text-align:center;"><div style="font-size:14px;font-weight:700;color:var(--admin-text);">' + pp.quantity + '</div><div style="font-size:10px;color:var(--admin-text-muted);">SOLD</div></div>' +
+                    '<div style="text-align:center;"><div style="font-size:14px;font-weight:700;color:var(--admin-gold);">' + pp.revenue.toFixed(3) + '</div><div style="font-size:10px;color:var(--admin-text-muted);">REVENUE</div></div>' +
+                    '<div style="text-align:center;"><div style="font-size:14px;font-weight:700;color:var(--admin-text-secondary);">' + pp.orderCount + '</div><div style="font-size:10px;color:var(--admin-text-muted);">ORDERS</div></div>' +
+                    '<span style="font-size:14px;color:var(--admin-text-muted);">▼</span>' +
+                '</div>' +
+            '</div>' +
+            ordersHtml +
+        '</div>';
+    }).join('');
+
+    // Price history from productPriceMap
+    var priceHistoryHtml = '';
+    if (_revenueAnalyticsCache.productPriceMap && _revenueAnalyticsCache.productPriceMap[product.productId]) {
+        var pm = _revenueAnalyticsCache.productPriceMap[product.productId];
+        if (pm.priceHistory && pm.priceHistory.length > 0) {
+            priceHistoryHtml = '<div style="margin-bottom:16px;"><div style="font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:0.06em;color:var(--admin-text-muted);margin-bottom:8px;">📊 Price History</div>' +
+                '<div class="admin-table-wrap"><div class="admin-table-scroll"><table class="admin-table" style="min-width:auto;"><thead><tr><th>Date</th><th style="text-align:right;">Price</th><th>Reason</th></tr></thead><tbody>' +
+                pm.priceHistory.map(function(h) {
+                    var d = new Date(h.changedAt).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'});
+                    var reason = h.reason === 'discount' ? '🏷️ Discount' : '💰 Update';
+                    return '<tr><td>' + d + '</td><td style="text-align:right;font-weight:600;">' + h.price.toFixed(3) + ' KWD</td><td>' + reason + '</td></tr>';
+                }).join('') +
+                '</tbody></table></div></div></div>';
+        }
+        // Show current price info
+        priceHistoryHtml = '<div style="display:flex;gap:12px;margin-bottom:16px;flex-wrap:wrap;">' +
+            '<div style="background:var(--admin-surface-2);padding:12px 16px;border-radius:10px;border:1px solid var(--admin-border);flex:1;min-width:120px;">' +
+                '<div style="font-size:10px;text-transform:uppercase;letter-spacing:0.06em;color:var(--admin-text-muted);margin-bottom:2px;">Current Price</div>' +
+                '<div style="font-size:18px;font-weight:700;font-family:Playfair Display,serif;">' + pm.currentPrice.toFixed(3) + ' KWD</div>' +
+            '</div>' +
+            (pm.compareAtPrice ? '<div style="background:var(--admin-surface-2);padding:12px 16px;border-radius:10px;border:1px solid var(--admin-border);flex:1;min-width:120px;"><div style="font-size:10px;text-transform:uppercase;letter-spacing:0.06em;color:var(--admin-text-muted);margin-bottom:2px;">Compare At</div><div style="font-size:18px;font-weight:700;font-family:Playfair Display,serif;text-decoration:line-through;color:var(--admin-text-muted);">' + pm.compareAtPrice.toFixed(3) + '</div></div>' : '') +
+            (pm.discountPercentage ? '<div style="background:rgba(74,222,128,0.1);padding:12px 16px;border-radius:10px;border:1px solid rgba(74,222,128,0.2);flex:1;min-width:120px;"><div style="font-size:10px;text-transform:uppercase;letter-spacing:0.06em;color:var(--admin-text-muted);margin-bottom:2px;">Discount</div><div style="font-size:18px;font-weight:700;color:#22c55e;">' + pm.discountPercentage + '%</div></div>' : '') +
+        '</div>' + priceHistoryHtml;
+    }
+
+    container.innerHTML = '<div style="margin-bottom:16px;">' +
+        '<button onclick="window.backToProductsList()" style="background:none;border:none;cursor:pointer;color:var(--admin-gold);font-size:14px;font-weight:600;font-family:inherit;padding:8px 0;display:flex;align-items:center;gap:6px;">‹ Back to Products</button>' +
+    '</div>' +
+    '<div style="display:flex;align-items:center;gap:14px;margin-bottom:20px;">' +
+        (product.image ? '<img src="' + resolveImageUrl(product.image) + '" style="width:56px;height:56px;border-radius:12px;object-fit:cover;border:1px solid var(--admin-border);" onerror="this.style.display=\'none\'">' : '') +
+        '<div>' +
+            '<h3 style="margin:0;font-family:Playfair Display,serif;font-size:20px;color:var(--admin-text);">' + product.name + '</h3>' +
+            '<div style="display:flex;gap:16px;margin-top:4px;font-size:12px;color:var(--admin-text-muted);">' +
+                '<span>' + product.totalQuantitySold + ' sold</span>' +
+                '<span>' + product.orderCount + ' orders</span>' +
+                '<span style="color:var(--admin-gold);font-weight:700;">' + product.totalRevenue.toFixed(3) + ' KWD</span>' +
+            '</div>' +
+        '</div>' +
+    '</div>' +
+    priceHistoryHtml +
+    '<div style="font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:0.06em;color:var(--admin-text-muted);margin-bottom:10px;">💵 Orders by Price Point</div>' +
+    pricePointsHtml;
+};
+
+/**
+ * Back to products list
+ */
+window.backToProductsList = function() {
+    if (_revenueAnalyticsCache) {
+        var body = document.getElementById('revenueHistoryBody');
+        if (body) {
+            // Re-render by triggering the modal refresh
+            showRevenueHistoryModal();
+        }
+    }
+};
+
+/**
+ * Show customer info popup for a specific order
+ */
+window.showOrderCustomerInfo = function(productIndex, ppIdx, orderIdx) {
+    if (!_revenueAnalyticsCache || !_revenueAnalyticsCache.products) return;
+    var product = _revenueAnalyticsCache.products[productIndex];
+    if (!product) return;
+    var pp = product.pricePoints[ppIdx];
+    if (!pp || !pp.orders) return;
+    var order = pp.orders[orderIdx];
+    if (!order) return;
+
+    // Remove existing popup
+    var existing = document.getElementById('customerInfoPopup');
+    if (existing) existing.remove();
+
+    var popup = document.createElement('div');
+    popup.id = 'customerInfoPopup';
+    popup.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.6);z-index:3000;display:flex;align-items:center;justify-content:center;padding:20px;backdrop-filter:blur(4px);animation:modalBgIn 0.2s ease;';
+    
+    var dateStr = new Date(order.date).toLocaleDateString('en-US', {weekday:'short',month:'short',day:'numeric',year:'numeric'});
+    var locationStr = order.shippingAddress ? (order.shippingAddress.city + ', ' + order.shippingAddress.country) : 'N/A';
+    var receiptUrl = (typeof API_BASE_URL !== 'undefined' ? API_BASE_URL : '') + '/admin/receipt/' + order.orderId;
+
+    popup.innerHTML = '<div style="background:var(--admin-surface,#fff);border-radius:20px;max-width:420px;width:100%;box-shadow:0 20px 60px rgba(0,0,0,0.3);animation:modalSlideUp 0.3s cubic-bezier(0.16,1,0.3,1);overflow:hidden;">' +
+        '<div style="padding:20px;border-bottom:1px solid var(--admin-border,#eee);display:flex;justify-content:space-between;align-items:center;">' +
+            '<h3 style="margin:0;font-family:Playfair Display,serif;font-size:18px;color:var(--admin-text,#333);">👤 Customer Details</h3>' +
+            '<button onclick="document.getElementById(\'customerInfoPopup\').remove()" style="background:none;border:none;font-size:20px;cursor:pointer;color:var(--admin-text-muted,#999);width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;">✕</button>' +
+        '</div>' +
+        '<div style="padding:20px;">' +
+            '<div style="background:var(--admin-surface-2,#f5f5f5);border-radius:14px;padding:16px;margin-bottom:14px;border:1px solid var(--admin-border,#eee);">' +
+                '<div style="font-size:10px;text-transform:uppercase;letter-spacing:0.08em;color:var(--admin-text-muted,#999);margin-bottom:8px;">Order Info</div>' +
+                '<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">' +
+                    '<div><span style="font-size:11px;color:var(--admin-text-muted,#999);">Order #</span><br><strong style="color:var(--admin-gold,#c9a962);">' + order.orderNumber + '</strong></div>' +
+                    '<div><span style="font-size:11px;color:var(--admin-text-muted,#999);">Date</span><br><strong>' + dateStr + '</strong></div>' +
+                    '<div><span style="font-size:11px;color:var(--admin-text-muted,#999);">Qty</span><br><strong>' + order.quantity + '</strong></div>' +
+                    '<div><span style="font-size:11px;color:var(--admin-text-muted,#999);">Revenue</span><br><strong style="color:var(--admin-gold,#c9a962);">' + order.revenue.toFixed(3) + ' KWD</strong></div>' +
+                '</div>' +
+            '</div>' +
+            '<div style="background:var(--admin-surface-2,#f5f5f5);border-radius:14px;padding:16px;margin-bottom:14px;border:1px solid var(--admin-border,#eee);">' +
+                '<div style="font-size:10px;text-transform:uppercase;letter-spacing:0.08em;color:var(--admin-text-muted,#999);margin-bottom:8px;">Customer</div>' +
+                '<div style="margin-bottom:6px;"><span style="font-size:11px;color:var(--admin-text-muted,#999);">Name</span><br><strong style="font-size:15px;">' + order.customer.name + '</strong></div>' +
+                '<div style="margin-bottom:6px;"><span style="font-size:11px;color:var(--admin-text-muted,#999);">Email</span><br><span style="font-size:13px;">' + order.customer.email + '</span></div>' +
+                '<div style="margin-bottom:6px;"><span style="font-size:11px;color:var(--admin-text-muted,#999);">Phone</span><br><span style="font-size:13px;">' + order.customer.phone + '</span></div>' +
+                '<div><span style="font-size:11px;color:var(--admin-text-muted,#999);">Location</span><br><span style="font-size:13px;">' + locationStr + '</span></div>' +
+            '</div>' +
+            '<a href="' + receiptUrl + '" target="_blank" style="display:flex;align-items:center;justify-content:center;gap:8px;width:100%;padding:14px;background:linear-gradient(135deg,var(--admin-gold,#c9a962),var(--admin-gold-dark,#a08848));color:#fff;border:none;border-radius:12px;font-size:14px;font-weight:700;cursor:pointer;text-decoration:none;font-family:inherit;">🧾 View Receipt</a>' +
+        '</div>' +
+    '</div>';
+
+    popup.addEventListener('click', function(e) { if (e.target === popup) popup.remove(); });
+    document.body.appendChild(popup);
+};
 
 // Export functions
 window.initRevenueProtection = initRevenueProtection;

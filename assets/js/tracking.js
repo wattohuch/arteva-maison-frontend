@@ -286,33 +286,34 @@ function initializeMap(orderData) {
 
     // Create map if not exists
     if (!map) {
-        // Define Layers
+        // Define Layers — using reliable free tile providers
+        const cartoDB = L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
+            maxZoom: 20,
+            attribution: '© CartoDB © OpenStreetMap'
+        });
+
         const osm = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            maxZoom: 19,
             attribution: '© OpenStreetMap'
         });
 
-        const googleHybrid = L.tileLayer('https://{s}.google.com/vt/lyrs=s,h&x={x}&y={y}&z={z}', {
-            maxZoom: 20,
-            subdomains: ['mt0', 'mt1', 'mt2', 'mt3'],
-            attribution: '© Google Maps'
-        });
-
-        const esriStreets = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Street_Map/MapServer/tile/{z}/{y}/{x}', {
+        const esriSatellite = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
+            maxZoom: 18,
             attribution: '© Esri'
         });
 
-        // Initialize map with Google Hybrid as default for better accuracy
+        // Initialize map with CartoDB Voyager as default (fast, beautiful, free)
         map = L.map('tracking-map', {
             center: center,
             zoom: zoom,
-            layers: [googleHybrid]
+            layers: [cartoDB]
         });
 
         // Layer Control
         const baseMaps = {
-            "Satellite": googleHybrid,
-            "Streets (Esri)": esriStreets,
-            "Streets (OSM)": osm
+            "Map": cartoDB,
+            "Satellite": esriSatellite,
+            "Classic": osm
         };
         L.control.layers(baseMaps).addTo(map);
 
