@@ -281,7 +281,7 @@ body.admin-body {
 .mobile-toggle:active {
     transform: scale(0.92);
     background: var(--admin-gold);
-    color: #0f0f0f;
+    color: #fff;
 }
 
 /* ============================================
@@ -1888,5 +1888,106 @@ body.admin-body {
 @media (min-width: 768px) {
     .revenue-summary-grid {
         grid-template-columns: repeat(4, 1fr);
+    }
+}
+
+/* ============================================
+   DESKTOP OVERRIDES (1024px+)
+   Full sidebar layout, refined spacing, 4-col stats
+   ============================================ */
+@media (min-width: 1024px) {
+    /* Sidebar: always visible on desktop */
+    .admin-sidebar {
+        transform: translateX(0);
+        box-shadow: none;
+        border-right: 1px solid rgba(201, 169, 98, 0.12);
+    }
+
+    /* Hide mobile toggle and overlay on desktop */
+    .mobile-toggle {
+        display: none !important;
+    }
+
+    .sidebar-overlay {
+        display: none !important;
+    }
+
+    /* Main content: offset by sidebar */
+    .admin-main {
+        margin-left: var(--sidebar-width);
+        padding: 32px 40px;
+        padding-top: 32px;
+        padding-bottom: 40px;
+        max-width: calc(100% - var(--sidebar-width));
+    }
+
+    /* Page header */
+    .admin-page-header {
+        flex-direction: row;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 32px;
+    }
+
+    .admin-page-title {
+        font-size: 28px;
+    }
+
+    /* 4-column stat cards */
+    .admin-stats {
+        grid-template-columns: repeat(4, 1fr);
+        gap: 16px;
+    }
+
+    .admin-stat-card,
+    .stat-card {
+        padding: 20px;
+        gap: 14px;
+    }
+
+    .stat-icon-wrap {
+        width: 48px;
+        height: 48px;
+        font-size: 22px;
+    }
+
+    .stat-content h3 {
+        font-size: 22px;
+    }
+
+    /* Search bars */
+    .admin-search-wrap {
+        max-width: 400px;
+    }
+
+    /* Tables: better spacing */
+    .admin-table th,
+    .admin-table td {
+        padding: 14px 16px;
+    }
+
+    /* Cards: hover effects */
+    .admin-stat-card:hover {
+        transform: translateY(-2px);
+        box-shadow: var(--admin-shadow-gold);
+    }
+
+    /* Modal: larger max-width */
+    .admin-modal-content {
+        max-width: 640px;
+    }
+
+    /* Hide bottom nav on desktop */
+    .bottom-nav {
+        display: none !important;
+    }
+
+    /* Form layout improvements */
+    .admin-form-group {
+        margin-bottom: 20px;
+    }
+
+    .admin-form-group label {
+        font-size: 13px;
     }
 }

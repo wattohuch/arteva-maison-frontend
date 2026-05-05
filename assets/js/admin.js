@@ -8,8 +8,10 @@
 // ==========================================
 function resolveImageUrl(url, fallback) {
     if (!url) return fallback || 'assets/images/products/placeholder.png';
+    if (typeof url !== 'string') return fallback || 'assets/images/products/placeholder.png';
     if (url.startsWith('http')) return url;
-    const backendOrigin = (typeof API_BASE_URL !== 'undefined' ? API_BASE_URL : '').replace('/api', '');
+    const base = (typeof API_BASE_URL === 'string' ? API_BASE_URL : (window.API_BASE_URL || '')).toString();
+    const backendOrigin = base.replace('/api', '');
     return backendOrigin + url;
 }
 
