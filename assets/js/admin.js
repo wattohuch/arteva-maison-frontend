@@ -1607,6 +1607,17 @@ function updateCategoryDropdown() {
     });
     select.innerHTML = options;
     if (selectedValue) select.value = selectedValue;
+
+    // Also populate additional categories checkboxes
+    const addCatContainer = document.getElementById('additionalCategoriesContainer');
+    if (addCatContainer) {
+        addCatContainer.innerHTML = allCategories.map(cat => `
+            <label style="display: flex; align-items: center; gap: 6px; cursor: pointer; font-size: 14px; padding: 4px 8px; border-radius: 6px; background: var(--admin-surface-3); border: 1px solid var(--admin-border); color: var(--admin-text);">
+                <input type="checkbox" value="${cat._id}" style="accent-color: #c9a962;">
+                ${cat.name}
+            </label>
+        `).join('');
+    }
 }
 
 function renderCategoriesTable(categories) {
