@@ -134,7 +134,7 @@ function renderOrderDetails(order) {
         const msg = encodeURIComponent('Hello ART\u00c9VA Maison,\n\nI would like to return/exchange:\n\nOrder #: ' + order.orderNumber + '\nItems: ' + itemNames + '\nTotal: ' + totalVal + ' KWD\n\nReason: ');
         if (daysSince <= 14) {
             actionBtnHtml = '<div style="margin-top: var(--space-4); padding-top: var(--space-4); border-top: 1px solid var(--border-light);">' +
-                '<a href="https://wa.me/96555636321?text=' + msg + '" target="_blank" rel="noopener" style="display:block;text-align:center;background:#25d366;color:#fff;padding:12px;border-radius:6px;text-decoration:none;font-weight:500;">' +
+                '<a href="https://wa.me/96550683207?text=' + msg + '" target="_blank" rel="noopener" style="display:block;text-align:center;background:#25d366;color:#fff;padding:12px;border-radius:6px;text-decoration:none;font-weight:500;">' +
                 '\u21a9 Return / Exchange (' + daysLeft + ' days remaining)</a></div>';
         } else {
             actionBtnHtml = '<div style="margin-top: var(--space-4); padding-top: var(--space-4); border-top: 1px solid var(--border-light);">' +
@@ -144,7 +144,7 @@ function renderOrderDetails(order) {
     } else if (isCancellable) {
         const msg = encodeURIComponent('Hello ART\u00c9VA Maison,\n\nI would like to cancel:\n\nOrder #: ' + order.orderNumber + '\nItems: ' + itemNames + '\nTotal: ' + totalVal + ' KWD\n\nReason: ');
         actionBtnHtml = '<div style="margin-top: var(--space-4); padding-top: var(--space-4); border-top: 1px solid var(--border-light);">' +
-            '<a href="https://wa.me/96555636321?text=' + msg + '" target="_blank" rel="noopener" style="display:block;text-align:center;background:#ef4444;color:#fff;padding:12px;border-radius:6px;text-decoration:none;font-weight:500;">' +
+            '<a href="https://wa.me/96550683207?text=' + msg + '" target="_blank" rel="noopener" style="display:block;text-align:center;background:#ef4444;color:#fff;padding:12px;border-radius:6px;text-decoration:none;font-weight:500;">' +
             '\u2715 Cancel Order via WhatsApp</a></div>';
     }
 
@@ -264,13 +264,13 @@ function renderOrders(orders) {
             const daysLeft = 14 - daysSince;
             const msg = encodeURIComponent('Hello ART\u00c9VA Maison,\n\nI would like to return/exchange:\n\nOrder #: ' + order.orderNumber + '\nItems: ' + itemNames + '\nTotal: ' + total + ' KWD\n\nReason: ');
             if (daysSince <= 14) {
-                whatsappBtn = '<a href="https://wa.me/96555636321?text=' + msg + '" target="_blank" rel="noopener" class="btn-view-order" style="background:#25d366;color:#fff;font-size:12px;">\u21a9 Return (' + daysLeft + 'd left)</a>';
+                whatsappBtn = '<a href="https://wa.me/96550683207?text=' + msg + '" target="_blank" rel="noopener" class="btn-view-order" style="background:#25d366;color:#fff;font-size:12px;">\u21a9 Return (' + daysLeft + 'd left)</a>';
             } else {
                 whatsappBtn = '<span class="btn-view-order" style="background:#e5e7eb;color:#9ca3af;cursor:not-allowed;font-size:11px;">Return Expired</span>';
             }
         } else if (isCancellable) {
             const msg = encodeURIComponent('Hello ART\u00c9VA Maison,\n\nI would like to cancel:\n\nOrder #: ' + order.orderNumber + '\nItems: ' + itemNames + '\nTotal: ' + total + ' KWD\n\nReason: ');
-            whatsappBtn = '<a href="https://wa.me/96555636321?text=' + msg + '" target="_blank" rel="noopener" class="btn-view-order" style="background:#ef4444;color:#fff;font-size:12px;">\u2715 Cancel</a>';
+            whatsappBtn = '<a href="https://wa.me/96550683207?text=' + msg + '" target="_blank" rel="noopener" class="btn-view-order" style="background:#ef4444;color:#fff;font-size:12px;">\u2715 Cancel</a>';
         }
 
         // Track order — show for all except pending and cancelled

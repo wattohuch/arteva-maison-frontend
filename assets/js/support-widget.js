@@ -6,7 +6,7 @@
   'use strict';
 
   // ── Configuration ──────────────────────────────
-  const WHATSAPP_NUMBER = '96555636321';
+  const WHATSAPP_NUMBER = '96550683207';
   const WHATSAPP_MESSAGE = 'Hello ARTÉVA Maison, I need assistance.';
   const SUPPORT_EMAIL = 'Artevamaison@gmail.com';
   const EMAIL_SUBJECT = 'Support Ticket - ARTÉVA Maison';

@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en" dir="ltr">
 
 <head>
@@ -148,7 +148,7 @@
     <header class="header" id="header">
         <div class="header-container">
             <div class="header-left">
-                <a href="index.html" class="logo">ARTÉVA</a>
+                <a href="index.html" class="logo">ARTEVA</a>
             </div>
         </div>
     </header>
@@ -174,13 +174,13 @@
         <div class="success-actions">
             <a href="#" class="success-btn primary" id="trackOrderBtn" data-i18n="track_order_btn">Track My Order</a>
             <a href="#" class="success-btn secondary" id="viewReceiptBtn" data-i18n="view_receipt_btn"
-                style="display: none;">📄 View Receipt</a>
+                style="display: none;">?? View Receipt</a>
             <a href="account.html" class="success-btn secondary" data-i18n="view_orders_btn">View My Orders</a>
             <a href="collections.html" class="success-btn secondary" data-i18n="continue_shopping">Continue Shopping</a>
         </div>
 
         <div class="email-notice" data-i18n="email_confirmation">
-            📧 A confirmation email has been sent to your registered email address with order details and tracking
+            ?? A confirmation email has been sent to your registered email address with order details and tracking
             information.
         </div>
     </main>
@@ -260,7 +260,7 @@
             if (finalOrderNumber) {
                 const order = await verifyOrderPayment(finalOrderNumber);
                 if (order && order.paymentStatus === 'paid') {
-                    // Payment is confirmed — safe to clear cart and show receipt
+                    // Payment is confirmed � safe to clear cart and show receipt
                     paymentVerified = true;
                     localStorage.removeItem('arteva_cart');
                     if (window.clearCart) window.clearCart();
@@ -271,7 +271,7 @@
                         receiptBtn.style.display = '';
                     }
                 } else if (order && (order.paymentStatus === 'failed' || order.paymentStatus === 'cancelled')) {
-                    // Payment failed or cancelled — show error state
+                    // Payment failed or cancelled � show error state
                     if (successTitle) successTitle.textContent = 'Payment Not Completed';
                     if (successMessage) successMessage.textContent = 'Your payment was not successful. Your cart has been preserved. Please try again.';
                     if (successIcon) successIcon.style.background = 'linear-gradient(135deg, #ef4444, #dc2626)';
@@ -298,7 +298,7 @@
                         receiptBtn.style.display = '';
                     }
                 } else {
-                    // Could not verify — show cautious message
+                    // Could not verify � show cautious message
                     if (successTitle) successTitle.textContent = 'Order Received';
                     if (successMessage) successMessage.textContent = 'We received your order. Payment verification is in progress.';
                     if (receiptBtn) receiptBtn.style.display = 'none';
