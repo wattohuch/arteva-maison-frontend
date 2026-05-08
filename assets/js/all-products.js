@@ -230,6 +230,10 @@
             const image = product.images?.[0]?.url || 'assets/images/products/placeholder.png';
             const isComingSoon = product.isComingSoon;
 
+            // Discount calculation
+            const hasDiscount = product.compareAtPrice && product.compareAtPrice > product.price;
+            const discountPct = hasDiscount ? Math.round(((product.compareAtPrice - product.price) / product.compareAtPrice) * 100) : 0;
+
             let badges = '';
             if (product.stock === 0 && !isComingSoon) {
                 badges += `<span class="product-badge badge-out-stock" style="background: #ef4444; color: white;">${lang === 'ar' ? 'غير متوفر' : 'Out of Stock'}</span>`;
@@ -238,9 +242,22 @@
             } else if (product.isNew || product.isNewArrival) {
                 badges += `<span class="product-badge badge-new">${lang === 'ar' ? 'جديد' : 'New'}</span>`;
             }
+            if (hasDiscount) {
+                badges += `<span class="product-badge badge-discount">-${discountPct}%</span>`;
+            }
 
             const btnText = isComingSoon ? (lang === 'ar' ? 'قريباً' : 'Coming Soon') : (product.stock === 0 ? (lang === 'ar' ? 'غير متوفر' : 'Out of Stock') : (lang === 'ar' ? 'أضف للسلة' : 'Add to Cart'));
             const btnDisabled = isComingSoon || product.stock === 0 ? 'disabled style="opacity:0.7; cursor:default;"' : '';
+
+            // Price HTML with discount support
+            let priceHtml;
+            if (hasDiscount) {
+                priceHtml = `<span class="original-price" data-base-price="${product.compareAtPrice.toFixed(3)}">${product.compareAtPrice.toFixed(3)} ${currency}</span>
+                    <span class="current-price has-discount" data-base-price="${product.price.toFixed(3)}">${product.price.toFixed(3)} ${currency}</span>
+                    <span class="discount-pct">-${discountPct}%</span>`;
+            } else {
+                priceHtml = `<span class="current-price" data-base-price="${product.price.toFixed(3)}">${product.price.toFixed(3)} ${currency}</span>`;
+            }
 
             return `
             <div class="product-card" data-animate="fade-up" style="--stagger: ${i}; animation-delay: ${i * 0.06}s;">
@@ -261,7 +278,7 @@
                 <div class="product-info">
                     <h4 class="product-name"><a href="product.html?id=${product._id}">${name}</a></h4>
                     <div class="product-price">
-                        <span class="current-price" data-base-price="${product.price.toFixed(3)}">${product.price.toFixed(3)} ${currency}</span>
+                        ${priceHtml}
                     </div>
                 </div>
             </div>`;

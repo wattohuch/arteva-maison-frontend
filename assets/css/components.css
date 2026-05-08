@@ -896,6 +896,38 @@
     color: var(--text-light);
 }
 
+.badge-discount {
+    background: linear-gradient(135deg, #dc3545, #c0392b);
+    color: #fff;
+    font-size: 11px;
+    font-weight: 700;
+    padding: 2px 8px;
+    border-radius: 4px;
+    letter-spacing: 0;
+}
+
+/* Discount price styling */
+.product-price .original-price {
+    font-size: var(--fs-xs);
+    color: var(--text-muted);
+    text-decoration: line-through;
+    font-weight: var(--fw-normal);
+}
+
+.product-price .current-price.has-discount {
+    color: #dc3545;
+    font-weight: var(--fw-bold);
+}
+
+.product-price .discount-pct {
+    font-size: 11px;
+    font-weight: 700;
+    color: #dc3545;
+    background: rgba(220, 53, 69, 0.08);
+    padding: 1px 6px;
+    border-radius: 4px;
+}
+
 .product-wishlist {
     position: absolute;
     top: var(--space-3);
