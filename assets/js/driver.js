@@ -26,6 +26,12 @@ document.addEventListener('DOMContentLoaded', async () => {
     document.getElementById('driverName').textContent = user.name;
     document.getElementById('driverAvatar').textContent = user.name.charAt(0).toUpperCase();
 
+    // Request notification permission
+    requestNotificationPermission();
+
+    // Register service worker for background notifications
+    registerServiceWorker();
+
     initMap();
     initSocket();
     await loadOrders();
@@ -285,10 +291,21 @@ function initSocket() {
     socket.on('driver_new_order', (data) => {
         console.log('📦 New order assigned:', data);
         showDriverToast('New Order Assigned! 🚀', `Order #${data.orderNumber} — ${data.customer || 'Customer'}`);
+
+        // Native OS notification (works when browser minimized)
+        showNativeNotification(
+            '🚀 New Order Assigned!',
+            `Order #${data.orderNumber}\n${data.customer || 'Customer'}\n${data.address || ''}`,
+            data
+        );
+
+        // Play alert sound
+        playNotificationSound();
+
         // Auto-refresh orders list
         loadOrders();
         // Vibrate if supported
-        if (navigator.vibrate) navigator.vibrate([200, 100, 200]);
+        if (navigator.vibrate) navigator.vibrate([200, 100, 200, 100, 200]);
     });
 
     // Live: Order status changed by admin
@@ -486,5 +503,107 @@ async function saveProofLocally(orderId, orderNumber, blob) {
         console.log(`📸 Proof photo saved locally for order ${orderNumber}`);
     } catch (err) {
         console.error('Failed to save proof locally:', err);
+    }
+}
+
+// ── Native OS Notifications ──
+function requestNotificationPermission() {
+    if (!('Notification' in window)) {
+        console.warn('This browser does not support notifications');
+        return;
+    }
+    if (Notification.permission === 'default') {
+        Notification.requestPermission().then(perm => {
+            console.log('🔔 Notification permission:', perm);
+        });
+    }
+}
+
+function showNativeNotification(title, body, data) {
+    if (!('Notification' in window) || Notification.permission !== 'granted') return;
+
+    try {
+        const options = {
+            body: body,
+            icon: 'assets/images/favicon.png',
+            badge: 'assets/images/favicon.png',
+            tag: 'arteva-driver-' + (data?.orderId || Date.now()),
+            renotify: true,
+            requireInteraction: true, // Stay until user interacts
+            vibrate: [200, 100, 200, 100, 200],
+            data: data
+        };
+
+        // Try service worker notification first (works in background)
+        if ('serviceWorker' in navigator && navigator.serviceWorker.controller) {
+            navigator.serviceWorker.ready.then(reg => {
+                reg.showNotification(title, options);
+            });
+        } else {
+            // Fallback to regular Notification
+            const notif = new Notification(title, options);
+            notif.onclick = () => {
+                window.focus();
+                notif.close();
+            };
+        }
+    } catch (err) {
+        console.error('Notification error:', err);
+    }
+}
+
+// ── Notification Sound ──
+let _audioCtx = null;
+
+function playNotificationSound() {
+    try {
+        if (!_audioCtx) _audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        const ctx = _audioCtx;
+
+        // Play a pleasant 3-tone chime
+        const notes = [523.25, 659.25, 783.99]; // C5, E5, G5
+        notes.forEach((freq, i) => {
+            const osc = ctx.createOscillator();
+            const gain = ctx.createGain();
+            osc.type = 'sine';
+            osc.frequency.value = freq;
+            gain.gain.setValueAtTime(0.3, ctx.currentTime + i * 0.15);
+            gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + i * 0.15 + 0.4);
+            osc.connect(gain);
+            gain.connect(ctx.destination);
+            osc.start(ctx.currentTime + i * 0.15);
+            osc.stop(ctx.currentTime + i * 0.15 + 0.4);
+        });
+
+        // Second chime after short pause
+        setTimeout(() => {
+            notes.forEach((freq, i) => {
+                const osc = ctx.createOscillator();
+                const gain = ctx.createGain();
+                osc.type = 'sine';
+                osc.frequency.value = freq;
+                gain.gain.setValueAtTime(0.25, ctx.currentTime + i * 0.15);
+                gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + i * 0.15 + 0.4);
+                osc.connect(gain);
+                gain.connect(ctx.destination);
+                osc.start(ctx.currentTime + i * 0.15);
+                osc.stop(ctx.currentTime + i * 0.15 + 0.4);
+            });
+        }, 600);
+    } catch (e) {
+        console.warn('Audio notification failed:', e);
+    }
+}
+
+// ── Service Worker Registration ──
+function registerServiceWorker() {
+    if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.register('driver-sw.js')
+            .then(reg => {
+                console.log('🔧 Driver service worker registered:', reg.scope);
+            })
+            .catch(err => {
+                console.warn('Service worker registration failed:', err);
+            });
     }
 }
