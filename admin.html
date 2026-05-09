@@ -59,6 +59,8 @@
                         class="nav-text">Analytics</span></a></li>
             <li><a href="#discounts" class="sidebar-link"><span class="icon">🏷️</span> <span
                         class="nav-text">Discounts</span></a></li>
+            <li><a href="#receipts" class="sidebar-link"><span class="icon">🧾</span> <span
+                        class="nav-text">Receipts</span></a></li>
             <li><a href="#" id="logoutBtn" class="sidebar-link" data-i18n="admin_logout"><span class="icon">🚪</span>
                     <span class="nav-text">Logout</span></a></li>
         </ul>
@@ -480,6 +482,63 @@
                             </tr>
                         </tbody>
                     </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- ========== RECEIPTS ========== -->
+        <div id="receipts" class="admin-section hidden">
+            <div class="admin-page-header">
+                <h1 class="admin-page-title">🧾 Receipts</h1>
+            </div>
+
+            <div style="display:flex;gap:12px;flex-wrap:wrap;margin-bottom:20px;align-items:center;">
+                <div class="admin-search-wrap" style="flex:1;min-width:200px;margin-bottom:0;">
+                    <span class="admin-search-icon">🔍</span>
+                    <input type="text" class="admin-search" id="receiptSearch" placeholder="Search by order #, customer name, or email...">
+                </div>
+                <select id="receiptStatusFilter" class="admin-search" style="width:auto;min-width:140px;">
+                    <option value="all">All Statuses</option>
+                    <option value="paid" selected>Paid</option>
+                    <option value="pending">Pending</option>
+                    <option value="refunded">Refunded</option>
+                    <option value="cancelled">Cancelled</option>
+                </select>
+            </div>
+
+            <div class="admin-table-wrap">
+                <div class="admin-table-scroll">
+                    <table class="admin-table">
+                        <thead>
+                            <tr>
+                                <th>Order #</th>
+                                <th>Customer</th>
+                                <th>Date</th>
+                                <th>Items</th>
+                                <th style="text-align:right;">Total (KWD)</th>
+                                <th>Payment</th>
+                                <th style="text-align:center;">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="receiptsTableBody">
+                            <tr>
+                                <td colspan="7" style="text-align:center;padding:40px;color:var(--admin-text-muted);">Loading receipts...</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Receipt Edit Modal -->
+        <div id="receiptEditModal" class="admin-modal hidden">
+            <div class="admin-modal-content" style="max-width:700px;">
+                <div class="admin-modal-header">
+                    <h2 id="receiptEditTitle">Edit Receipt</h2>
+                    <button class="admin-btn-icon" onclick="closeReceiptModal()">✕</button>
+                </div>
+                <div class="admin-modal-body" id="receiptEditBody">
+                    <!-- Populated by JS -->
                 </div>
             </div>
         </div>
@@ -1026,6 +1085,7 @@
     <script src="assets/js/currency.js"></script>
     <script src="assets/js/order-notification.js"></script>
     <script src="assets/js/revenue-auth.js"></script>
+    <script src="assets/js/receipts-admin.js"></script>
     <script src="assets/js/admin.js?v=11"></script>
 </body>
 
