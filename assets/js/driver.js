@@ -213,7 +213,17 @@ function renderControls(order) {
             `;
         }
     } else {
+        const backendUrl = (window.API_BASE_URL || '').replace('/api', '');
+        const proofUrl = order.deliveryProof ? `${backendUrl}${order.deliveryProof}` : null;
         buttons += `<div class="badge delivered" style="text-align:center; padding:15px; margin-top:10px;">Order Completed ✅</div>`;
+        if (proofUrl) {
+            buttons += `
+                <div style="margin-top:12px; text-align:center;">
+                    <p style="font-size:13px; color:#999; margin-bottom:8px;">📸 Delivery Proof Photo</p>
+                    <img src="${proofUrl}" alt="Delivery proof" style="max-width:100%; border-radius:12px; border:1px solid #eee; box-shadow:0 2px 12px rgba(0,0,0,0.1); cursor:pointer;" onclick="window.open('${proofUrl}','_blank')">
+                </div>
+            `;
+        }
     }
 
     container.innerHTML = buttons;
@@ -578,61 +588,81 @@ function showNativeNotification(title, body, data) {
 }
 
 // ── Notification Sound ──
-let _audioCtx = null;
+let _notifAudio = null;
 
-// Pre-warm AudioContext on first user interaction (mobile browsers require this)
+// Pre-warm: create audio on first user interaction (unlocks mobile autoplay)
 document.addEventListener('touchstart', _warmAudio, { once: true });
 document.addEventListener('click', _warmAudio, { once: true });
+
 function _warmAudio() {
-    if (!_audioCtx) {
-        _audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-        // Play a silent buffer to unlock audio
-        const buf = _audioCtx.createBuffer(1, 1, 22050);
-        const src = _audioCtx.createBufferSource();
-        src.buffer = buf;
-        src.connect(_audioCtx.destination);
-        src.start(0);
-        console.log('🔊 Audio context warmed up');
+    if (!_notifAudio) {
+        _notifAudio = _createChimeAudio();
+        _notifAudio.volume = 0.01;
+        _notifAudio.play().then(() => {
+            _notifAudio.pause();
+            _notifAudio.currentTime = 0;
+            _notifAudio.volume = 1.0;
+            console.log('🔊 Audio unlocked for notifications');
+        }).catch(() => {});
     }
+}
+
+function _createChimeAudio() {
+    const sampleRate = 44100;
+    const duration = 1.2;
+    const numSamples = Math.floor(sampleRate * duration);
+    const buffer = new ArrayBuffer(44 + numSamples * 2);
+    const view = new DataView(buffer);
+    const ws = (v, o, s) => { for (let i = 0; i < s.length; i++) v.setUint8(o + i, s.charCodeAt(i)); };
+
+    ws(view, 0, 'RIFF');
+    view.setUint32(4, 36 + numSamples * 2, true);
+    ws(view, 8, 'WAVE');
+    ws(view, 12, 'fmt ');
+    view.setUint32(16, 16, true);
+    view.setUint16(20, 1, true);
+    view.setUint16(22, 1, true);
+    view.setUint32(24, sampleRate, true);
+    view.setUint32(28, sampleRate * 2, true);
+    view.setUint16(32, 2, true);
+    view.setUint16(34, 16, true);
+    ws(view, 36, 'data');
+    view.setUint32(40, numSamples * 2, true);
+
+    const chime = [
+        { freq: 523.25, start: 0, end: 0.2 },
+        { freq: 659.25, start: 0.15, end: 0.35 },
+        { freq: 783.99, start: 0.3, end: 0.55 },
+        { freq: 523.25, start: 0.6, end: 0.8 },
+        { freq: 659.25, start: 0.75, end: 0.95 },
+        { freq: 783.99, start: 0.9, end: 1.15 },
+    ];
+
+    for (let i = 0; i < numSamples; i++) {
+        const t = i / sampleRate;
+        let sample = 0;
+        for (const note of chime) {
+            if (t >= note.start && t < note.end) {
+                const nt = t - note.start;
+                const env = Math.sin(Math.PI * nt / (note.end - note.start));
+                sample += Math.sin(2 * Math.PI * note.freq * t) * env * 0.4;
+            }
+        }
+        view.setInt16(44 + i * 2, Math.max(-1, Math.min(1, sample)) * 32000, true);
+    }
+
+    const blob = new Blob([buffer], { type: 'audio/wav' });
+    const audio = new Audio(URL.createObjectURL(blob));
+    audio.preload = 'auto';
+    return audio;
 }
 
 function playNotificationSound() {
     try {
-        if (!_audioCtx) _audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-        const ctx = _audioCtx;
-        // Resume if suspended (mobile browsers suspend after idle)
-        if (ctx.state === 'suspended') ctx.resume();
-
-        // Play a pleasant 3-tone chime
-        const notes = [523.25, 659.25, 783.99]; // C5, E5, G5
-        notes.forEach((freq, i) => {
-            const osc = ctx.createOscillator();
-            const gain = ctx.createGain();
-            osc.type = 'sine';
-            osc.frequency.value = freq;
-            gain.gain.setValueAtTime(0.3, ctx.currentTime + i * 0.15);
-            gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + i * 0.15 + 0.4);
-            osc.connect(gain);
-            gain.connect(ctx.destination);
-            osc.start(ctx.currentTime + i * 0.15);
-            osc.stop(ctx.currentTime + i * 0.15 + 0.4);
-        });
-
-        // Second chime after short pause
-        setTimeout(() => {
-            notes.forEach((freq, i) => {
-                const osc = ctx.createOscillator();
-                const gain = ctx.createGain();
-                osc.type = 'sine';
-                osc.frequency.value = freq;
-                gain.gain.setValueAtTime(0.25, ctx.currentTime + i * 0.15);
-                gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + i * 0.15 + 0.4);
-                osc.connect(gain);
-                gain.connect(ctx.destination);
-                osc.start(ctx.currentTime + i * 0.15);
-                osc.stop(ctx.currentTime + i * 0.15 + 0.4);
-            });
-        }, 600);
+        if (!_notifAudio) _notifAudio = _createChimeAudio();
+        _notifAudio.currentTime = 0;
+        _notifAudio.volume = 1.0;
+        _notifAudio.play().catch(e => console.warn('Audio play failed:', e));
     } catch (e) {
         console.warn('Audio notification failed:', e);
     }
