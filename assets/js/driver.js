@@ -9,6 +9,7 @@ let socket = null;
 let watchId = null;
 let driverId = null;
 let activeOrder = null;
+let _newOrderIds = new Set();  // Track newly assigned orders for highlighting
 
 // Default: Kuwait City
 const DEFAULT_LAT = 29.3759;
@@ -70,11 +71,16 @@ async function loadOrders() {
             const orders = response.data;
             window.allOrders = orders;
 
-            const active = orders.filter(o => o.orderStatus !== 'delivered' && o.orderStatus !== 'cancelled');
+            let active = orders.filter(o => o.orderStatus !== 'delivered' && o.orderStatus !== 'cancelled');
             const history = orders.filter(o => o.orderStatus === 'delivered' || o.orderStatus === 'cancelled');
 
             renderList(activeContainer, active, true);
             renderList(historyContainer, history, false);
+
+            // Auto-switch to active tab if new orders came in
+            if (_newOrderIds.size > 0) {
+                switchTab('active');
+            }
         }
     } catch (err) {
         console.error(err);
@@ -89,11 +95,16 @@ function renderList(container, orders, isActive) {
         return;
     }
 
-    container.innerHTML = orders.map(order => `
-        <div class="order-card" onclick="openOrderMap('${order._id}')">
+    container.innerHTML = orders.map(order => {
+        const isNew = _newOrderIds.has(order._id);
+        return `
+        <div class="order-card ${isNew ? 'order-new-glow' : ''}" onclick="openOrderMap('${order._id}')">
             <div class="order-header">
                 <span class="order-id">#${order.orderNumber}</span>
-                <span class="badge ${order.orderStatus}">${order.orderStatus.replace(/_/g, ' ')}</span>
+                <div style="display:flex;gap:6px;align-items:center;">
+                    ${isNew ? '<span class="badge-new">🆕 NEW</span>' : ''}
+                    <span class="badge ${order.orderStatus}">${order.orderStatus.replace(/_/g, ' ')}</span>
+                </div>
             </div>
             
             <div class="info-row">
@@ -112,7 +123,16 @@ function renderList(container, orders, isActive) {
                 </div>
             ` : ''}
         </div>
-    `).join('');
+    `}).join('');
+
+    // Clear new highlights after 8 seconds
+    if (_newOrderIds.size > 0) {
+        setTimeout(() => {
+            _newOrderIds.clear();
+            document.querySelectorAll('.order-new-glow').forEach(el => el.classList.remove('order-new-glow'));
+            document.querySelectorAll('.badge-new').forEach(el => el.remove());
+        }, 8000);
+    }
 }
 
 // Map: Open Modal
@@ -290,7 +310,12 @@ function initSocket() {
     // Live: New order assigned to this driver
     socket.on('driver_new_order', (data) => {
         console.log('📦 New order assigned:', data);
-        showDriverToast('New Order Assigned! 🚀', `Order #${data.orderNumber} — ${data.customer || 'Customer'}`);
+
+        // Track this order as "new" for highlighting + sorting to top
+        if (data.orderId) _newOrderIds.add(data.orderId);
+
+        // Play alert sound FIRST (most noticeable)
+        playNotificationSound();
 
         // Native OS notification (works when browser minimized)
         showNativeNotification(
@@ -299,11 +324,11 @@ function initSocket() {
             data
         );
 
-        // Play alert sound
-        playNotificationSound();
+        showDriverToast('New Order Assigned! 🚀', `Order #${data.orderNumber} — ${data.customer || 'Customer'}`);
 
-        // Auto-refresh orders list
+        // Auto-refresh orders list (new order will be on top with glow)
         loadOrders();
+
         // Vibrate if supported
         if (navigator.vibrate) navigator.vibrate([200, 100, 200, 100, 200]);
     });
@@ -555,10 +580,28 @@ function showNativeNotification(title, body, data) {
 // ── Notification Sound ──
 let _audioCtx = null;
 
+// Pre-warm AudioContext on first user interaction (mobile browsers require this)
+document.addEventListener('touchstart', _warmAudio, { once: true });
+document.addEventListener('click', _warmAudio, { once: true });
+function _warmAudio() {
+    if (!_audioCtx) {
+        _audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        // Play a silent buffer to unlock audio
+        const buf = _audioCtx.createBuffer(1, 1, 22050);
+        const src = _audioCtx.createBufferSource();
+        src.buffer = buf;
+        src.connect(_audioCtx.destination);
+        src.start(0);
+        console.log('🔊 Audio context warmed up');
+    }
+}
+
 function playNotificationSound() {
     try {
         if (!_audioCtx) _audioCtx = new (window.AudioContext || window.webkitAudioContext)();
         const ctx = _audioCtx;
+        // Resume if suspended (mobile browsers suspend after idle)
+        if (ctx.state === 'suspended') ctx.resume();
 
         // Play a pleasant 3-tone chime
         const notes = [523.25, 659.25, 783.99]; // C5, E5, G5

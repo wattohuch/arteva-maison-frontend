@@ -369,6 +369,33 @@
             background: #333;
             color: #aaa;
         }
+
+        /* New order glow animation */
+        .order-new-glow {
+            animation: newOrderGlow 1.5s ease-in-out infinite alternate;
+            border: 2px solid #c9a962 !important;
+            position: relative;
+        }
+        @keyframes newOrderGlow {
+            0% { box-shadow: 0 0 8px rgba(201, 169, 98, 0.3); }
+            100% { box-shadow: 0 0 24px rgba(201, 169, 98, 0.7), 0 0 48px rgba(201, 169, 98, 0.2); }
+        }
+
+        .badge-new {
+            background: linear-gradient(135deg, #c9a962, #e6c84a);
+            color: #000;
+            font-size: 11px;
+            font-weight: 800;
+            padding: 3px 8px;
+            border-radius: 6px;
+            letter-spacing: 0.5px;
+            animation: badgePulse 1s ease-in-out infinite;
+            white-space: nowrap;
+        }
+        @keyframes badgePulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+        }
     </style>
 </head>
 
