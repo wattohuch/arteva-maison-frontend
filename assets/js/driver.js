@@ -175,8 +175,8 @@ function renderControls(order) {
     if (!isCompleted) {
         if (isStarted) {
             buttons += `
-                <button class="btn-main finish" onclick="finishDelivery('${order._id}')">
-                    ✅ Mark as Delivered
+                <button class="btn-main finish" onclick="window.captureDeliveryProof('${order._id}')">
+                    📷 Take Photo & Mark Delivered
                 </button>
             `;
         } else {
@@ -187,7 +187,7 @@ function renderControls(order) {
             `;
         }
     } else {
-        buttons += `<div class="badge delivered" style="text-align:center; padding:15px; margin-top:10px;">Order Completed</div>`;
+        buttons += `<div class="badge delivered" style="text-align:center; padding:15px; margin-top:10px;">Order Completed ✅</div>`;
     }
 
     container.innerHTML = buttons;
@@ -207,15 +207,18 @@ window.startDelivery = async (id, number) => {
     }
 };
 
-window.finishDelivery = async (id) => {
-    if (!confirm('Confirm delivery completion?')) return;
-
+window.finishDelivery = async (id, proofBlob) => {
     try {
+        // Save proof photo locally first
+        if (proofBlob) {
+            await saveProofLocally(id, activeOrder?.orderNumber || id, proofBlob);
+        }
+
         await DriverAPI.updateStatus(id, 'delivered');
         stopTracking();
         activeOrder.orderStatus = 'delivered';
         renderControls(activeOrder);
-        alert('Great job! Order delivered.');
+        showDriverToast('Order Delivered! 🎉', 'Photo saved to device. Great job!');
         closeMap();
     } catch (e) {
         alert('Error: ' + e.message);
@@ -240,10 +243,40 @@ function initMap() {
     L.control.layers({ "Satellite": googleHybrid, "Streets": esriStreets, "OSM": osm }).addTo(map);
 }
 
-// Init Socket
+// Init Socket — with live order assignment listener
 function initSocket() {
     socket = io(Config.SOCKET_URL());
-    socket.on('connect', () => { if (driverId) socket.emit('join_pilot_room', driverId); });
+    socket.on('connect', () => {
+        if (driverId) {
+            socket.emit('join_pilot_room', driverId);
+            console.log('🔌 Driver connected to socket, room: pilot_' + driverId);
+        }
+    });
+
+    // Live: New order assigned to this driver
+    socket.on('driver_new_order', (data) => {
+        console.log('📦 New order assigned:', data);
+        showDriverToast('New Order Assigned! 🚀', `Order #${data.orderNumber} — ${data.customer || 'Customer'}`);
+        // Auto-refresh orders list
+        loadOrders();
+        // Vibrate if supported
+        if (navigator.vibrate) navigator.vibrate([200, 100, 200]);
+    });
+
+    // Live: Order status changed by admin
+    socket.on('driver_order_update', (data) => {
+        console.log('🔄 Order updated:', data);
+        loadOrders();
+    });
+
+    socket.on('disconnect', () => {
+        console.log('🔌 Driver disconnected from socket');
+    });
+
+    socket.on('reconnect', () => {
+        if (driverId) socket.emit('join_pilot_room', driverId);
+        loadOrders();
+    });
 }
 
 // Tracking Logic
@@ -271,4 +304,159 @@ function startTracking(orderId, orderNumber) {
 function stopTracking() {
     if (watchId) navigator.geolocation.clearWatch(watchId);
     watchId = null;
+}
+
+// ── Toast Notifications ──
+function showDriverToast(title, message) {
+    // Remove existing
+    document.querySelectorAll('.driver-toast').forEach(t => t.remove());
+
+    const toast = document.createElement('div');
+    toast.className = 'driver-toast';
+    toast.innerHTML = `<div class="toast-title">${title}</div><div>${message}</div>`;
+    document.body.appendChild(toast);
+
+    requestAnimationFrame(() => toast.classList.add('show'));
+
+    setTimeout(() => {
+        toast.classList.remove('show');
+        setTimeout(() => toast.remove(), 500);
+    }, 5000);
+}
+
+// ── Camera Proof for Delivery ──
+let _cameraStream = null;
+let _pendingDeliveryId = null;
+
+window.captureDeliveryProof = async (orderId) => {
+    _pendingDeliveryId = orderId;
+    const overlay = document.getElementById('cameraOverlay');
+    const video = document.getElementById('cameraVideo');
+    const preview = document.getElementById('cameraPreview');
+    const controls = document.getElementById('cameraControls');
+
+    overlay.classList.remove('hidden');
+    preview.style.display = 'none';
+    video.style.display = 'block';
+
+    try {
+        _cameraStream = await navigator.mediaDevices.getUserMedia({
+            video: { facingMode: 'environment', width: { ideal: 1280 }, height: { ideal: 960 } },
+            audio: false
+        });
+        video.srcObject = _cameraStream;
+
+        controls.innerHTML = `
+            <button class="cam-btn-capture" onclick="window.takePhoto()">📷 Capture</button>
+            <button class="cam-btn-cancel" onclick="window.closeCameraOverlay()">Cancel</button>
+        `;
+    } catch (err) {
+        console.error('Camera error:', err);
+        // Fallback to file input
+        controls.innerHTML = `
+            <div style="color:#fff;text-align:center;">
+                <p>Camera not available. Select a photo instead:</p>
+                <input type="file" accept="image/*" capture="environment" id="proofFileInput" style="margin-top:10px;">
+                <br><button class="cam-btn-cancel" onclick="window.closeCameraOverlay()" style="margin-top:12px;">Cancel</button>
+            </div>
+        `;
+        document.getElementById('proofFileInput')?.addEventListener('change', async (e) => {
+            const file = e.target.files[0];
+            if (file) {
+                await finishDelivery(_pendingDeliveryId, file);
+                closeCameraOverlay();
+            }
+        });
+    }
+};
+
+window.takePhoto = () => {
+    const video = document.getElementById('cameraVideo');
+    const canvas = document.getElementById('cameraCanvas');
+    const preview = document.getElementById('cameraPreview');
+    const controls = document.getElementById('cameraControls');
+
+    canvas.width = video.videoWidth;
+    canvas.height = video.videoHeight;
+    canvas.getContext('2d').drawImage(video, 0, 0);
+
+    const dataUrl = canvas.toDataURL('image/jpeg', 0.85);
+    preview.src = dataUrl;
+    preview.style.display = 'block';
+    video.style.display = 'none';
+
+    controls.innerHTML = `
+        <button class="cam-btn-confirm" onclick="window.confirmProof()">✅ Confirm & Deliver</button>
+        <button class="cam-btn-retake" onclick="window.retakePhoto()">🔄 Retake</button>
+        <button class="cam-btn-cancel" onclick="window.closeCameraOverlay()">Cancel</button>
+    `;
+};
+
+window.retakePhoto = () => {
+    const video = document.getElementById('cameraVideo');
+    const preview = document.getElementById('cameraPreview');
+    const controls = document.getElementById('cameraControls');
+
+    preview.style.display = 'none';
+    video.style.display = 'block';
+
+    controls.innerHTML = `
+        <button class="cam-btn-capture" onclick="window.takePhoto()">📷 Capture</button>
+        <button class="cam-btn-cancel" onclick="window.closeCameraOverlay()">Cancel</button>
+    `;
+};
+
+window.confirmProof = async () => {
+    const canvas = document.getElementById('cameraCanvas');
+    canvas.toBlob(async (blob) => {
+        await finishDelivery(_pendingDeliveryId, blob);
+        closeCameraOverlay();
+    }, 'image/jpeg', 0.85);
+};
+
+window.closeCameraOverlay = () => {
+    const overlay = document.getElementById('cameraOverlay');
+    overlay.classList.add('hidden');
+    if (_cameraStream) {
+        _cameraStream.getTracks().forEach(t => t.stop());
+        _cameraStream = null;
+    }
+    _pendingDeliveryId = null;
+};
+
+// ── IndexedDB Local Photo Storage ──
+const DB_NAME = 'ArtevaDriveProofs';
+const DB_STORE = 'photos';
+
+function openProofDB() {
+    return new Promise((resolve, reject) => {
+        const req = indexedDB.open(DB_NAME, 1);
+        req.onupgradeneeded = (e) => {
+            const db = e.target.result;
+            if (!db.objectStoreNames.contains(DB_STORE)) {
+                db.createObjectStore(DB_STORE, { keyPath: 'id', autoIncrement: true });
+            }
+        };
+        req.onsuccess = () => resolve(req.result);
+        req.onerror = () => reject(req.error);
+    });
+}
+
+async function saveProofLocally(orderId, orderNumber, blob) {
+    try {
+        const db = await openProofDB();
+        const tx = db.transaction(DB_STORE, 'readwrite');
+        const store = tx.objectStore(DB_STORE);
+        store.add({
+            orderId,
+            orderNumber: orderNumber || orderId,
+            timestamp: new Date().toISOString(),
+            driverId,
+            photo: blob
+        });
+        await new Promise((res, rej) => { tx.oncomplete = res; tx.onerror = rej; });
+        console.log(`📸 Proof photo saved locally for order ${orderNumber}`);
+    } catch (err) {
+        console.error('Failed to save proof locally:', err);
+    }
 }
