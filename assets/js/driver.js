@@ -566,6 +566,7 @@ function showNativeNotification(title, body, data) {
             renotify: true,
             requireInteraction: true, // Stay until user interacts
             vibrate: [200, 100, 200, 100, 200],
+            silent: false, // Ensure system notification sound plays
             data: data
         };
 
@@ -597,6 +598,10 @@ document.addEventListener('click', _warmAudio, { once: true });
 function _warmAudio() {
     if (!_notifAudio) {
         _notifAudio = _createChimeAudio();
+        // Append to DOM to ensure it behaves like media element on mobile
+        _notifAudio.style.display = 'none';
+        document.body.appendChild(_notifAudio);
+
         _notifAudio.volume = 0.01;
         _notifAudio.play().then(() => {
             _notifAudio.pause();
