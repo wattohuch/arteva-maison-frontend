@@ -22,7 +22,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 
     const user = AuthAPI.getUser();
-    driverId = user.id;
+    driverId = user._id || user.id;
     document.getElementById('driverName').textContent = user.name;
     document.getElementById('driverAvatar').textContent = user.name.charAt(0).toUpperCase();
 
