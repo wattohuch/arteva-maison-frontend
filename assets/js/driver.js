@@ -209,18 +209,46 @@ window.startDelivery = async (id, number) => {
 
 window.finishDelivery = async (id, proofBlob) => {
     try {
-        // Save proof photo locally first
+        // Save proof photo locally as backup
         if (proofBlob) {
             await saveProofLocally(id, activeOrder?.orderNumber || id, proofBlob);
         }
 
-        await DriverAPI.updateStatus(id, 'delivered');
-        stopTracking();
-        activeOrder.orderStatus = 'delivered';
-        renderControls(activeOrder);
-        showDriverToast('Order Delivered! 🎉', 'Photo saved to device. Great job!');
-        closeMap();
+        if (proofBlob) {
+            // Upload proof to backend — this marks as delivered + emails customer
+            showDriverToast('Uploading...', 'Sending delivery proof to customer...');
+
+            const formData = new FormData();
+            formData.append('photo', proofBlob, `proof_${id}_${Date.now()}.jpg`);
+
+            const token = localStorage.getItem('arteva_token');
+            const apiBase = window.API_BASE_URL || (window.Config && Config.API_BASE_URL) || '';
+
+            const res = await fetch(`${apiBase}/driver/orders/${id}/proof`, {
+                method: 'POST',
+                headers: { 'Authorization': 'Bearer ' + token },
+                body: formData
+            });
+
+            const data = await res.json();
+            if (!data.success) throw new Error(data.message || 'Upload failed');
+
+            stopTracking();
+            activeOrder.orderStatus = 'delivered';
+            renderControls(activeOrder);
+            showDriverToast('Order Delivered! 🎉', 'Photo sent to customer\'s email. Great job!');
+            closeMap();
+        } else {
+            // No photo — fallback to status-only update
+            await DriverAPI.updateStatus(id, 'delivered');
+            stopTracking();
+            activeOrder.orderStatus = 'delivered';
+            renderControls(activeOrder);
+            showDriverToast('Order Delivered! 🎉', 'Marked as delivered.');
+            closeMap();
+        }
     } catch (e) {
+        console.error('Delivery error:', e);
         alert('Error: ' + e.message);
     }
 };
