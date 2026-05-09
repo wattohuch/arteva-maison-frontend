@@ -599,7 +599,7 @@
                     compareEl.className = 'product-compare-price price-display';
                     compareEl.setAttribute('data-base-price', product.compareAtPrice.toFixed(3));
                     compareEl.innerHTML = `${product.compareAtPrice.toFixed(3)} <span class="price-currency">${priceCurrency}</span>`;
-                    compareEl.style.cssText = 'text-decoration: line-through; color: #999; font-size: 0.85em; margin-inline-start: 8px;';
+                    compareEl.style.cssText = 'text-decoration: line-through; color: #999; font-size: 1em; margin-inline-start: 8px;';
                     priceDisplay.appendChild(compareEl);
                     // Discount badge
                     const badgeEl = document.createElement('span');
@@ -760,12 +760,28 @@
                                 ? (p.images.find(img => img.isPrimary) || p.images[0]).url
                                 : 'assets/images/products/placeholder.png';
 
+                            // Discount calculation
+                            const pHasDiscount = p.compareAtPrice && p.compareAtPrice > p.price;
+                            const pDiscountPct = pHasDiscount ? Math.round(((p.compareAtPrice - p.price) / p.compareAtPrice) * 100) : 0;
+
                             // Stock Logic
                             let isOutOfStock = false;
-                            let stockBadge = '';
+                            let badgesHtml = '';
                             if (p.stock !== undefined && p.stock === 0) {
                                 isOutOfStock = true;
-                                stockBadge = `<span class="product-badge badge-out-stock" style="background: #ef4444; color: white;">${lang === 'ar' ? 'غير متوفر' : 'Out of Stock'}</span>`;
+                                badgesHtml += `<span class="product-badge badge-out-stock" style="background: #ef4444; color: white;">${lang === 'ar' ? 'غير متوفر' : 'Out of Stock'}</span>`;
+                            }
+                            if (pHasDiscount && !isOutOfStock) {
+                                badgesHtml += `<span class="product-badge badge-discount">-${pDiscountPct}%</span>`;
+                            }
+
+                            // Price HTML
+                            let pPriceHtml;
+                            if (pHasDiscount) {
+                                pPriceHtml = `<span class="original-price" data-base-price="${p.compareAtPrice.toFixed(3)}">${p.compareAtPrice.toFixed(3)} ${pCurrency}</span>
+                                    <span class="current-price has-discount" data-base-price="${p.price.toFixed(3)}">${p.price.toFixed(3)} ${pCurrency}</span>`;
+                            } else {
+                                pPriceHtml = `<span class="current-price" data-base-price="${p.price.toFixed(3)}">${p.price.toFixed(3)} ${pCurrency}</span>`;
                             }
 
                             const card = document.createElement('div');
@@ -775,7 +791,7 @@
                                     <a href="product.html?id=${p._id}">
                                         <img src="${pImage}" alt="${pName}" loading="lazy" style="${isOutOfStock ? 'opacity: 0.6;' : ''}" onerror="if(typeof handleImageError==='function') handleImageError(this); else this.src='assets/images/products/placeholder.png';">
                                     </a>
-                                    ${stockBadge ? `<div class="product-badges">${stockBadge}</div>` : ''}
+                                    ${badgesHtml ? `<div class="product-badges">${badgesHtml}</div>` : ''}
                                     <button class="product-wishlist" aria-label="Add to Wishlist">
                                         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
                                     </button>
@@ -788,7 +804,7 @@
                                 <div class="product-info">
                                     <h4 class="product-name"><a href="product.html?id=${p._id}">${pName}</a></h4>
                                     <div class="product-price">
-                                        <span class="current-price" data-base-price="${p.price.toFixed(3)}">${p.price.toFixed(3)} ${pCurrency}</span>
+                                        ${pPriceHtml}
                                     </div>
                                 </div>`;
                             relatedGrid.appendChild(card);

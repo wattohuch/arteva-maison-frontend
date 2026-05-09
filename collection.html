@@ -625,6 +625,10 @@
                     const addToCartText = lang === 'ar' ? 'أضف للسلة' : 'Add to Cart';
                     const currency = lang === 'ar' ? 'د.ك' : 'KWD';
 
+                    // Discount calculation
+                    const hasDiscount = product.compareAtPrice && product.compareAtPrice > product.price;
+                    const discountPct = hasDiscount ? Math.round(((product.compareAtPrice - product.price) / product.compareAtPrice) * 100) : 0;
+
                     // Stock & Coming Soon Logic
                     let stockBadge = '';
                     let isOutOfStock = false;
@@ -652,6 +656,19 @@
                         if (newBadge) badgesHtml += newBadge;
                         if (stockBadge) badgesHtml += stockBadge;
                     }
+                    // Discount badge on tile image
+                    if (hasDiscount && !isComingSoon && !isOutOfStock) {
+                        badgesHtml += `<span class="product-badge badge-discount">-${discountPct}%</span>`;
+                    }
+
+                    // Price HTML with discount support
+                    let priceHtml;
+                    if (hasDiscount) {
+                        priceHtml = `<span class="original-price" data-base-price="${product.compareAtPrice.toFixed(3)}">${product.compareAtPrice.toFixed(3)} ${currency}</span>
+                            <span class="current-price has-discount" data-base-price="${product.price.toFixed(3)}">${product.price.toFixed(3)} ${currency}</span>`;
+                    } else {
+                        priceHtml = `<span class="current-price" data-base-price="${product.price.toFixed(3)}">${product.price.toFixed(3)} ${currency}</span>`;
+                    }
 
                     card.innerHTML = `
                         <div class="product-image">
@@ -673,7 +690,7 @@
                                 <a href="product.html?id=${product._id}">${productName}</a>
                             </h4>
                             <div class="product-price">
-                                <span class="current-price" data-base-price="${product.price.toFixed(3)}">${product.price.toFixed(3)} ${currency}</span>
+                                ${priceHtml}
                             </div>
                         </div>`;
                     productsGrid.appendChild(card);

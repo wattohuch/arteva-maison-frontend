@@ -321,8 +321,19 @@ function renderRevenueHistory(data, analytics) {
                 var rankBadge = idx === 0 ? ' <span class="revenue-best-badge">🏆 #1</span>' : 
                     (idx < 3 ? ' <span style="font-size:10px;background:rgba(201,169,98,0.15);color:var(--admin-gold);padding:2px 6px;border-radius:8px;">#' + (idx+1) + '</span>' : '');
 
+                // Show discount info if product has a discount
+                var discountInfo = '';
+                var pm = analytics.productPriceMap && analytics.productPriceMap[p.productId];
+                if (pm && pm.compareAtPrice && pm.compareAtPrice > pm.currentPrice) {
+                    discountInfo = '<div style="font-size:11px;margin-top:2px;">' +
+                        '<span style="text-decoration:line-through;color:var(--admin-text-muted);">' + pm.compareAtPrice.toFixed(3) + '</span> ' +
+                        '<span style="color:#dc3545;font-weight:600;">' + pm.currentPrice.toFixed(3) + '</span> ' +
+                        '<span style="background:rgba(220,53,69,0.12);color:#dc3545;font-weight:700;padding:1px 4px;border-radius:3px;font-size:10px;">-' + pm.discountPercentage + '%</span>' +
+                    '</div>';
+                }
+
                 return '<tr onclick="window.showProductDrillDown(' + idx + ')" style="cursor:pointer;" title="Click to view details">' +
-                    '<td><strong style="color:var(--admin-text);">' + p.name + '</strong>' + rankBadge + '</td>' +
+                    '<td><strong style="color:var(--admin-text);">' + p.name + '</strong>' + rankBadge + discountInfo + '</td>' +
                     '<td style="text-align:center;">' + p.totalQuantitySold + '</td>' +
                     '<td style="text-align:center;">' + p.orderCount + '</td>' +
                     '<td style="text-align:right;font-weight:700;font-family:Playfair Display,serif;color:var(--admin-gold);">' + p.totalRevenue.toFixed(3) + '</td>' +
@@ -510,11 +521,46 @@ window.showProductDrillDown = function(productIndex) {
                 '</tbody></table></div>';
         }
 
+        // Determine the original/compare-at price for this price point
+        var originalPriceInfo = '';
+        var pm = _revenueAnalyticsCache.productPriceMap && _revenueAnalyticsCache.productPriceMap[product.productId];
+        if (pm) {
+            // If product currently has a compareAtPrice and this price point matches the current discounted price
+            if (pm.compareAtPrice && pm.compareAtPrice > pp.price) {
+                var pctOff = Math.round(((pm.compareAtPrice - pp.price) / pm.compareAtPrice) * 100);
+                originalPriceInfo = '<div style="margin-top:4px;font-size:12px;color:var(--admin-text-muted);display:flex;align-items:center;gap:6px;flex-wrap:wrap;">' +
+                    '<span style="text-decoration:line-through;">' + pm.compareAtPrice.toFixed(3) + ' KWD</span>' +
+                    '<span style="background:rgba(220,53,69,0.12);color:#dc3545;font-weight:700;padding:1px 6px;border-radius:4px;font-size:11px;">-' + pctOff + '%</span>' +
+                    '<span style="font-style:italic;color:var(--admin-text-muted);">was the original price</span>' +
+                '</div>';
+            } else if (pm.compareAtPrice && pp.price >= pm.compareAtPrice) {
+                // This price point IS the original (pre-discount) price
+                originalPriceInfo = '<div style="margin-top:4px;font-size:11px;color:var(--admin-text-muted);font-style:italic;">' +
+                    '💰 Original price (before discount)' +
+                '</div>';
+            } else if (pm.priceHistory && pm.priceHistory.length > 0) {
+                // Search price history to find the compare-at price that applied when this price was active
+                var matchingHistory = pm.priceHistory.filter(function(h) {
+                    return Math.abs(h.price - pp.price) < 0.001 && h.compareAtPrice && h.compareAtPrice > pp.price;
+                });
+                if (matchingHistory.length > 0) {
+                    var histEntry = matchingHistory[matchingHistory.length - 1];
+                    var histPct = Math.round(((histEntry.compareAtPrice - pp.price) / histEntry.compareAtPrice) * 100);
+                    originalPriceInfo = '<div style="margin-top:4px;font-size:12px;color:var(--admin-text-muted);display:flex;align-items:center;gap:6px;flex-wrap:wrap;">' +
+                        '<span style="text-decoration:line-through;">' + histEntry.compareAtPrice.toFixed(3) + ' KWD</span>' +
+                        '<span style="background:rgba(220,53,69,0.12);color:#dc3545;font-weight:700;padding:1px 6px;border-radius:4px;font-size:11px;">-' + histPct + '%</span>' +
+                        '<span style="font-style:italic;color:var(--admin-text-muted);">was the original price</span>' +
+                    '</div>';
+                }
+            }
+        }
+
         return '<div style="background:var(--admin-surface-2);border:1px solid var(--admin-border);border-radius:12px;padding:14px;margin-bottom:8px;">' +
             '<div onclick="var el=document.getElementById(\'ppOrders_' + ppIdx + '\');if(el)el.style.display=el.style.display===\'none\'?\'block\':\'none\';" style="cursor:pointer;display:flex;justify-content:space-between;align-items:center;">' +
                 '<div>' +
                     '<span style="font-size:18px;font-weight:700;font-family:Playfair Display,serif;color:var(--admin-text);">' + pp.price.toFixed(3) + '</span>' +
                     ' <span style="font-size:12px;color:var(--admin-text-muted);">KWD</span>' +
+                    originalPriceInfo +
                 '</div>' +
                 '<div style="display:flex;gap:16px;align-items:center;">' +
                     '<div style="text-align:center;"><div style="font-size:14px;font-weight:700;color:var(--admin-text);">' + pp.quantity + '</div><div style="font-size:10px;color:var(--admin-text-muted);">SOLD</div></div>' +
