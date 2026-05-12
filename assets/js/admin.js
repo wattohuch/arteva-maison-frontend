@@ -412,6 +412,7 @@ function switchToSection(targetId) {
         case 'settings': loadSettings(); break;
         case 'analytics': loadAnalytics(); break;
         case 'discounts': loadDiscountsPage(); break;
+        case 'visitors': loadVisitorPage(); break;
     }
 }
 
@@ -1981,6 +1982,116 @@ async function loadIPVisitorLog() {
     } catch (err) {
         console.error('Failed to load IP visitor log:', err);
         tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;padding:40px;color:var(--admin-text-muted);">Failed to load visitor log.</td></tr>';
+    }
+}
+
+// ==========================================
+// Visitors Page (Dedicated IP Tracking)
+// ==========================================
+async function loadVisitorPage() {
+    const dateFilter = document.getElementById('visitorDateFilter')?.value || '';
+    const queryParam = dateFilter ? `?date=${dateFilter}&limit=1000` : '?limit=1000';
+
+    try {
+        const response = await fetch(`${API_BASE_URL}/admin/analytics/visitor-log${queryParam}`, {
+            headers: { 'Authorization': `Bearer ${localStorage.getItem('arteva_token')}` }
+        });
+        const result = await response.json();
+
+        if (!result.success) throw new Error('Failed');
+
+        const data = result.data || [];
+
+        // ── Compute stats ──
+        const today = new Date().toISOString().split('T')[0];
+        const todayRecords = data.filter(v => v.date === today);
+        const todayUniqueIPs = [...new Set(todayRecords.map(v => v.ip))].length;
+
+        // Top product today
+        const todayProductCounts = {};
+        todayRecords.forEach(v => {
+            const name = v.productName || '—';
+            todayProductCounts[name] = (todayProductCounts[name] || 0) + 1;
+        });
+        const topProductToday = Object.entries(todayProductCounts).sort((a, b) => b[1] - a[1])[0]?.[0] || '—';
+
+        // Daily summary aggregation
+        const dailyMap = {};
+        data.forEach(v => {
+            if (!dailyMap[v.date]) dailyMap[v.date] = { ips: new Set(), views: 0, products: {} };
+            dailyMap[v.date].ips.add(v.ip);
+            dailyMap[v.date].views++;
+            const pn = v.productName || '—';
+            dailyMap[v.date].products[pn] = (dailyMap[v.date].products[pn] || 0) + 1;
+        });
+        const dailySummary = Object.entries(dailyMap)
+            .map(([date, d]) => ({
+                date,
+                uniqueIPs: d.ips.size,
+                totalViews: d.views,
+                topProduct: Object.entries(d.products).sort((a, b) => b[1] - a[1])[0]?.[0] || '—'
+            }))
+            .sort((a, b) => b.date.localeCompare(a.date));
+
+        const avgDaily = dailySummary.length > 0
+            ? Math.round(dailySummary.reduce((s, d) => s + d.uniqueIPs, 0) / dailySummary.length)
+            : 0;
+
+        // ── Stat tiles ──
+        const el = (id) => document.getElementById(id);
+        if (el('visitorStatTotal')) el('visitorStatTotal').textContent = data.length.toLocaleString();
+        if (el('visitorStatTodayIPs')) el('visitorStatTodayIPs').textContent = todayUniqueIPs.toLocaleString();
+        if (el('visitorStatTopProduct')) el('visitorStatTopProduct').textContent = topProductToday.length > 20 ? topProductToday.substring(0, 20) + '…' : topProductToday;
+        if (el('visitorStatAvgDaily')) el('visitorStatAvgDaily').textContent = avgDaily.toLocaleString();
+
+        // ── Daily Summary Table ──
+        const summaryBody = document.getElementById('visitorDailySummaryBody');
+        if (summaryBody) {
+            if (dailySummary.length === 0) {
+                summaryBody.innerHTML = '<tr><td colspan="4" style="text-align:center;padding:30px;color:var(--admin-text-muted);">No data yet.</td></tr>';
+            } else {
+                summaryBody.innerHTML = dailySummary.map(d => `
+                    <tr>
+                        <td style="font-weight:600;">${d.date}</td>
+                        <td style="text-align:right;font-weight:700;color:#2563eb;">${d.uniqueIPs}</td>
+                        <td style="text-align:right;">${d.totalViews}</td>
+                        <td>${d.topProduct}</td>
+                    </tr>
+                `).join('');
+            }
+        }
+
+        // ── Full Log Table ──
+        const logBody = document.getElementById('visitorFullLogBody');
+        if (logBody) {
+            if (data.length === 0) {
+                logBody.innerHTML = '<tr><td colspan="5" style="text-align:center;padding:40px;color:var(--admin-text-muted);">No visitors recorded yet.</td></tr>';
+            } else {
+                logBody.innerHTML = data.map(v => {
+                    const ua = v.userAgent || '';
+                    const shortUA = ua.length > 50 ? ua.substring(0, 50) + '…' : ua;
+                    const ref = v.referrer || '—';
+                    const shortRef = ref.length > 35 ? ref.substring(0, 35) + '…' : ref;
+                    const productName = v.productName || '—';
+                    const imageUrl = v.productImage ? resolveImageUrl(v.productImage) : '';
+                    const imgTag = imageUrl ? `<img src="${imageUrl}" style="width:32px;height:32px;border-radius:4px;object-fit:cover;margin-right:8px;vertical-align:middle;" onerror="this.style.display='none'">` : '';
+                    const dateStr = v.createdAt ? new Date(v.createdAt).toLocaleString() : v.date || '—';
+
+                    return `<tr>
+                        <td style="font-family:monospace;font-size:12px;font-weight:600;">${v.ip || '—'}</td>
+                        <td style="font-size:12px;">${dateStr}</td>
+                        <td>${imgTag}<span>${productName}</span></td>
+                        <td style="font-size:11px;color:var(--admin-text-muted);" title="${ua}">${shortUA}</td>
+                        <td style="font-size:11px;color:var(--admin-text-muted);" title="${ref}">${shortRef}</td>
+                    </tr>`;
+                }).join('');
+            }
+        }
+
+    } catch (err) {
+        console.error('Failed to load visitor page:', err);
+        const logBody = document.getElementById('visitorFullLogBody');
+        if (logBody) logBody.innerHTML = '<tr><td colspan="5" style="text-align:center;padding:40px;color:var(--admin-text-muted);">Failed to load visitors.</td></tr>';
     }
 }
 

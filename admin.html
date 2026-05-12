@@ -61,6 +61,8 @@
                         class="nav-text">Discounts</span></a></li>
             <li><a href="#receipts" class="sidebar-link"><span class="icon">🧾</span> <span
                         class="nav-text">Receipts</span></a></li>
+            <li><a href="#visitors" class="sidebar-link"><span class="icon">🌐</span> <span
+                        class="nav-text">Visitors</span></a></li>
             <li><a href="#" id="logoutBtn" class="sidebar-link" data-i18n="admin_logout"><span class="icon">🚪</span>
                     <span class="nav-text">Logout</span></a></li>
         </ul>
@@ -572,6 +574,95 @@
                 </div>
             </div>
         </div>
+
+        <!-- ── Visitors Section ── -->
+        <div id="visitors" class="admin-section hidden">
+            <div class="admin-page-header">
+                <h1 class="admin-page-title">🌐 Visitor Tracking</h1>
+            </div>
+
+            <!-- Stat Cards -->
+            <div class="admin-stats-grid" style="margin-bottom: 24px;">
+                <div class="admin-stat-card">
+                    <div class="stat-icon-wrap">👁️</div>
+                    <div class="stat-content">
+                        <h3 id="visitorStatTotal">0</h3>
+                        <p>Total Records</p>
+                    </div>
+                </div>
+                <div class="admin-stat-card">
+                    <div class="stat-icon-wrap">🌐</div>
+                    <div class="stat-content">
+                        <h3 id="visitorStatTodayIPs">0</h3>
+                        <p>Unique IPs Today</p>
+                    </div>
+                </div>
+                <div class="admin-stat-card">
+                    <div class="stat-icon-wrap">🔥</div>
+                    <div class="stat-content">
+                        <h3 id="visitorStatTopProduct">—</h3>
+                        <p>Most Viewed Today</p>
+                    </div>
+                </div>
+                <div class="admin-stat-card">
+                    <div class="stat-icon-wrap">📅</div>
+                    <div class="stat-content">
+                        <h3 id="visitorStatAvgDaily">0</h3>
+                        <p>Avg Daily Visitors</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Date Filter -->
+            <div style="display:flex;gap:12px;flex-wrap:wrap;margin-bottom:20px;align-items:center;">
+                <label style="color:var(--admin-text);font-weight:600;">Filter by Date:</label>
+                <input type="date" id="visitorDateFilter" class="admin-search" style="width:auto;min-width:160px;">
+                <button class="admin-btn" onclick="loadVisitorPage()" style="padding:8px 16px;">🔄 Refresh</button>
+                <button class="admin-btn" onclick="document.getElementById('visitorDateFilter').value='';loadVisitorPage()" style="padding:8px 16px;">All Records</button>
+            </div>
+
+            <!-- Daily Summary -->
+            <h2 style="font-family:'Playfair Display',serif;font-size:18px;margin-bottom:12px;color:var(--admin-text);">📊 Daily Summary</h2>
+            <div class="admin-table-wrap" style="margin-bottom:32px;">
+                <div class="admin-table-scroll">
+                    <table class="admin-table" id="visitorDailySummaryTable">
+                        <thead>
+                            <tr>
+                                <th>Date</th>
+                                <th style="text-align:right;">Unique IPs</th>
+                                <th style="text-align:right;">Total Views</th>
+                                <th>Top Product</th>
+                            </tr>
+                        </thead>
+                        <tbody id="visitorDailySummaryBody">
+                            <tr><td colspan="4" style="text-align:center;padding:30px;color:var(--admin-text-muted);">Loading...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Full Visitor Log -->
+            <h2 style="font-family:'Playfair Display',serif;font-size:18px;margin-bottom:12px;color:var(--admin-text);">📋 Detailed Visitor Log</h2>
+            <div class="admin-table-wrap">
+                <div class="admin-table-scroll">
+                    <table class="admin-table" id="visitorFullLogTable">
+                        <thead>
+                            <tr>
+                                <th>IP Address</th>
+                                <th>Date & Time</th>
+                                <th>Product Viewed</th>
+                                <th>Browser / Device</th>
+                                <th>Referrer</th>
+                            </tr>
+                        </thead>
+                        <tbody id="visitorFullLogBody">
+                            <tr><td colspan="5" style="text-align:center;padding:40px;color:var(--admin-text-muted);">Loading visitor log...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
     </main>
 
     <!-- ========== MODALS ========== -->
