@@ -899,9 +899,9 @@
 .badge-discount {
     background: linear-gradient(135deg, #dc3545, #c0392b);
     color: #fff;
-    font-size: 11px;
+    font-size: 16px;
     font-weight: 700;
-    padding: 2px 8px;
+    padding: 4px 10px;
     border-radius: 4px;
     letter-spacing: 0;
 }

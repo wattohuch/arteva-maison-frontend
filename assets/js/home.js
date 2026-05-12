@@ -178,7 +178,6 @@ function renderBrowseCollections(container, products) {
             priceHtml = `<span class="browse-collection-price" style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;justify-content:center;">
                 <span style="text-decoration:line-through;color:var(--text-muted);font-size:12px;" data-base-price="${product.compareAtPrice.toFixed(3)}">${product.compareAtPrice.toFixed(3)} ${currency}</span>
                 <span style="color:#dc3545;font-weight:700;" data-base-price="${product.price.toFixed(3)}">${product.price.toFixed(3)} ${currency}</span>
-                <span class="discount-pct">-${discountPct}%</span>
             </span>`;
         } else {
             priceHtml = `<span class="browse-collection-price" data-base-price="${product.price.toFixed(3)}">${product.price.toFixed(3)} ${currency}</span>`;
@@ -260,8 +259,7 @@ function renderProducts(container, products) {
         let priceHtml;
         if (hasDiscount) {
             priceHtml = `<span class="original-price" data-base-price="${product.compareAtPrice.toFixed(3)}">${product.compareAtPrice.toFixed(3)} ${currency}</span>
-                    <span class="current-price has-discount" data-base-price="${product.price.toFixed(3)}">${product.price.toFixed(3)} ${currency}</span>
-                    <span class="discount-pct">-${discountPct}%</span>`;
+                    <span class="current-price has-discount" data-base-price="${product.price.toFixed(3)}">${product.price.toFixed(3)} ${currency}</span>`;
         } else {
             priceHtml = `<span class="current-price" data-base-price="${product.price.toFixed(3)}">${product.price.toFixed(3)} ${currency}</span>`;
         }
@@ -318,9 +316,32 @@ async function loadCategories() {
     `).join('');
 
     try {
-        const response = await CategoriesAPI.getAll();
-        if (response.success && response.data.length > 0) {
-            renderCategories(grid, response.data);
+        // Fetch categories and products in parallel
+        const [catResponse, prodResponse] = await Promise.all([
+            CategoriesAPI.getAll(),
+            ProductsAPI.getAll({ limit: 200 })
+        ]);
+
+        if (catResponse.success && catResponse.data.length > 0) {
+            // Build a set of category IDs that have at least one discounted product
+            const categoriesWithOffers = new Set();
+            if (prodResponse.success && prodResponse.data.length > 0) {
+                prodResponse.data.forEach(product => {
+                    if (product.compareAtPrice && product.compareAtPrice > product.price) {
+                        // Add primary category
+                        const catId = typeof product.category === 'object' ? product.category._id : product.category;
+                        if (catId) categoriesWithOffers.add(catId);
+                        // Add additional categories
+                        if (product.additionalCategories && Array.isArray(product.additionalCategories)) {
+                            product.additionalCategories.forEach(ac => {
+                                const acId = typeof ac === 'object' ? ac._id : ac;
+                                if (acId) categoriesWithOffers.add(acId);
+                            });
+                        }
+                    }
+                });
+            }
+            renderCategories(grid, catResponse.data, categoriesWithOffers);
         } else {
             grid.innerHTML = '<p class="text-center" style="grid-column:1/-1;">No categories available.</p>';
         }
@@ -330,8 +351,9 @@ async function loadCategories() {
     }
 }
 
-function renderCategories(grid, categories) {
+function renderCategories(grid, categories, categoriesWithOffers) {
     const lang = localStorage.getItem('site_lang') || 'en';
+    const offersSet = categoriesWithOffers || new Set();
 
     // Only show active categories
     const active = categories.filter(c => c.isActive !== false);
@@ -343,10 +365,24 @@ function renderCategories(grid, categories) {
             : 'assets/images/products/placeholder.png';
         const slug = cat.slug || cat._id;
 
+        // Check if this category has offers
+        const hasOffers = offersSet.has(cat._id);
+        const offerBadge = hasOffers ? `
+            <span class="category-offer-badge" style="
+                position:absolute; top:10px; right:10px; z-index:2;
+                background: linear-gradient(135deg, #dc3545, #c0392b);
+                color:#fff; font-size:11px; font-weight:700;
+                padding:4px 10px; border-radius:4px;
+                text-transform:uppercase; letter-spacing:0.5px;
+                box-shadow: 0 2px 8px rgba(220,53,69,0.35);
+                animation: pulse-offer 2s ease-in-out infinite;
+            ">${lang === 'ar' ? 'عروض متاحة' : 'Offers Available'}</span>` : '';
+
         return `
         <a href="collection.html?cat=${slug}" class="category-card" data-animate="fade-up" style="animation-delay: ${i * 0.08}s;">
             <img src="${image}" alt="${name}" loading="lazy"
                 onerror="this.onerror=null; this.src='assets/images/products/placeholder.png';">
+            ${offerBadge}
             <div class="category-overlay">
                 <span class="category-name">${name}</span>
             </div>

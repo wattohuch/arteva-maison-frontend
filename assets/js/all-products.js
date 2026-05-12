@@ -253,8 +253,7 @@
             let priceHtml;
             if (hasDiscount) {
                 priceHtml = `<span class="original-price" data-base-price="${product.compareAtPrice.toFixed(3)}">${product.compareAtPrice.toFixed(3)} ${currency}</span>
-                    <span class="current-price has-discount" data-base-price="${product.price.toFixed(3)}">${product.price.toFixed(3)} ${currency}</span>
-                    <span class="discount-pct">-${discountPct}%</span>`;
+                    <span class="current-price has-discount" data-base-price="${product.price.toFixed(3)}">${product.price.toFixed(3)} ${currency}</span>`;
             } else {
                 priceHtml = `<span class="current-price" data-base-price="${product.price.toFixed(3)}">${product.price.toFixed(3)} ${currency}</span>`;
             }

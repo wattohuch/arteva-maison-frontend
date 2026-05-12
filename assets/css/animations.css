@@ -289,6 +289,12 @@ body {
   letter-spacing: 0.18em;
 }
 
+/* Category offer badge pulse */
+@keyframes pulse-offer {
+  0%, 100% { transform: scale(1); opacity: 1; }
+  50% { transform: scale(1.05); opacity: 0.92; }
+}
+
 /* ─── Button System ──────────────────────────── */
 .btn {
   transition: all 0.35s cubic-bezier(0.25, 0.46, 0.45, 0.94);
