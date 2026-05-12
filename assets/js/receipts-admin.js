@@ -32,7 +32,8 @@
 
         try {
             var token = localStorage.getItem('token');
-            var API_BASE = window.API_BASE || (window.AppConfig && AppConfig.API_BASE) || '';
+            var baseUrl = window.API_BASE_URL || (window.Config && Config.API_BASE_URL) || '';
+            var API_BASE = baseUrl.replace(/\/api\/?$/, '');
             var res = await fetch(API_BASE + '/api/admin/orders', {
                 headers: { 'Authorization': 'Bearer ' + token }
             });
@@ -219,7 +220,8 @@
 
         try {
             var token = localStorage.getItem('token');
-            var API_BASE = window.API_BASE || (window.AppConfig && AppConfig.API_BASE) || '';
+            var baseUrl = window.API_BASE_URL || (window.Config && Config.API_BASE_URL) || '';
+            var API_BASE = baseUrl.replace(/\/api\/?$/, '');
             var res = await fetch(API_BASE + '/api/admin/orders/' + _currentEditOrder._id + '/receipt', {
                 method: 'PUT',
                 headers: {
@@ -270,7 +272,8 @@
     // ── View receipt preview ──
     window.viewReceiptPreview = function (orderId) {
         var token = localStorage.getItem('token');
-        var API_BASE = window.API_BASE || (window.AppConfig && AppConfig.API_BASE) || '';
+        var baseUrl = window.API_BASE_URL || (window.Config && Config.API_BASE_URL) || '';
+        var API_BASE = baseUrl.replace(/\/api\/?$/, '');
         var url = API_BASE + '/api/admin/receipt/' + orderId + '?token=' + token;
         window.open(url, '_blank', 'width=450,height=700');
     };

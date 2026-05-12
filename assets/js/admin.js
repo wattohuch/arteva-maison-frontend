@@ -1876,24 +1876,26 @@ async function loadAnalytics() {
 }
 
 function renderAnalytics(data) {
-    const { products, summary } = data;
+    const { products, summary, dailyBreakdown } = data;
 
     const totalViewsEl = document.getElementById('statTotalViews');
     const topProductEl = document.getElementById('statTopProduct');
     const avgViewsEl = document.getElementById('statAvgViews');
     const trackedProductsEl = document.getElementById('statTrackedProducts');
+    const uniqueVisitorsEl = document.getElementById('statUniqueVisitors');
 
     if (totalViewsEl) totalViewsEl.textContent = summary.totalViews.toLocaleString();
     if (topProductEl) topProductEl.textContent = summary.topProduct;
     if (avgViewsEl) avgViewsEl.textContent = summary.averageViews.toLocaleString();
     if (trackedProductsEl) trackedProductsEl.textContent = summary.totalProducts.toLocaleString();
+    if (uniqueVisitorsEl) uniqueVisitorsEl.textContent = (summary.totalUniqueVisitors || 0).toLocaleString();
 
     const tbody = document.getElementById('analyticsTableBody');
     if (!tbody) return;
 
     if (!products || products.length === 0) {
         tbody.innerHTML = `
-            <tr><td colspan="5">
+            <tr><td colspan="6">
                 <div class="analytics-empty">
                     <div class="analytics-empty-icon">\ud83d\udcca</div>
                     <div class="analytics-empty-text">No product views recorded yet.<br>Views will appear here as customers browse products.</div>
@@ -1908,6 +1910,7 @@ function renderAnalytics(data) {
         const rank = index + 1;
         const rankClass = rank <= 3 ? ` top-${rank}` : '';
         const views = product.viewCount || 0;
+        const uniqueViews = product.uniqueViews || 0;
         const percentage = Math.round((views / maxViews) * 100);
         const categoryName = product.category?.name || 'Uncategorized';
 
@@ -1928,6 +1931,7 @@ function renderAnalytics(data) {
                 </td>
                 <td>${categoryName}</td>
                 <td class="analytics-view-count">${views.toLocaleString()}</td>
+                <td style="text-align:right;font-weight:600;color:#2563eb;">${uniqueViews.toLocaleString()}</td>
                 <td>
                     <div class="analytics-bar-wrap">
                         <div class="analytics-bar-track">
@@ -1939,6 +1943,45 @@ function renderAnalytics(data) {
             </tr>
         `;
     }).join('');
+
+    // Load IP visitor log
+    loadIPVisitorLog();
+}
+
+async function loadIPVisitorLog() {
+    const tbody = document.getElementById('ipVisitorTableBody');
+    if (!tbody) return;
+
+    try {
+        const response = await fetch(`${API_BASE_URL}/admin/analytics/visitor-log`, {
+            headers: {
+                'Authorization': `Bearer ${localStorage.getItem('arteva_token')}`
+            }
+        });
+        const result = await response.json();
+
+        if (result.success && result.data && result.data.length > 0) {
+            tbody.innerHTML = result.data.map(v => {
+                const ua = v.userAgent || '';
+                const shortUA = ua.length > 60 ? ua.substring(0, 60) + '...' : ua;
+                const ref = v.referrer || '—';
+                const shortRef = ref.length > 40 ? ref.substring(0, 40) + '...' : ref;
+                const productName = v.productName || v.product || '—';
+                return `<tr>
+                    <td style="font-family:monospace;font-size:12px;font-weight:600;">${v.ip || '—'}</td>
+                    <td>${v.date || '—'}</td>
+                    <td>${productName}</td>
+                    <td style="font-size:11px;color:var(--admin-text-muted);" title="${ua}">${shortUA}</td>
+                    <td style="font-size:11px;color:var(--admin-text-muted);" title="${ref}">${shortRef}</td>
+                </tr>`;
+            }).join('');
+        } else {
+            tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;padding:40px;color:var(--admin-text-muted);">No visitor data yet. IP tracking starts once customers browse products.</td></tr>';
+        }
+    } catch (err) {
+        console.error('Failed to load IP visitor log:', err);
+        tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;padding:40px;color:var(--admin-text-muted);">Failed to load visitor log.</td></tr>';
+    }
 }
 
 // ==========================================

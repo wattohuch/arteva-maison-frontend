@@ -426,6 +426,13 @@
                         <p>Products</p>
                     </div>
                 </div>
+                <div class="admin-stat-card">
+                    <div class="stat-icon-wrap">🌐</div>
+                    <div class="stat-content">
+                        <h3 id="statUniqueVisitors">0</h3>
+                        <p>Unique Visitors (30d)</p>
+                    </div>
+                </div>
             </div>
 
             <h2 style="font-family: 'Playfair Display', serif; font-size: 20px; margin-bottom: 16px; color: var(--admin-text);">Most Viewed Products</h2>
@@ -439,12 +446,35 @@
                                 <th>Product</th>
                                 <th>Category</th>
                                 <th style="width: 100px; text-align: right;">Views</th>
+                                <th style="width: 100px; text-align: right;">Unique IPs</th>
                                 <th style="min-width: 180px;">Popularity</th>
                             </tr>
                         </thead>
                         <tbody id="analyticsTableBody">
                             <tr>
-                                <td colspan="5" style="text-align: center; padding: 40px; color: var(--admin-text-muted);">Loading analytics...</td>
+                                <td colspan="6" style="text-align: center; padding: 40px; color: var(--admin-text-muted);">Loading analytics...</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <h2 style="font-family: 'Playfair Display', serif; font-size: 20px; margin: 32px 0 16px; color: var(--admin-text);">🌐 IP Visitor Log</h2>
+            <div class="admin-table-wrap">
+                <div class="admin-table-scroll">
+                    <table class="admin-table" id="ipVisitorTable">
+                        <thead>
+                            <tr>
+                                <th>IP Address</th>
+                                <th>Date</th>
+                                <th>Product Viewed</th>
+                                <th>Browser / Device</th>
+                                <th>Referrer</th>
+                            </tr>
+                        </thead>
+                        <tbody id="ipVisitorTableBody">
+                            <tr>
+                                <td colspan="5" style="text-align: center; padding: 40px; color: var(--admin-text-muted);">Loading visitor log...</td>
                             </tr>
                         </tbody>
                     </table>
