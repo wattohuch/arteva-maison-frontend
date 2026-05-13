@@ -1052,7 +1052,7 @@ window.viewOrder = (orderId) => {
             : '';
         footer.innerHTML = `
             <button class="admin-btn secondary" onclick="window.open('receipt.html?id=${order._id}', '_blank')">📄 Receipt</button>
-            <button class="admin-btn secondary" onclick="window.open('order-tracking.html?order=${order.orderNumber}', '_blank')">📍 Track</button>
+            <button class="admin-btn secondary" onclick="window.open('track-order.html?order=${order.orderNumber}', '_blank')">📍 Track</button>
             ${trackDriverBtn}
             <button class="admin-btn" onclick="closeOrderModal()">Close</button>
         `;

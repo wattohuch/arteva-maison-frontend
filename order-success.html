@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+ï»¿<!DOCTYPE html>
 <html lang="en" dir="ltr">
 
 <head>
@@ -15,7 +15,7 @@
         rel="stylesheet">
 
     <!-- Stylesheets -->
-    <link rel="stylesheet" href="assets/css/main.css">
+    <link rel="stylesheet" href="assets/css/main.css">`n    <link rel="stylesheet" href="assets/css/components.css">
 
     <style>
         .success-container {
@@ -145,10 +145,10 @@
 
 <body>
     <!-- Header -->
-    <header class="header" id="header">
-        <div class="header-container">
+    <header class="header scrolled" id="header">
+        <div class="header-inner">
             <div class="header-left">
-                <a href="index.html" class="logo">ARTEVA</a>
+                <div class="logo"><a href="index.html"><span class="logo-text"><span class="main">ARTEVA</span><span class="sub">MAISON</span></span></a></div>
             </div>
         </div>
     </header>
@@ -260,18 +260,18 @@
             if (finalOrderNumber) {
                 const order = await verifyOrderPayment(finalOrderNumber);
                 if (order && order.paymentStatus === 'paid') {
-                    // Payment is confirmed — safe to clear cart and show receipt
+                    // Payment is confirmed â€” safe to clear cart and show receipt
                     paymentVerified = true;
                     localStorage.removeItem('arteva_cart');
                     if (window.clearCart) window.clearCart();
 
-                    trackOrderBtn.href = `order-tracking.html?order=${finalOrderNumber}`;
+                    trackOrderBtn.href = `track-order.html?order=${finalOrderNumber}`;
                     if (receiptBtn) {
                         receiptBtn.href = `receipt.html?order=${finalOrderNumber}`;
                         receiptBtn.style.display = '';
                     }
                 } else if (order && (order.paymentStatus === 'failed' || order.paymentStatus === 'cancelled')) {
-                    // Payment failed or cancelled — show error state
+                    // Payment failed or cancelled â€” show error state
                     if (successTitle) successTitle.textContent = 'Payment Not Completed';
                     if (successMessage) successMessage.textContent = 'Your payment was not successful. Your cart has been preserved. Please try again.';
                     if (successIcon) successIcon.style.background = 'linear-gradient(135deg, #ef4444, #dc2626)';
@@ -285,20 +285,20 @@
                     if (successMessage) successMessage.textContent = 'Your payment is being verified. Please check back in a few minutes.';
                     if (successIcon) successIcon.style.background = 'linear-gradient(135deg, #f59e0b, #d97706)';
                     if (receiptBtn) receiptBtn.style.display = 'none';
-                    trackOrderBtn.href = `order-tracking.html?order=${finalOrderNumber}`;
+                    trackOrderBtn.href = `track-order.html?order=${finalOrderNumber}`;
                     // Do NOT clear cart until verified
                 } else if (order && order.paymentMethod === 'cod') {
                     // COD orders are always confirmed immediately
                     paymentVerified = true;
                     localStorage.removeItem('arteva_cart');
                     if (window.clearCart) window.clearCart();
-                    trackOrderBtn.href = `order-tracking.html?order=${finalOrderNumber}`;
+                    trackOrderBtn.href = `track-order.html?order=${finalOrderNumber}`;
                     if (receiptBtn) {
                         receiptBtn.href = `receipt.html?order=${finalOrderNumber}`;
                         receiptBtn.style.display = '';
                     }
                 } else {
-                    // Could not verify — show cautious message
+                    // Could not verify â€” show cautious message
                     if (successTitle) successTitle.textContent = 'Order Received';
                     if (successMessage) successMessage.textContent = 'We received your order. Payment verification is in progress.';
                     if (receiptBtn) receiptBtn.style.display = 'none';

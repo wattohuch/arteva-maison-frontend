@@ -152,7 +152,7 @@ function renderOrderDetails(order) {
     let trackBtnHtml = '';
     if (order.orderStatus !== 'pending' && order.orderStatus !== 'cancelled') {
         trackBtnHtml = '<div style="margin-top: var(--space-4); padding-top: var(--space-4); border-top: 1px solid var(--border-light);">' +
-            '<a href="order-tracking.html?order=' + order.orderNumber + '" class="btn-view-order" style="display: block; text-align: center; background: #10b981; color: #fff; padding: 12px; border-radius: 6px; text-decoration: none; font-weight: 500;">' +
+            '<a href="track-order.html?order=' + order.orderNumber + '" class="btn-view-order" style="display: block; text-align: center; background: #10b981; color: #fff; padding: 12px; border-radius: 6px; text-decoration: none; font-weight: 500;">' +
             '\ud83d\udccd Track Your Order</a></div>';
     }
 
@@ -276,7 +276,7 @@ function renderOrders(orders) {
         // Track order — show for all except pending and cancelled
         let trackBtn = '';
         if (order.orderStatus !== 'pending' && order.orderStatus !== 'cancelled') {
-            trackBtn = '<a href="order-tracking.html?order=' + order.orderNumber + '" class="btn-view-order" style="background:#10b981;color:#fff;">\ud83d\udccd Track</a>';
+            trackBtn = '<a href="track-order.html?order=' + order.orderNumber + '" class="btn-view-order" style="background:#10b981;color:#fff;">\ud83d\udccd Track</a>';
         }
 
         return '<div class="order-card">' +
