@@ -31,7 +31,7 @@
         tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;padding:40px;color:var(--admin-text-muted);">Loading receipts...</td></tr>';
 
         try {
-            var token = localStorage.getItem('token');
+            var token = localStorage.getItem('arteva_token');
             var baseUrl = window.API_BASE_URL || (window.Config && Config.API_BASE_URL) || '';
             var API_BASE = baseUrl.replace(/\/api\/?$/, '');
             var res = await fetch(API_BASE + '/api/admin/orders', {
@@ -219,7 +219,7 @@
         var notes = document.getElementById('receiptNotes')?.value || '';
 
         try {
-            var token = localStorage.getItem('token');
+            var token = localStorage.getItem('arteva_token');
             var baseUrl = window.API_BASE_URL || (window.Config && Config.API_BASE_URL) || '';
             var API_BASE = baseUrl.replace(/\/api\/?$/, '');
             var res = await fetch(API_BASE + '/api/admin/orders/' + _currentEditOrder._id + '/receipt', {
@@ -271,7 +271,7 @@
 
     // ── View receipt preview ──
     window.viewReceiptPreview = function (orderId) {
-        var token = localStorage.getItem('token');
+        var token = localStorage.getItem('arteva_token');
         var baseUrl = window.API_BASE_URL || (window.Config && Config.API_BASE_URL) || '';
         var API_BASE = baseUrl.replace(/\/api\/?$/, '');
         var url = API_BASE + '/api/admin/receipt/' + orderId + '?token=' + token;
