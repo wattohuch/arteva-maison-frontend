@@ -1,0 +1,555 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ARTÉVA Print Station</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            background: #0f0f0f;
+            color: #e0e0e0;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .station {
+            max-width: 600px;
+            width: 90%;
+            text-align: center;
+        }
+
+        .logo {
+            font-family: Georgia, serif;
+            font-size: 28px;
+            color: #D4AF37;
+            letter-spacing: 4px;
+            margin-bottom: 8px;
+        }
+
+        .subtitle {
+            font-size: 12px;
+            color: #666;
+            letter-spacing: 6px;
+            text-transform: uppercase;
+            margin-bottom: 40px;
+        }
+
+        /* Status Indicator */
+        .status-ring {
+            width: 180px;
+            height: 180px;
+            border-radius: 50%;
+            margin: 0 auto 32px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+        }
+
+        .status-ring::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            border-radius: 50%;
+            border: 3px solid #222;
+        }
+
+        .status-ring.idle::before { border-color: #1a3a1a; }
+        .status-ring.printing::before { border-color: #D4AF37; animation: pulse-ring 1.5s infinite; }
+        .status-ring.error::before { border-color: #5a1a1a; }
+
+        @keyframes pulse-ring {
+            0%, 100% { opacity: 0.5; transform: scale(1); }
+            50% { opacity: 1; transform: scale(1.05); }
+        }
+
+        .status-icon { font-size: 64px; }
+
+        .status-text {
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+
+        .status-detail {
+            font-size: 13px;
+            color: #888;
+        }
+
+        /* Stats */
+        .stats {
+            display: flex;
+            gap: 24px;
+            justify-content: center;
+            margin: 32px 0;
+        }
+
+        .stat {
+            background: #1a1a1a;
+            border: 1px solid #2a2a2a;
+            border-radius: 12px;
+            padding: 16px 24px;
+            min-width: 120px;
+        }
+
+        .stat-value {
+            font-size: 28px;
+            font-weight: 700;
+            color: #D4AF37;
+        }
+
+        .stat-label {
+            font-size: 11px;
+            color: #666;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-top: 4px;
+        }
+
+        /* Log */
+        .log-container {
+            background: #1a1a1a;
+            border: 1px solid #2a2a2a;
+            border-radius: 12px;
+            padding: 16px;
+            margin-top: 24px;
+            text-align: left;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+
+        .log-title {
+            font-size: 11px;
+            color: #666;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            margin-bottom: 12px;
+        }
+
+        .log-entry {
+            font-size: 12px;
+            font-family: 'Consolas', monospace;
+            padding: 4px 0;
+            border-bottom: 1px solid #222;
+            color: #aaa;
+        }
+
+        .log-entry.success { color: #4ade80; }
+        .log-entry.error { color: #f87171; }
+        .log-entry .time { color: #555; margin-right: 8px; }
+
+        /* Setup screen */
+        .setup {
+            background: #1a1a1a;
+            border: 1px solid #2a2a2a;
+            border-radius: 16px;
+            padding: 32px;
+            max-width: 400px;
+            width: 90%;
+        }
+
+        .setup h2 {
+            font-size: 18px;
+            margin-bottom: 20px;
+            color: #D4AF37;
+        }
+
+        .setup input {
+            width: 100%;
+            padding: 12px 16px;
+            background: #0f0f0f;
+            border: 1px solid #333;
+            border-radius: 8px;
+            color: #e0e0e0;
+            font-size: 14px;
+            margin-bottom: 12px;
+            outline: none;
+        }
+
+        .setup input:focus { border-color: #D4AF37; }
+
+        .setup button {
+            width: 100%;
+            padding: 12px;
+            background: #D4AF37;
+            color: #000;
+            border: none;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+        }
+
+        .setup button:hover { background: #c9a330; }
+        .setup .hint { font-size: 11px; color: #555; margin-top: 8px; }
+
+        /* Hidden print frame */
+        #printFrame {
+            position: fixed;
+            top: -9999px;
+            left: -9999px;
+            width: 794px;
+            height: 1123px;
+        }
+
+        /* Print-specific styles */
+        @media print {
+            body * { visibility: hidden; }
+            #printFrame, #printFrame * { visibility: visible; }
+            #printFrame {
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<!-- Setup Screen -->
+<div class="setup" id="setupScreen">
+    <div style="text-align:center; margin-bottom:24px;">
+        <div class="logo">ARTÉVA</div>
+        <div class="subtitle">Print Station</div>
+    </div>
+    <h2>🖨️ Connect to Backend</h2>
+    <input type="text" id="apiUrl" placeholder="Backend URL" value="https://arteva-maison-backend-gy1x.onrender.com">
+    <input type="text" id="apiKey" placeholder="Print Agent Key" value="arteva-print-2026">
+    <input type="number" id="pollInterval" placeholder="Poll interval (seconds)" value="20" min="5" max="120">
+    <button onclick="startStation()">Start Print Station</button>
+    <p class="hint">Keep this tab open. The station will auto-print new paid orders.</p>
+</div>
+
+<!-- Main Station Screen -->
+<div class="station" id="stationScreen" style="display:none;">
+    <div class="logo">ARTÉVA</div>
+    <div class="subtitle">Print Station</div>
+
+    <div class="status-ring idle" id="statusRing">
+        <span class="status-icon" id="statusIcon">⏳</span>
+    </div>
+
+    <div class="status-text" id="statusText">Waiting for orders...</div>
+    <div class="status-detail" id="statusDetail">Polling every 20s</div>
+
+    <div class="stats">
+        <div class="stat">
+            <div class="stat-value" id="printedCount">0</div>
+            <div class="stat-label">Printed</div>
+        </div>
+        <div class="stat">
+            <div class="stat-value" id="queueCount">0</div>
+            <div class="stat-label">In Queue</div>
+        </div>
+        <div class="stat">
+            <div class="stat-value" id="uptimeDisplay">0m</div>
+            <div class="stat-label">Uptime</div>
+        </div>
+    </div>
+
+    <div class="log-container">
+        <div class="log-title">Activity Log</div>
+        <div id="logEntries"></div>
+    </div>
+</div>
+
+<!-- Hidden iframe for printing -->
+<iframe id="printFrame" name="printFrame"></iframe>
+
+<script>
+let apiUrl = '';
+let apiKey = '';
+let pollMs = 20000;
+let pollTimer = null;
+let printedCount = 0;
+let startTime = null;
+let printing = false;
+
+function startStation() {
+    apiUrl = document.getElementById('apiUrl').value.replace(/\/+$/, '');
+    apiKey = document.getElementById('apiKey').value;
+    pollMs = parseInt(document.getElementById('pollInterval').value) * 1000 || 20000;
+
+    // Save config
+    localStorage.setItem('ps_apiUrl', apiUrl);
+    localStorage.setItem('ps_apiKey', apiKey);
+    localStorage.setItem('ps_pollMs', pollMs);
+
+    document.getElementById('setupScreen').style.display = 'none';
+    document.getElementById('stationScreen').style.display = 'block';
+    document.getElementById('statusDetail').textContent = `Polling every ${pollMs/1000}s`;
+
+    startTime = Date.now();
+    log('Station started');
+    poll();
+    pollTimer = setInterval(poll, pollMs);
+
+    // Update uptime every minute
+    setInterval(updateUptime, 60000);
+}
+
+// Auto-restore saved config
+window.addEventListener('DOMContentLoaded', () => {
+    const saved = localStorage.getItem('ps_apiUrl');
+    if (saved) {
+        document.getElementById('apiUrl').value = saved;
+        document.getElementById('apiKey').value = localStorage.getItem('ps_apiKey') || 'arteva-print-2026';
+        document.getElementById('pollInterval').value = (parseInt(localStorage.getItem('ps_pollMs')) || 20000) / 1000;
+    }
+
+    // Auto-start if URL param ?auto=1
+    if (new URLSearchParams(window.location.search).get('auto') === '1' && saved) {
+        startStation();
+    }
+});
+
+async function poll() {
+    if (printing) return;
+
+    try {
+        setStatus('idle', '⏳', 'Checking for new orders...');
+
+        const res = await fetch(`${apiUrl}/api/admin/print-queue/poll?key=${apiKey}`, { timeout: 15000 });
+        if (!res.ok) {
+            throw new Error(`HTTP ${res.status}`);
+        }
+
+        const data = await res.json();
+
+        if (!data.success) {
+            throw new Error(data.message || 'API error');
+        }
+
+        document.getElementById('queueCount').textContent = data.count || 0;
+
+        if (data.count > 0 && data.orders && data.orders.length > 0) {
+            log(`Found ${data.count} order(s) to print`, 'success');
+            for (const order of data.orders) {
+                await printOrder(order);
+            }
+        } else {
+            setStatus('idle', '✅', 'No new orders');
+        }
+    } catch (e) {
+        log(`Poll error: ${e.message}`, 'error');
+        setStatus('error', '❌', `Error: ${e.message}`);
+    }
+}
+
+async function printOrder(order) {
+    printing = true;
+    const orderNum = order.orderNumber || order._id;
+
+    try {
+        setStatus('printing', '🖨️', `Printing ${orderNum}...`);
+        log(`Printing receipt: ${orderNum}`);
+
+        // Build receipt HTML
+        const receiptHtml = buildReceiptHtml(order);
+
+        // Load into iframe and print
+        const frame = document.getElementById('printFrame');
+        const doc = frame.contentDocument || frame.contentWindow.document;
+        doc.open();
+        doc.write(receiptHtml);
+        doc.close();
+
+        // Wait for content to render
+        await new Promise(r => setTimeout(r, 500));
+
+        // Trigger print
+        frame.contentWindow.print();
+
+        // Wait for print dialog
+        await new Promise(r => setTimeout(r, 3000));
+
+        // Mark as printed
+        await fetch(`${apiUrl}/api/admin/print-queue/done/${order._id}?key=${apiKey}`, { method: 'POST' });
+
+        printedCount++;
+        document.getElementById('printedCount').textContent = printedCount;
+        log(`✅ Printed: ${orderNum}`, 'success');
+        setStatus('idle', '✅', `Last printed: ${orderNum}`);
+    } catch (e) {
+        log(`Print error for ${orderNum}: ${e.message}`, 'error');
+        setStatus('error', '❌', `Print failed: ${e.message}`);
+    }
+
+    printing = false;
+}
+
+function buildReceiptHtml(order) {
+    const items = order.items || [];
+    const date = new Date(order.createdAt || Date.now()).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
+    const customer = order.user || {};
+    const addr = order.shippingAddress || {};
+    const status = (order.orderStatus || 'pending').replace(/_/g, ' ');
+    const payNames = { cod: 'Cash on Delivery', knet: 'KNET', card: 'Credit/Debit Card', applepay: 'Apple Pay', myfatoorah: 'Online Payment' };
+
+    return `<!DOCTYPE html>
+<html>
+<head>
+<style>
+    @page { size: A4; margin: 15mm; }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: 'Georgia', 'Times New Roman', serif; color: #2c241b; line-height: 1.4; }
+    .receipt { max-width: 700px; margin: 0 auto; padding: 20px; }
+
+    .header { text-align: center; margin-bottom: 24px; }
+    .brand { font-size: 28px; font-weight: bold; letter-spacing: 6px; color: #2c241b; }
+    .header-sub { font-size: 10px; color: #999; letter-spacing: 3px; margin-top: 4px; }
+    .gold-line { height: 2px; background: #D4AF37; margin: 16px 0; }
+
+    .meta-grid { display: flex; gap: 12px; margin-bottom: 20px; }
+    .meta-item { flex: 1; }
+    .meta-label { font-size: 9px; color: #999; text-transform: uppercase; letter-spacing: 1px; }
+    .meta-label-ar { font-size: 8px; color: #bbb; }
+    .meta-value { font-size: 14px; font-weight: 600; margin-top: 2px; }
+    .status-badge { display: inline-block; padding: 2px 10px; border-radius: 10px; font-size: 11px; font-weight: 600; background: #d1fae5; color: #065f46; }
+
+    .info-grid { display: flex; gap: 12px; margin-bottom: 16px; }
+    .info-box { flex: 1; background: #fafaf8; border: 1px solid #e6e1d6; border-radius: 6px; padding: 12px; }
+    .info-title { font-size: 9px; color: #999; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 6px; }
+    .info-text { font-size: 12px; color: #2c241b; }
+
+    table { width: 100%; border-collapse: collapse; margin: 16px 0; }
+    th { font-size: 10px; color: #2c241b; text-transform: uppercase; letter-spacing: 1px; border-bottom: 1px solid #e6e1d6; padding: 8px 4px; text-align: left; }
+    th.ar { font-size: 8px; color: #bbb; font-weight: normal; }
+    td { font-size: 12px; padding: 8px 4px; border-bottom: 1px solid #f0ece0; }
+    .text-right { text-align: right; }
+    .text-center { text-align: center; }
+
+    .totals { margin: 16px 0; text-align: right; }
+    .total-row { display: flex; justify-content: flex-end; gap: 40px; padding: 4px 0; font-size: 12px; color: #666; }
+    .total-main { font-size: 18px; font-weight: bold; color: #2c241b; border-top: 2px solid #e6e1d6; padding-top: 8px; margin-top: 8px; }
+
+    .policy { background: #fffbeb; border: 1px solid rgba(245,158,11,0.2); border-left: 3px solid #D4AF37; border-radius: 6px; padding: 12px 16px; margin: 20px 0; font-size: 10px; color: #666; }
+    .policy-title { font-size: 12px; color: #2c241b; font-weight: 600; margin-bottom: 6px; }
+
+    .footer { text-align: center; margin-top: 24px; padding-top: 16px; border-top: 1px solid #e6e1d6; }
+    .footer p { font-size: 11px; color: #999; margin: 4px 0; }
+</style>
+</head>
+<body>
+<div class="receipt">
+    <div class="header">
+        <div class="brand">ARTÉVA MAISON</div>
+        <div class="header-sub">Order Receipt / إيصال الطلب</div>
+    </div>
+    <div class="gold-line"></div>
+
+    <div class="meta-grid">
+        <div class="meta-item">
+            <div class="meta-label">Order Number <span class="meta-label-ar">رقم الطلب</span></div>
+            <div class="meta-value">${order.orderNumber || 'N/A'}</div>
+        </div>
+        <div class="meta-item">
+            <div class="meta-label">Date <span class="meta-label-ar">التاريخ</span></div>
+            <div class="meta-value">${date}</div>
+        </div>
+        <div class="meta-item">
+            <div class="meta-label">Status <span class="meta-label-ar">الحالة</span></div>
+            <div class="meta-value"><span class="status-badge">${status}</span></div>
+        </div>
+    </div>
+
+    <div class="info-grid">
+        <div class="info-box">
+            <div class="info-title">Customer / بيانات العميل</div>
+            <div class="info-text"><strong>${customer.name || addr.fullName || 'Guest'}</strong></div>
+            <div class="info-text">${customer.email || ''}</div>
+            <div class="info-text">${customer.phone || addr.phone || ''}</div>
+        </div>
+        <div class="info-box">
+            <div class="info-title">Shipping / عنوان الشحن</div>
+            <div class="info-text">${[addr.street || addr.addressLine1, addr.area, addr.block ? 'Block ' + addr.block : '', addr.city, addr.country].filter(Boolean).join('<br>')}</div>
+        </div>
+    </div>
+
+    <div class="info-grid">
+        <div class="info-box">
+            <div class="info-title">Payment / طريقة الدفع</div>
+            <div class="info-text"><strong>${(payNames[order.paymentMethod] || order.paymentMethod || 'N/A').toUpperCase()}</strong></div>
+        </div>
+        <div class="info-box">
+            <div class="info-title">Payment Status / حالة الدفع</div>
+            <div class="info-text"><span class="status-badge">${(order.paymentStatus || 'pending').replace(/_/g, ' ')}</span></div>
+        </div>
+    </div>
+
+    <table>
+        <thead>
+            <tr>
+                <th>Item <span class="ar">المنتج</span></th>
+                <th class="text-right">Price <span class="ar">السعر</span></th>
+                <th class="text-center">Qty <span class="ar">الكمية</span></th>
+                <th class="text-right">Total <span class="ar">المجموع</span></th>
+            </tr>
+        </thead>
+        <tbody>
+            ${items.map(item => `
+            <tr>
+                <td>${item.name}${item.nameAr ? '<br><small style="color:#999;">' + item.nameAr + '</small>' : ''}</td>
+                <td class="text-right">${(item.price || 0).toFixed(3)} KWD</td>
+                <td class="text-center">${item.quantity}</td>
+                <td class="text-right"><strong>${((item.price || 0) * (item.quantity || 1)).toFixed(3)} KWD</strong></td>
+            </tr>`).join('')}
+        </tbody>
+    </table>
+
+    <div class="totals">
+        <div class="total-row"><span>Subtotal / المجموع الفرعي</span><span>${(order.subtotal || order.total || 0).toFixed(3)} KWD</span></div>
+        <div class="total-row"><span>Delivery / التوصيل</span><span>${(order.shippingCost || 0).toFixed(3)} KWD</span></div>
+        <div class="total-row total-main"><span>Total Paid / المبلغ المدفوع</span><span>${(order.total || 0).toFixed(3)} KWD</span></div>
+    </div>
+
+    <div class="policy">
+        <div class="policy-title">Return & Exchange Policy / سياسة الإرجاع والاستبدال</div>
+        <p>Products may be returned or exchanged within 14 days of delivery, provided they are unopened and in original condition.</p>
+        <p style="margin-top:4px;">يمكن إرجاع أو استبدال المنتجات خلال ١٤ يومًا من التسليم، بشرط أن تكون غير مفتوحة وفي حالتها الأصلي</p>
+        <p style="margin-top:6px;">Contact / تواصل: +965 5068 3207</p>
+    </div>
+
+    <div class="footer">
+        <p>Thank you for shopping with ARTÉVA Maison ✨</p>
+        <p>شكراً لتسوقكم مع أرتيفا ميزون</p>
+        <p style="font-size:10px; margin-top:6px;">artevamaison@gmail.com • www.artevamaisonkw.com • +965 5068 3207</p>
+    </div>
+</div>
+</body>
+</html>`;
+}
+
+function setStatus(state, icon, text) {
+    const ring = document.getElementById('statusRing');
+    ring.className = 'status-ring ' + state;
+    document.getElementById('statusIcon').textContent = icon;
+    document.getElementById('statusText').textContent = text;
+}
+
+function log(msg, type) {
+    const el = document.getElementById('logEntries');
+    const time = new Date().toLocaleTimeString();
+    const cls = type || '';
+    el.innerHTML = `<div class="log-entry ${cls}"><span class="time">${time}</span>${msg}</div>` + el.innerHTML;
+    // Keep last 50 entries
+    while (el.children.length > 50) el.removeChild(el.lastChild);
+}
+
+function updateUptime() {
+    if (!startTime) return;
+    const mins = Math.floor((Date.now() - startTime) / 60000);
+    const display = mins < 60 ? `${mins}m` : `${Math.floor(mins/60)}h ${mins%60}m`;
+    document.getElementById('uptimeDisplay').textContent = display;
+}
+</script>
+</body>
+</html>
