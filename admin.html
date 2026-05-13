@@ -84,28 +84,35 @@
             </div>
 
             <div class="admin-stats">
-                <div class="admin-stat-card">
+                <div class="admin-stat-card" onclick="navigateToSection('users')" style="cursor: pointer;" title="Click to view all users">
                     <div class="stat-icon-wrap">👥</div>
                     <div class="stat-content">
                         <h3 id="statMembers">0</h3>
                         <p data-i18n="admin_total_users">Total Users</p>
                     </div>
                 </div>
-                <div class="admin-stat-card">
+                <div class="admin-stat-card" onclick="navigateToSection('products')" style="cursor: pointer;" title="Click to view all products">
                     <div class="stat-icon-wrap">📦</div>
                     <div class="stat-content">
                         <h3 id="statProducts">0</h3>
                         <p data-i18n="admin_products_count">Products</p>
                     </div>
                 </div>
-                <div class="admin-stat-card">
+                <div class="admin-stat-card" onclick="navigateToSection('orders')" style="cursor: pointer;" title="Click to view all orders">
                     <div class="stat-icon-wrap">🛍️</div>
                     <div class="stat-content">
                         <h3 id="statOrders">0</h3>
                         <p data-i18n="admin_orders_count">Orders</p>
                     </div>
                 </div>
-                <div class="admin-stat-card">
+                <div class="admin-stat-card" onclick="navigateToSection('visitors')" style="cursor: pointer;" title="Click to view visitor analytics">
+                    <div class="stat-icon-wrap">🌐</div>
+                    <div class="stat-content">
+                        <h3 id="statVisitors">0</h3>
+                        <p>Visitors (30d)</p>
+                    </div>
+                </div>
+                <div class="admin-stat-card" onclick="navigateToSection('receipts')" style="cursor: pointer;" title="Click to view receipts">
                     <div class="stat-icon-wrap">💰</div>
                     <div class="stat-content">
                         <h3 id="statRevenue">0.000</h3>

@@ -539,6 +539,9 @@ async function loadDashboard() {
             document.getElementById('statProducts').textContent = totalProducts;
             document.getElementById('statOrders').textContent = totalOrders;
 
+            // Load visitor count
+            loadVisitorCount();
+
             // Revenue handling
             const revenueCard = document.querySelector('.admin-stat-card:has(#statRevenue)');
             const revenueValue = document.getElementById('statRevenue');
@@ -577,6 +580,37 @@ async function loadDashboard() {
     } catch (err) {
         console.error('Failed to load stats:', err);
     }
+}
+
+// Load visitor count for dashboard tile
+async function loadVisitorCount() {
+    try {
+        const response = await fetch(`${API_BASE_URL}/admin/analytics/visitor-log?limit=10000`, {
+            headers: { 'Authorization': `Bearer ${localStorage.getItem('arteva_token')}` }
+        });
+        const result = await response.json();
+        if (result.success && result.data) {
+            // Count unique IPs in last 30 days
+            const thirtyDaysAgo = new Date();
+            thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+            const uniqueIPs = new Set();
+            result.data.forEach(v => {
+                const viewDate = new Date(v.timestamp);
+                if (viewDate >= thirtyDaysAgo) {
+                    uniqueIPs.add(v.ip);
+                }
+            });
+            document.getElementById('statVisitors').textContent = uniqueIPs.size;
+        }
+    } catch (err) {
+        console.error('Failed to load visitor count:', err);
+        document.getElementById('statVisitors').textContent = '0';
+    }
+}
+
+// Navigate to section when tile is clicked
+function navigateToSection(sectionId) {
+    window.location.hash = sectionId;
 }
 
 function renderRecentOrders(orders) {
@@ -2061,30 +2095,68 @@ async function loadVisitorPage() {
             }
         }
 
-        // ── Full Log Table ──
+        // ── Full Log Table with Date Grouping ──
         const logBody = document.getElementById('visitorFullLogBody');
         if (logBody) {
             if (data.length === 0) {
                 logBody.innerHTML = '<tr><td colspan="5" style="text-align:center;padding:40px;color:var(--admin-text-muted);">No visitors recorded yet.</td></tr>';
             } else {
-                logBody.innerHTML = data.map(v => {
-                    const ua = v.userAgent || '';
-                    const shortUA = ua.length > 50 ? ua.substring(0, 50) + '…' : ua;
-                    const ref = v.referrer || '—';
-                    const shortRef = ref.length > 35 ? ref.substring(0, 35) + '…' : ref;
-                    const productName = v.productName || '—';
-                    const imageUrl = v.productImage ? resolveImageUrl(v.productImage) : '';
-                    const imgTag = imageUrl ? `<img src="${imageUrl}" style="width:32px;height:32px;border-radius:4px;object-fit:cover;margin-right:8px;vertical-align:middle;" onerror="this.style.display='none'">` : '';
-                    const dateStr = v.createdAt ? new Date(v.createdAt).toLocaleString() : v.date || '—';
+                // Group by date
+                const groupedByDate = {};
+                data.forEach(v => {
+                    const dateKey = v.date || (v.createdAt ? new Date(v.createdAt).toISOString().split('T')[0] : 'Unknown');
+                    if (!groupedByDate[dateKey]) {
+                        groupedByDate[dateKey] = [];
+                    }
+                    groupedByDate[dateKey].push(v);
+                });
 
-                    return `<tr>
-                        <td style="font-family:monospace;font-size:12px;font-weight:600;">${v.ip || '—'}</td>
-                        <td style="font-size:12px;">${dateStr}</td>
-                        <td>${imgTag}<span>${productName}</span></td>
-                        <td style="font-size:11px;color:var(--admin-text-muted);" title="${ua}">${shortUA}</td>
-                        <td style="font-size:11px;color:var(--admin-text-muted);" title="${ref}">${shortRef}</td>
-                    </tr>`;
-                }).join('');
+                // Sort dates descending
+                const sortedDates = Object.keys(groupedByDate).sort((a, b) => b.localeCompare(a));
+
+                let html = '';
+                sortedDates.forEach((date, index) => {
+                    const visitors = groupedByDate[date];
+                    const uniqueIPs = [...new Set(visitors.map(v => v.ip))].length;
+                    const isExpanded = index === 0; // First date expanded by default
+
+                    // Date header row (clickable)
+                    html += `
+                        <tr class="date-group-header" onclick="toggleDateGroup('${date}')" style="background: #f9fafb; cursor: pointer; border-top: 2px solid #e5e7eb;">
+                            <td colspan="5" style="padding: 12px 16px; font-weight: 600; color: #111827;">
+                                <span id="date-icon-${date}" style="display: inline-block; width: 20px; transition: transform 0.2s;">${isExpanded ? '▼' : '▶'}</span>
+                                ${date}
+                                <span style="margin-left: 12px; font-size: 13px; color: #6b7280; font-weight: 400;">
+                                    ${visitors.length} views • ${uniqueIPs} unique IP${uniqueIPs !== 1 ? 's' : ''}
+                                </span>
+                            </td>
+                        </tr>
+                    `;
+
+                    // Visitor rows for this date
+                    visitors.forEach(v => {
+                        const ua = v.userAgent || '';
+                        const shortUA = ua.length > 50 ? ua.substring(0, 50) + '…' : ua;
+                        const ref = v.referrer || '—';
+                        const shortRef = ref.length > 35 ? ref.substring(0, 35) + '…' : ref;
+                        const productName = v.productName || '—';
+                        const imageUrl = v.productImage ? resolveImageUrl(v.productImage) : '';
+                        const imgTag = imageUrl ? `<img src="${imageUrl}" style="width:32px;height:32px;border-radius:4px;object-fit:cover;margin-right:8px;vertical-align:middle;" onerror="this.style.display='none'">` : '';
+                        const timeStr = v.createdAt ? new Date(v.createdAt).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', second: '2-digit' }) : '—';
+
+                        html += `
+                            <tr class="date-group-row date-group-${date}" style="display: ${isExpanded ? 'table-row' : 'none'};">
+                                <td style="font-family: monospace; font-size: 12px; font-weight: 600; padding-left: 40px;">${v.ip || '—'}</td>
+                                <td style="font-size: 12px; color: #6b7280;">${timeStr}</td>
+                                <td>${imgTag}<span>${productName}</span></td>
+                                <td style="font-size: 11px; color: #9ca3af;" title="${ua}">${shortUA}</td>
+                                <td style="font-size: 11px; color: #9ca3af;" title="${ref}">${shortRef}</td>
+                            </tr>
+                        `;
+                    });
+                });
+
+                logBody.innerHTML = html;
             }
         }
 
@@ -2092,6 +2164,22 @@ async function loadVisitorPage() {
         console.error('Failed to load visitor page:', err);
         const logBody = document.getElementById('visitorFullLogBody');
         if (logBody) logBody.innerHTML = '<tr><td colspan="5" style="text-align:center;padding:40px;color:var(--admin-text-muted);">Failed to load visitors.</td></tr>';
+    }
+}
+
+// Toggle date group visibility in visitor log
+function toggleDateGroup(date) {
+    const rows = document.querySelectorAll(`.date-group-${date}`);
+    const icon = document.getElementById(`date-icon-${date}`);
+    
+    if (rows.length > 0) {
+        const isHidden = rows[0].style.display === 'none';
+        rows.forEach(row => {
+            row.style.display = isHidden ? 'table-row' : 'none';
+        });
+        if (icon) {
+            icon.textContent = isHidden ? '▼' : '▶';
+        }
     }
 }
 
