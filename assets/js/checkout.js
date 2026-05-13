@@ -319,6 +319,9 @@ function getPaymentMethodId(type) {
         method = availablePaymentMethods.find(
             m => (m.name || '').toLowerCase().includes('apple') || (m.code || '').toLowerCase().includes('ap')
         );
+    } else if (type === 'cod') {
+        // Cash on Delivery - no payment gateway needed
+        return null;
     }
 
     return method ? method.id : (fallbacks[type] || null);
