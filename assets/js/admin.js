@@ -413,6 +413,7 @@ function switchToSection(targetId) {
         case 'analytics': loadAnalytics(); break;
         case 'discounts': loadDiscountsPage(); break;
         case 'visitors': loadVisitorPage(); break;
+        case 'social-contacts': loadSocialContacts(); break;
     }
 }
 
@@ -2551,4 +2552,101 @@ document.getElementById('discountProductSearch')?.addEventListener('input', func
     });
     renderDiscountProductsTable(filtered);
 });
+
+// ==========================================
+// Social Contacts Management
+// ==========================================
+let socialContactsLoaded = false;
+
+async function loadSocialContacts() {
+    const waInput = document.getElementById('settingsWhatsappNumber');
+    const waDisplay = document.getElementById('settingsWhatsappDisplay');
+    const igInput = document.getElementById('settingsInstagramHandle');
+    const previewWA = document.getElementById('previewWhatsappLink');
+    const previewIG = document.getElementById('previewInstagramLink');
+    const lastUpdated = document.getElementById('socialContactsLastUpdated');
+
+    if (!waInput) return;
+
+    // Live preview update
+    function updatePreview() {
+        const num = waInput.value.replace(/[^0-9]/g, '');
+        const ig = igInput.value.replace('@', '');
+        const waLink = 'https://api.whatsapp.com/send?phone=' + num;
+        const igLink = 'https://www.instagram.com/' + ig;
+        previewWA.href = waLink;
+        previewWA.textContent = waLink;
+        previewIG.href = igLink;
+        previewIG.textContent = igLink;
+    }
+
+    waInput.addEventListener('input', updatePreview);
+    igInput.addEventListener('input', updatePreview);
+
+    // Load current settings from API
+    try {
+        const token = localStorage.getItem('arteva_token');
+        const res = await fetch((window.API_BASE_URL || 'https://arteva-maison-backend-gy1x.onrender.com/api') + '/admin/site-settings', {
+            headers: { 'Authorization': 'Bearer ' + token }
+        });
+        const result = await res.json();
+        if (result.success) {
+            waInput.value = result.data.whatsappNumber || '';
+            waDisplay.value = result.data.whatsappDisplay || '';
+            igInput.value = result.data.instagramHandle || '';
+            updatePreview();
+            if (result.data.updatedAt) {
+                lastUpdated.textContent = 'Last updated: ' + new Date(result.data.updatedAt).toLocaleString();
+            }
+        }
+    } catch (err) {
+        console.error('Failed to load social contacts settings:', err);
+    }
+
+    // Form submit handler (only bind once)
+    if (!socialContactsLoaded) {
+        socialContactsLoaded = true;
+        const form = document.getElementById('socialContactsForm');
+        if (form) {
+            form.addEventListener('submit', async function(e) {
+                e.preventDefault();
+                const btn = document.getElementById('saveSocialContactsBtn');
+                const originalText = btn.textContent;
+                btn.disabled = true;
+                btn.textContent = 'Saving...';
+
+                try {
+                    const token = localStorage.getItem('arteva_token');
+                    const res = await fetch((window.API_BASE_URL || 'https://arteva-maison-backend-gy1x.onrender.com/api') + '/admin/site-settings', {
+                        method: 'PUT',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Authorization': 'Bearer ' + token
+                        },
+                        body: JSON.stringify({
+                            whatsappNumber: waInput.value,
+                            whatsappDisplay: waDisplay.value,
+                            instagramHandle: igInput.value
+                        })
+                    });
+                    const result = await res.json();
+                    if (result.success) {
+                        showToast('Success', 'Social contacts updated successfully! Changes are live across the website.', 'success');
+                        if (result.data.updatedAt) {
+                            lastUpdated.textContent = 'Last updated: ' + new Date(result.data.updatedAt).toLocaleString();
+                        }
+                    } else {
+                        showToast('Error', result.message || 'Failed to update settings', 'error');
+                    }
+                } catch (err) {
+                    console.error(err);
+                    showToast('Error', 'Failed to save settings', 'error');
+                } finally {
+                    btn.disabled = false;
+                    btn.textContent = originalText;
+                }
+            });
+        }
+    }
+}
 

@@ -63,6 +63,8 @@
                         class="nav-text">Receipts</span></a></li>
             <li><a href="#visitors" class="sidebar-link"><span class="icon">🌐</span> <span
                         class="nav-text">Visitors</span></a></li>
+            <li><a href="#social-contacts" class="sidebar-link"><span class="icon">📱</span> <span
+                        class="nav-text">Social Contacts</span></a></li>
             <li><a href="#" id="logoutBtn" class="sidebar-link" data-i18n="admin_logout"><span class="icon">🚪</span>
                     <span class="nav-text">Logout</span></a></li>
         </ul>
@@ -666,6 +668,59 @@
                             <tr><td colspan="5" style="text-align:center;padding:40px;color:var(--admin-text-muted);">Loading visitor log...</td></tr>
                         </tbody>
                     </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- ========== SOCIAL CONTACTS ========== -->
+        <div id="social-contacts" class="admin-section hidden">
+            <div class="admin-page-header">
+                <h1 class="admin-page-title">📱 Social Contacts</h1>
+            </div>
+
+            <div class="admin-table-wrap" style="max-width: 640px;">
+                <div style="padding: 28px;">
+                    <p style="color: var(--admin-text-muted); margin-bottom: 24px; font-size: 14px; line-height: 1.6;">
+                        Update the WhatsApp number and Instagram handle used across the entire website. Changes take effect immediately on all pages.
+                    </p>
+
+                    <form id="socialContactsForm">
+                        <div class="admin-form-group">
+                            <label style="display:flex;align-items:center;gap:8px;">🟢 WhatsApp Number <small style="color:var(--admin-text-muted);font-weight:normal;">(digits only, with country code)</small></label>
+                            <input type="text" id="settingsWhatsappNumber" name="whatsappNumber" placeholder="e.g. 96550683207" required style="font-size: 16px; letter-spacing: 1px;">
+                        </div>
+                        <div class="admin-form-group">
+                            <label style="display:flex;align-items:center;gap:8px;">📞 Display Format <small style="color:var(--admin-text-muted);font-weight:normal;">(how customers see it)</small></label>
+                            <input type="text" id="settingsWhatsappDisplay" name="whatsappDisplay" placeholder="e.g. +965 5068 3207" required style="font-size: 16px; letter-spacing: 1px;">
+                        </div>
+                        <div class="admin-form-group">
+                            <label style="display:flex;align-items:center;gap:8px;">📸 Instagram Handle <small style="color:var(--admin-text-muted);font-weight:normal;">(without @)</small></label>
+                            <input type="text" id="settingsInstagramHandle" name="instagramHandle" placeholder="e.g. arteva.maison" required style="font-size: 16px; letter-spacing: 1px;">
+                        </div>
+
+                        <!-- Live Preview -->
+                        <div style="background: var(--admin-surface-2); border: 1px solid var(--admin-border); border-radius: 12px; padding: 20px; margin: 20px 0;">
+                            <h4 style="margin: 0 0 12px; font-size: 13px; text-transform: uppercase; letter-spacing: 1px; color: var(--admin-text-muted);">Live Preview</h4>
+                            <div style="display: flex; flex-direction: column; gap: 8px;">
+                                <div style="display:flex;align-items:center;gap:10px;">
+                                    <span style="font-size: 20px;">🟢</span>
+                                    <span>WhatsApp Link: </span>
+                                    <a id="previewWhatsappLink" href="#" target="_blank" style="color: #25d366; word-break: break-all;"></a>
+                                </div>
+                                <div style="display:flex;align-items:center;gap:10px;">
+                                    <span style="font-size: 20px;">📸</span>
+                                    <span>Instagram Link: </span>
+                                    <a id="previewInstagramLink" href="#" target="_blank" style="color: #e1306c; word-break: break-all;"></a>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="admin-form-actions" style="border: none; padding-top: 0;">
+                            <button type="submit" class="admin-btn admin-btn-primary" id="saveSocialContactsBtn">💾 Save Changes</button>
+                        </div>
+                    </form>
+
+                    <div id="socialContactsLastUpdated" style="margin-top: 16px; font-size: 12px; color: var(--admin-text-muted);"></div>
                 </div>
             </div>
         </div>
