@@ -293,6 +293,10 @@ window.finishDelivery = async (id, proofBlob) => {
 // Map Init
 function initMap() {
     // Define Layers (Copied from previous steps)
+    const cartoDB = L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
+        maxZoom: 20,
+        attribution: '© CartoDB © OpenStreetMap'
+    });
     const osm = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { attribution: '© OpenStreetMap' });
     const googleHybrid = L.tileLayer('http://{s}.google.com/vt/lyrs=s,h&x={x}&y={y}&z={z}', { maxZoom: 20, subdomains: ['mt0', 'mt1', 'mt2', 'mt3'], attribution: '© Google Maps' });
     const esriStreets = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Street_Map/MapServer/tile/{z}/{y}/{x}', { attribution: '© Esri' });
@@ -301,10 +305,10 @@ function initMap() {
         center: [DEFAULT_LAT, DEFAULT_LNG],
         zoom: 13,
         zoomControl: false, // Cleaner UI
-        layers: [googleHybrid]
+        layers: [cartoDB]
     });
 
-    L.control.layers({ "Satellite": googleHybrid, "Streets": esriStreets, "OSM": osm }).addTo(map);
+    L.control.layers({ "Map": cartoDB, "Satellite": googleHybrid, "Streets": esriStreets, "OSM": osm }).addTo(map);
 }
 
 // Init Socket — with live order assignment listener

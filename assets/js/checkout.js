@@ -210,8 +210,9 @@ function initMap() {
 
     window.map = L.map('map').setView([defaultLat, defaultLng], 11);
 
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-        attribution: '© OpenStreetMap contributors'
+    L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
+        maxZoom: 20,
+        attribution: '© CartoDB © OpenStreetMap'
     }).addTo(window.map);
 
     // Add draggable marker
