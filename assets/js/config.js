@@ -21,7 +21,7 @@ const Config = {
     FEATURES: {
         STRIPE_ENABLED: false,  // Disabled until Stripe account is configured
         KNET_ENABLED: false,    // Disabled until KNET merchant account is ready
-        COD_ENABLED: true       // Cash on Delivery is enabled
+        COD_ENABLED: false      // Cash on Delivery is DISABLED
     }
 };
 

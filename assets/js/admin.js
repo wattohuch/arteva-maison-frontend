@@ -610,7 +610,18 @@ async function loadVisitorCount() {
 
 // Navigate to section when tile is clicked
 function navigateToSection(sectionId) {
-    window.location.hash = sectionId;
+    // Find and click the matching sidebar link to properly trigger navigation
+    const link = document.querySelector(`.sidebar-link[href="#${sectionId}"]`);
+    if (link) {
+        link.click();
+    } else {
+        // Fallback: manually switch section
+        document.querySelectorAll('.admin-section').forEach(s => s.classList.add('hidden'));
+        const target = document.getElementById(sectionId);
+        if (target) target.classList.remove('hidden');
+        switchToSection(sectionId);
+        window.location.hash = sectionId;
+    }
 }
 
 function renderRecentOrders(orders) {
