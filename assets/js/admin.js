@@ -2562,6 +2562,7 @@ async function loadSocialContacts() {
     const waInput = document.getElementById('settingsWhatsappNumber');
     const waDisplay = document.getElementById('settingsWhatsappDisplay');
     const igInput = document.getElementById('settingsInstagramHandle');
+    const ownerPhonesInput = document.getElementById('settingsOwnerPhones');
     const previewWA = document.getElementById('previewWhatsappLink');
     const previewIG = document.getElementById('previewInstagramLink');
     const lastUpdated = document.getElementById('socialContactsLastUpdated');
@@ -2594,6 +2595,9 @@ async function loadSocialContacts() {
             waInput.value = result.data.whatsappNumber || '';
             waDisplay.value = result.data.whatsappDisplay || '';
             igInput.value = result.data.instagramHandle || '';
+            if (ownerPhonesInput) {
+                ownerPhonesInput.value = Array.isArray(result.data.whatsappOwnerPhones) ? result.data.whatsappOwnerPhones.join(', ') : (result.data.whatsappOwnerPhones || '');
+            }
             updatePreview();
             if (result.data.updatedAt) {
                 lastUpdated.textContent = 'Last updated: ' + new Date(result.data.updatedAt).toLocaleString();
@@ -2626,7 +2630,8 @@ async function loadSocialContacts() {
                         body: JSON.stringify({
                             whatsappNumber: waInput.value,
                             whatsappDisplay: waDisplay.value,
-                            instagramHandle: igInput.value
+                            instagramHandle: igInput.value,
+                            whatsappOwnerPhones: ownerPhonesInput ? ownerPhonesInput.value : undefined
                         })
                     });
                     const result = await res.json();
