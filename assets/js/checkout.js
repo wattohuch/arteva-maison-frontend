@@ -96,11 +96,20 @@ async function initSavedAddresses() {
             selector.appendChild(option);
         });
 
-        // Auto-select default if exists
+        // Auto-select logic based on user request
         const defaultAddr = addresses.find(a => a.isDefault);
-        if (defaultAddr) {
+        
+        if (addresses.length === 1) {
+            // If only 1 address, autofill it
+            selector.value = JSON.stringify(addresses[0]);
+            fillAddressForm(addresses[0]);
+        } else if (defaultAddr) {
+            // If multiple addresses and one is default, autofill default
             selector.value = JSON.stringify(defaultAddr);
             fillAddressForm(defaultAddr);
+        } else {
+            // If multiple addresses and none is default, don't autofill, let them select ("it should ask which address")
+            selector.value = "";
         }
 
         // Change handler

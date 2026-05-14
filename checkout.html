@@ -318,85 +318,109 @@
 </head>
 
 <body>
-    <!-- Header -->
-    <header class="header" id="header">
-        <div class="header-container">
-            <div class="header-left">
-                <div class="logo"><a href="index.html"><span class="logo-text"><span class="main">ARTÉVA</span><span class="sub">MAISON</span></span></a></div>
-            </div>
-            <div class="header-right">
-                <div class="lang-switcher">
-                    <button id="lang-en" class="lang-btn active">EN</button>
-                    <span class="lang-separator">|</span>
-                    <button id="lang-ar" class="lang-btn">AR</button>
-                </div>
-                <div class="header-currency">
-                    <div class="currency-selector">
-                        <button class="currency-trigger" aria-label="Select Currency">
-                            <span class="currency-flag fi fi-kw"></span>
-                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
-                                stroke="currentColor" stroke-width="2"
-                                style="width: 12px; height: 12px; margin-left: 2px;">
-                                <path d="M6 9l6 6 6-6" />
-                            </svg>
-                        </button>
-                        <div class="currency-dropdown">
-                            <div class="currency-option active" data-currency="KWD">
-                                <span class="currency-option-flag fi fi-kw" aria-label="Kuwait"></span>
-                                <div class="currency-option-info">
-                                    <div class="currency-option-code" style="display: none;">KWD</div>
-                                    <div class="currency-option-name" data-i18n="currency_kwd">Kuwaiti Dinar</div>
-                                </div>
-                            </div>
-                            <div class="currency-option" data-currency="SAR">
-                                <span class="currency-option-flag fi fi-sa" aria-label="Saudi Arabia"></span>
-                                <div class="currency-option-info">
-                                    <div class="currency-option-code" style="display: none;">SAR</div>
-                                    <div class="currency-option-name" data-i18n="currency_sar">Saudi Riyal</div>
-                                </div>
-                            </div>
-                            <div class="currency-option" data-currency="AED">
-                                <span class="currency-option-flag fi fi-ae" aria-label="UAE"></span>
-                                <div class="currency-option-info">
-                                    <div class="currency-option-code" style="display: none;">AED</div>
-                                    <div class="currency-option-name" data-i18n="currency_aed">UAE Dirham</div>
-                                </div>
-                            </div>
-                            <div class="currency-option" data-currency="QAR">
-                                <span class="currency-option-flag fi fi-qa" aria-label="Qatar"></span>
-                                <div class="currency-option-info">
-                                    <div class="currency-option-code" style="display: none;">QAR</div>
-                                    <div class="currency-option-name" data-i18n="currency_qar">Qatari Riyal</div>
-                                </div>
-                            </div>
-                            <div class="currency-option" data-currency="BHD">
-                                <span class="currency-option-flag fi fi-bh" aria-label="Bahrain"></span>
-                                <div class="currency-option-info">
-                                    <div class="currency-option-code" style="display: none;">BHD</div>
-                                    <div class="currency-option-name" data-i18n="currency_bhd">Bahraini Dinar</div>
-                                </div>
-                            </div>
-                            <div class="currency-option" data-currency="OMR">
-                                <span class="currency-option-flag fi fi-om" aria-label="Oman"></span>
-                                <div class="currency-option-info">
-                                    <div class="currency-option-code" style="display: none;">OMR</div>
-                                    <div class="currency-option-name" data-i18n="currency_omr">Omani Rial</div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <a href="cart.html" class="header-icon">
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                        stroke-width="1.5">
-                        <path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"></path>
-                        <line x1="3" y1="6" x2="21" y2="6"></line>
-                        <path d="M16 10a4 4 0 01-8 0"></path>
-                    </svg>
-                </a>
-            </div>
+  <!-- ========== HEADER ========== -->
+  <header class="header scrolled" id="header">
+    <div class="header-inner">
+      <!-- Left Side (Empty on Checkout or just a back button if needed, but we'll leave it empty to keep logo centered) -->
+      <div class="header-left">
+         <a href="index.html" class="nav-link" style="font-size: 14px; display: flex; align-items: center; gap: 8px;">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+            <span data-i18n="back_to_shop">Back to Shop</span>
+         </a>
+      </div>
+
+      <!-- Logo (Center) -->
+      <div class="logo">
+        <a href="index.html">
+          <span class="logo-text">
+            <span class="main">ARTÉVA</span>
+            <span class="sub">MAISON</span>
+          </span>
+        </a>
+      </div>
+
+      <!-- Right Side -->
+      <div class="header-right">
+        <div class="lang-switcher">
+          <button id="lang-en" class="lang-btn active">EN</button>
+          <span class="lang-separator">|</span>
+          <button id="lang-ar" class="lang-btn">AR</button>
         </div>
-    </header>
+        <div class="header-currency">
+          <div class="currency-selector">
+            <button class="currency-trigger" aria-label="Select Currency">
+              <span class="currency-flag fi fi-kw"></span>
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                stroke-width="2" style="width: 12px; height: 12px; margin-left: 2px;">
+                <path d="M6 9l6 6 6-6" />
+              </svg>
+            </button>
+            <div class="currency-dropdown">
+              <!-- Currencies matching main header -->
+              <div class="currency-option active" data-currency="KWD">
+                <span class="currency-option-flag fi fi-kw" aria-label="Kuwait"></span>
+                <div class="currency-option-info">
+                  <div class="currency-option-code" style="display: none;">KWD</div>
+                  <div class="currency-option-name" data-i18n="currency_kwd">Kuwaiti Dinar</div>
+                </div>
+              </div>
+              <div class="currency-option" data-currency="SAR">
+                <span class="currency-option-flag fi fi-sa" aria-label="Saudi Arabia"></span>
+                <div class="currency-option-info">
+                  <div class="currency-option-code" style="display: none;">SAR</div>
+                  <div class="currency-option-name" data-i18n="currency_sar">Saudi Riyal</div>
+                </div>
+              </div>
+              <div class="currency-option" data-currency="AED">
+                <span class="currency-option-flag fi fi-ae" aria-label="UAE"></span>
+                <div class="currency-option-info">
+                  <div class="currency-option-code" style="display: none;">AED</div>
+                  <div class="currency-option-name" data-i18n="currency_aed">UAE Dirham</div>
+                </div>
+              </div>
+              <div class="currency-option" data-currency="QAR">
+                <span class="currency-option-flag fi fi-qa" aria-label="Qatar"></span>
+                <div class="currency-option-info">
+                  <div class="currency-option-code" style="display: none;">QAR</div>
+                  <div class="currency-option-name" data-i18n="currency_qar">Qatari Riyal</div>
+                </div>
+              </div>
+              <div class="currency-option" data-currency="BHD">
+                <span class="currency-option-flag fi fi-bh" aria-label="Bahrain"></span>
+                <div class="currency-option-info">
+                  <div class="currency-option-code" style="display: none;">BHD</div>
+                  <div class="currency-option-name" data-i18n="currency_bhd">Bahraini Dinar</div>
+                </div>
+              </div>
+              <div class="currency-option" data-currency="OMR">
+                <span class="currency-option-flag fi fi-om" aria-label="Oman"></span>
+                <div class="currency-option-info">
+                  <div class="currency-option-code" style="display: none;">OMR</div>
+                  <div class="currency-option-name" data-i18n="currency_omr">Omani Rial</div>
+                </div>
+              </div>
+              <div class="currency-option" data-currency="USD">
+                <span class="currency-option-flag fi fi-us" aria-label="USA"></span>
+                <div class="currency-option-info">
+                  <div class="currency-option-code" style="display: none;">USD</div>
+                  <div class="currency-option-name" data-i18n="currency_usd">US Dollar</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <a href="cart.html" class="header-icon cart-icon" aria-label="Cart">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+            stroke-linecap="round" stroke-linejoin="round">
+            <path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z" />
+            <line x1="3" y1="6" x2="21" y2="6" />
+            <path d="M16 10a4 4 0 0 1-8 0" />
+          </svg>
+          <span class="cart-count" id="cartCount">0</span>
+        </a>
+      </div>
+    </div>
+  </header>
 
     <!-- Main Content -->
     <main class="checkout-container">
