@@ -412,17 +412,21 @@ function renderRevenueHistory(data, analytics) {
             (dailyBreakdown.length === 0 
                 ? '<p style="text-align: center; padding: 32px; color: var(--admin-text-muted);">No revenue data yet</p>'
                 : '<div class="admin-table-wrap"><div class="admin-table-scroll"><table class="admin-table revenue-table">' +
-                    '<thead><tr><th>Date</th><th style="text-align: center;">Orders</th><th style="text-align: right;">Revenue (KWD)</th></tr></thead>' +
+                    '<thead><tr><th>Date</th><th style="text-align: center;">Orders</th><th style="text-align: center;">Visitors (IP)</th><th style="text-align: center;">Views</th><th style="text-align: right;">Revenue (KWD)</th></tr></thead>' +
                     '<tbody>' +
                     dailyBreakdown.map(function(d) {
                         var dateObj = new Date(d.date + 'T00:00:00');
                         var dayName = dateObj.toLocaleDateString('en-US', { weekday: 'short' });
                         var formatted = dateObj.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
                         var isBest = bestDay && d.date === bestDay.date;
+                        var visitors = d.visitors || 0;
+                        var views = d.views || 0;
                         return '<tr class="' + (isBest ? 'revenue-best-day' : '') + '">' +
                             '<td><span style="color: var(--admin-text-muted); font-size: 11px; margin-right: 6px;">' + dayName + '</span> ' + formatted +
                             (isBest ? ' <span class="revenue-best-badge">🏆 Best</span>' : '') + '</td>' +
                             '<td style="text-align: center;">' + d.orders + '</td>' +
+                            '<td style="text-align: center; color: #2563eb; font-weight: 600;">' + visitors + '</td>' +
+                            '<td style="text-align: center; color: var(--admin-text-muted);">' + views + '</td>' +
                             '<td style="text-align: right; font-weight: 600; font-family: Playfair Display, serif;">' + d.revenue.toFixed(3) + '</td></tr>';
                     }).join('') +
                     '</tbody></table></div></div>'

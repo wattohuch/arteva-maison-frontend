@@ -1,5 +1,5 @@
 /**
- * Receipts Admin — List, search, edit any order receipt
+ * Receipts Admin — List, search, edit, print any order receipt
  * All changes persist to the Order model and are reflected in receipt generation + print
  */
 
@@ -32,23 +32,54 @@
 
         try {
             var token = localStorage.getItem('arteva_token');
+            if (!token) {
+                showReceiptError('Session expired. Please log in again.', true);
+                return;
+            }
             var baseUrl = window.API_BASE_URL || (window.Config && Config.API_BASE_URL) || '';
             var API_BASE = baseUrl.replace(/\/api\/?$/, '');
             var res = await fetch(API_BASE + '/api/admin/orders', {
                 headers: { 'Authorization': 'Bearer ' + token }
             });
+
+            if (res.status === 401) {
+                showReceiptError('Session expired. Please log in again.', true);
+                return;
+            }
+
             var data = await res.json();
             if (data.success) {
                 _allOrders = data.data || [];
             } else {
+                showReceiptError(data.message || 'Failed to load receipts');
                 _allOrders = [];
+                return;
             }
         } catch (err) {
             console.error('[Receipts] Failed to load orders:', err);
+            showReceiptError('Unable to connect to server. Check your internet connection.');
             _allOrders = [];
+            return;
         }
 
         renderReceiptsTable();
+    }
+
+    /**
+     * Show a friendly error in the receipts table instead of raw JSON
+     */
+    function showReceiptError(message, isAuthError) {
+        var tbody = document.getElementById('receiptsTableBody');
+        if (!tbody) return;
+
+        var actionHtml = isAuthError
+            ? '<br><button class="admin-btn admin-btn-primary" style="margin-top:12px;" onclick="window.location.href=\'account.html\'">🔑 Log In Again</button>'
+            : '<br><button class="admin-btn" style="margin-top:12px;" onclick="loadReceipts()">🔄 Retry</button>';
+
+        tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;padding:40px;">' +
+            '<div style="color:#ef4444;font-size:16px;margin-bottom:8px;">⚠️ ' + message + '</div>' +
+            actionHtml +
+            '</td></tr>';
     }
 
     function renderReceiptsTable() {
@@ -87,6 +118,7 @@
             var itemCount = order.items ? order.items.length : 0;
             var total = (order.total || 0).toFixed(3);
             var payBadgeColor = order.paymentStatus === 'paid' ? '#10b981' : (order.paymentStatus === 'refunded' ? '#ef4444' : '#f59e0b');
+            var printedIcon = order.printedAt ? '✅' : '—';
 
             return '<tr>' +
                 '<td style="font-weight:600;color:var(--admin-gold);">' + (order.orderNumber || 'N/A') + '</td>' +
@@ -95,13 +127,88 @@
                 '<td style="text-align:center;">' + itemCount + '</td>' +
                 '<td style="text-align:right;font-weight:700;font-family:Playfair Display,serif;">' + total + '</td>' +
                 '<td><span style="display:inline-block;padding:2px 8px;border-radius:12px;font-size:11px;font-weight:600;background:' + payBadgeColor + '20;color:' + payBadgeColor + ';">' + (order.paymentStatus || 'N/A') + '</span></td>' +
-                '<td style="text-align:center;">' +
-                    '<button class="admin-btn" style="font-size:12px;padding:4px 12px;" onclick="window.openReceiptEdit(\'' + order._id + '\')">✏️ Edit</button> ' +
-                    '<button class="admin-btn" style="font-size:12px;padding:4px 12px;" onclick="window.viewReceiptPreview(\'' + order._id + '\')">👁️ View</button>' +
+                '<td style="text-align:center;white-space:nowrap;">' +
+                    '<button class="admin-btn" style="font-size:12px;padding:4px 10px;" onclick="window.openReceiptEdit(\'' + order._id + '\')">✏️</button> ' +
+                    '<button class="admin-btn" style="font-size:12px;padding:4px 10px;" onclick="window.viewReceiptPreview(\'' + order._id + '\')">👁️</button> ' +
+                    '<button class="admin-btn" style="font-size:12px;padding:4px 10px;background:#10b98120;color:#10b981;" onclick="window.printReceiptFromBrowser(\'' + order._id + '\', this)" title="Print receipt">🖨️</button>' +
                 '</td>' +
             '</tr>';
         }).join('');
     }
+
+    // ── Print receipt from browser ──
+    window.printReceiptFromBrowser = async function (orderId, btn) {
+        // Prevent accidental double-click
+        if (btn && btn.disabled) return;
+        if (btn) {
+            btn.disabled = true;
+            btn.innerHTML = '⏳';
+        }
+
+        try {
+            var token = localStorage.getItem('arteva_token');
+            var baseUrl = window.API_BASE_URL || (window.Config && Config.API_BASE_URL) || '';
+            var API_BASE = baseUrl.replace(/\/api\/?$/, '');
+
+            // Fetch receipt HTML
+            var res = await fetch(API_BASE + '/api/admin/receipt/' + orderId, {
+                headers: { 'Authorization': 'Bearer ' + token }
+            });
+
+            if (!res.ok) {
+                throw new Error('Failed to load receipt (HTTP ' + res.status + ')');
+            }
+
+            var html = await res.text();
+
+            // Open a hidden print window
+            var printWin = window.open('', '_blank', 'width=450,height=700');
+            if (!printWin) {
+                alert('Please allow popups to print receipts.');
+                return;
+            }
+
+            printWin.document.write(html);
+            printWin.document.close();
+
+            // Wait for content to render, then print
+            printWin.onload = function () {
+                setTimeout(function () {
+                    printWin.print();
+                    // Update button to show success
+                    if (btn) {
+                        btn.innerHTML = '✅';
+                        btn.style.background = '#10b98140';
+                        setTimeout(function () {
+                            btn.innerHTML = '🖨️';
+                            btn.style.background = '';
+                            btn.disabled = false;
+                        }, 3000);
+                    }
+                }, 500);
+            };
+
+            // Fallback if onload doesn't fire
+            setTimeout(function () {
+                try { printWin.print(); } catch (e) {}
+                if (btn && btn.disabled) {
+                    btn.innerHTML = '🖨️';
+                    btn.disabled = false;
+                }
+            }, 3000);
+
+        } catch (err) {
+            console.error('[Receipts] Print failed:', err);
+            alert('Print failed: ' + err.message);
+            if (btn) {
+                btn.innerHTML = '❌';
+                setTimeout(function () {
+                    btn.innerHTML = '🖨️';
+                    btn.disabled = false;
+                }, 2000);
+            }
+        }
+    };
 
     // ── Open receipt edit modal ──
     window.openReceiptEdit = function (orderId) {
@@ -156,12 +263,15 @@
                 '<textarea class="admin-search" style="margin:0;min-height:60px;resize:vertical;" id="receiptNotes">' + (_currentEditOrder.notes || '') + '</textarea>' +
             '</div>' +
 
-            '<div style="margin-top:16px;padding:12px;background:var(--admin-surface-2);border-radius:12px;display:flex;justify-content:space-between;align-items:center;">' +
+            '<div style="margin-top:16px;padding:12px;background:var(--admin-surface-2);border-radius:12px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;">' +
                 '<div>' +
                     '<div style="font-size:12px;color:var(--admin-text-muted);">Subtotal: <span id="receiptSubtotal" style="font-weight:600;">' + (_currentEditOrder.subtotal || 0).toFixed(3) + '</span> KWD</div>' +
                     '<div style="font-size:18px;font-weight:700;font-family:Playfair Display,serif;color:var(--admin-gold);margin-top:4px;">Total: <span id="receiptTotal">' + (_currentEditOrder.total || 0).toFixed(3) + '</span> KWD</div>' +
                 '</div>' +
-                '<button class="admin-btn admin-btn-primary" onclick="window.saveReceiptEdit()" style="font-size:14px;padding:10px 24px;">💾 Save Receipt</button>' +
+                '<div style="display:flex;gap:8px;">' +
+                    '<button class="admin-btn" onclick="window.printReceiptFromBrowser(\'' + _currentEditOrder._id + '\', this)" style="font-size:14px;padding:10px 16px;">🖨️ Print</button>' +
+                    '<button class="admin-btn admin-btn-primary" onclick="window.saveReceiptEdit()" style="font-size:14px;padding:10px 24px;">💾 Save</button>' +
+                '</div>' +
             '</div>';
 
         modal.classList.remove('hidden');
@@ -245,6 +355,12 @@
                     notes: notes
                 })
             });
+
+            if (res.status === 401) {
+                alert('Session expired. Please log in again.');
+                window.location.href = 'account.html';
+                return;
+            }
 
             var data = await res.json();
             if (data.success) {

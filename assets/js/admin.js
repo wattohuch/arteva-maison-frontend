@@ -2558,11 +2558,89 @@ document.getElementById('discountProductSearch')?.addEventListener('input', func
 // ==========================================
 let socialContactsLoaded = false;
 
+// ── Dynamic Owner Phone List ──
+window.addOwnerPhoneEntry = function(value) {
+    const container = document.getElementById('ownerPhonesListContainer');
+    if (!container) return;
+
+    const phoneVal = typeof value === 'string' ? value.trim() : '';
+    const entryDiv = document.createElement('div');
+    entryDiv.style.cssText = 'display:flex;gap:8px;align-items:center;';
+    entryDiv.className = 'owner-phone-entry';
+
+    const input = document.createElement('input');
+    input.type = 'text';
+    input.placeholder = 'e.g. 96550683207';
+    input.value = phoneVal;
+    input.className = 'admin-search owner-phone-input';
+    input.style.cssText = 'margin:0;flex:1;font-size:16px;letter-spacing:1px;';
+    input.pattern = '[0-9]{8,15}';
+    input.title = 'Phone number (digits only, 8-15 digits)';
+
+    // Validation styling on input
+    input.addEventListener('input', function() {
+        const val = this.value.replace(/[^0-9]/g, '');
+        this.value = val;
+        if (val.length >= 8 && val.length <= 15) {
+            this.style.borderColor = '#10b981';
+        } else if (val.length > 0) {
+            this.style.borderColor = '#ef4444';
+        } else {
+            this.style.borderColor = '';
+        }
+    });
+
+    const removeBtn = document.createElement('button');
+    removeBtn.type = 'button';
+    removeBtn.innerHTML = '✕';
+    removeBtn.title = 'Remove this phone';
+    removeBtn.style.cssText = 'padding:8px 12px;background:#ef444420;color:#ef4444;border:1px solid #ef444440;border-radius:6px;cursor:pointer;font-size:14px;font-weight:bold;min-width:36px;';
+    removeBtn.addEventListener('click', function() {
+        entryDiv.remove();
+    });
+
+    entryDiv.appendChild(input);
+    entryDiv.appendChild(removeBtn);
+    container.appendChild(entryDiv);
+
+    // Focus the new input if empty
+    if (!phoneVal) input.focus();
+};
+
+window.removeOwnerPhoneEntry = function(btn) {
+    btn.closest('.owner-phone-entry')?.remove();
+};
+
+function getOwnerPhonesFromUI() {
+    const inputs = document.querySelectorAll('#ownerPhonesListContainer .owner-phone-input');
+    const phones = [];
+    inputs.forEach(function(input) {
+        const val = input.value.replace(/[^0-9]/g, '').trim();
+        if (val.length >= 8) phones.push(val);
+    });
+    return phones;
+}
+
+function renderOwnerPhonesList(phonesArray) {
+    const container = document.getElementById('ownerPhonesListContainer');
+    if (!container) return;
+    container.innerHTML = '';
+
+    if (!phonesArray || phonesArray.length === 0) {
+        // Add one empty entry by default
+        addOwnerPhoneEntry('');
+        return;
+    }
+
+    phonesArray.forEach(function(phone) {
+        addOwnerPhoneEntry(phone);
+    });
+}
+
 async function loadSocialContacts() {
     const waInput = document.getElementById('settingsWhatsappNumber');
     const waDisplay = document.getElementById('settingsWhatsappDisplay');
     const igInput = document.getElementById('settingsInstagramHandle');
-    const ownerPhonesInput = document.getElementById('settingsOwnerPhones');
     const previewWA = document.getElementById('previewWhatsappLink');
     const previewIG = document.getElementById('previewInstagramLink');
     const lastUpdated = document.getElementById('socialContactsLastUpdated');
@@ -2595,9 +2673,13 @@ async function loadSocialContacts() {
             waInput.value = result.data.whatsappNumber || '';
             waDisplay.value = result.data.whatsappDisplay || '';
             igInput.value = result.data.instagramHandle || '';
-            if (ownerPhonesInput) {
-                ownerPhonesInput.value = Array.isArray(result.data.whatsappOwnerPhones) ? result.data.whatsappOwnerPhones.join(', ') : (result.data.whatsappOwnerPhones || '');
-            }
+
+            // Render owner phones as dynamic list
+            const phones = Array.isArray(result.data.whatsappOwnerPhones)
+                ? result.data.whatsappOwnerPhones
+                : (result.data.whatsappOwnerPhones || '').split(',').map(p => p.trim()).filter(Boolean);
+            renderOwnerPhonesList(phones);
+
             updatePreview();
             if (result.data.updatedAt) {
                 lastUpdated.textContent = 'Last updated: ' + new Date(result.data.updatedAt).toLocaleString();
@@ -2619,6 +2701,15 @@ async function loadSocialContacts() {
                 btn.disabled = true;
                 btn.textContent = 'Saving...';
 
+                // Collect phones from dynamic list
+                const ownerPhones = getOwnerPhonesFromUI();
+                if (ownerPhones.length === 0) {
+                    showToast('Warning', 'Please add at least one owner phone number', 'error');
+                    btn.disabled = false;
+                    btn.textContent = originalText;
+                    return;
+                }
+
                 try {
                     const token = localStorage.getItem('arteva_token');
                     const res = await fetch((window.API_BASE_URL || 'https://arteva-maison-backend-gy1x.onrender.com/api') + '/admin/site-settings', {
@@ -2631,7 +2722,7 @@ async function loadSocialContacts() {
                             whatsappNumber: waInput.value,
                             whatsappDisplay: waDisplay.value,
                             instagramHandle: igInput.value,
-                            whatsappOwnerPhones: ownerPhonesInput ? ownerPhonesInput.value : undefined
+                            whatsappOwnerPhones: ownerPhones
                         })
                     });
                     const result = await res.json();
@@ -2654,4 +2745,5 @@ async function loadSocialContacts() {
         }
     }
 }
+
 

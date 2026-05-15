@@ -698,8 +698,14 @@
                             <input type="text" id="settingsInstagramHandle" name="instagramHandle" placeholder="e.g. arteva.maison" required style="font-size: 16px; letter-spacing: 1px;">
                         </div>
                         <div class="admin-form-group">
-                            <label style="display:flex;align-items:center;gap:8px;">📱 Owner Notification Phones <small style="color:var(--admin-text-muted);font-weight:normal;">(comma-separated)</small></label>
-                            <input type="text" id="settingsOwnerPhones" name="whatsappOwnerPhones" placeholder="e.g. 96565611566, 96551008567" required style="font-size: 16px; letter-spacing: 1px;">
+                            <label style="display:flex;align-items:center;gap:8px;">📱 Owner Notification Phones <small style="color:var(--admin-text-muted);font-weight:normal;">(receive order alerts via WhatsApp)</small></label>
+                            <div id="ownerPhonesListContainer" style="display:flex;flex-direction:column;gap:8px;margin-top:4px;">
+                                <!-- Dynamic phone entries populated by JS -->
+                            </div>
+                            <button type="button" onclick="addOwnerPhoneEntry()" style="margin-top:8px;padding:6px 14px;font-size:13px;background:var(--admin-gold,#D4AF37);color:#1a1a2e;border:none;border-radius:6px;cursor:pointer;font-weight:600;display:flex;align-items:center;gap:4px;">
+                                ➕ Add Phone
+                            </button>
+                            <small style="color:var(--admin-text-muted);display:block;margin-top:4px;">Each phone number receives order notifications. Use full international format (e.g. 96550683207)</small>
                         </div>
 
                         <!-- Live Preview -->
