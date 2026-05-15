@@ -313,6 +313,113 @@
             font-size: var(--fs-sm);
             color: var(--text-muted);
         }
+
+        /* Address Type Selector */
+        .address-type-selector {
+            display: flex;
+            gap: var(--space-3);
+            margin-bottom: var(--space-5);
+        }
+
+        .address-type-btn {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: var(--space-2);
+            padding: 12px 16px;
+            border: 2px solid var(--border-light);
+            border-radius: var(--radius-md);
+            background: var(--bg-primary);
+            cursor: pointer;
+            font-family: var(--font-body);
+            font-size: var(--fs-sm);
+            font-weight: 500;
+            color: var(--text-secondary);
+            transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .address-type-btn:hover {
+            border-color: var(--color-gold);
+            color: var(--color-gold);
+            background: rgba(212, 175, 55, 0.04);
+        }
+
+        .address-type-btn.active {
+            border-color: var(--color-gold);
+            background: rgba(212, 175, 55, 0.08);
+            color: var(--color-gold);
+            font-weight: 600;
+            box-shadow: 0 0 0 1px rgba(212, 175, 55, 0.15);
+        }
+
+        .address-type-icon {
+            font-size: 18px;
+            line-height: 1;
+        }
+
+        /* Save Address Prompt */
+        .save-address-prompt {
+            display: none;
+            background: linear-gradient(135deg, rgba(212, 175, 55, 0.06), rgba(212, 175, 55, 0.02));
+            border: 1px solid rgba(212, 175, 55, 0.2);
+            border-radius: var(--radius-md);
+            padding: var(--space-4);
+            margin-top: var(--space-4);
+            animation: slideDown 0.3s ease;
+        }
+
+        .save-address-prompt.show {
+            display: block;
+        }
+
+        .save-address-prompt p {
+            font-size: var(--fs-sm);
+            color: var(--text-secondary);
+            margin-bottom: var(--space-3);
+        }
+
+        .save-address-prompt .prompt-actions {
+            display: flex;
+            gap: var(--space-3);
+        }
+
+        .save-address-prompt .btn-save-yes,
+        .save-address-prompt .btn-save-no {
+            flex: 1;
+            padding: 8px 16px;
+            border-radius: var(--radius-sm);
+            font-size: var(--fs-sm);
+            font-weight: 500;
+            cursor: pointer;
+            border: 1px solid var(--border-light);
+            font-family: var(--font-body);
+            transition: all 0.2s ease;
+        }
+
+        .save-address-prompt .btn-save-yes {
+            background: var(--color-gold);
+            color: white;
+            border-color: var(--color-gold);
+        }
+
+        .save-address-prompt .btn-save-yes:hover {
+            background: var(--color-gold-dark);
+        }
+
+        .save-address-prompt .btn-save-no {
+            background: var(--bg-primary);
+            color: var(--text-secondary);
+        }
+
+        .save-address-prompt .btn-save-no:hover {
+            background: var(--bg-secondary);
+        }
+
+        @keyframes slideDown {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
     </style>
     <link rel="icon" type="image/png" href="assets/images/favicon.png">
 </head>
@@ -326,7 +433,7 @@
       </div>
 
       <!-- Logo (Center) -->
-      <div class="logo" style="transform: scale(0.85); transform-origin: center;">
+      <div class="logo">
         <a href="index.html">
           <span class="logo-text">
             <span class="main">ARTÉVA</span>
@@ -432,6 +539,23 @@
                     <div class="checkout-section">
                         <h2 data-i18n="shipping_address">Shipping Address</h2>
 
+                        <!-- Address Type Buttons -->
+                        <div class="address-type-selector" id="addressTypeSelector">
+                            <button type="button" class="address-type-btn active" data-type="Home">
+                                <span class="address-type-icon">🏠</span>
+                                <span data-i18n="address_home">Home</span>
+                            </button>
+                            <button type="button" class="address-type-btn" data-type="Work">
+                                <span class="address-type-icon">💼</span>
+                                <span data-i18n="address_work">Work</span>
+                            </button>
+                            <button type="button" class="address-type-btn" data-type="Other">
+                                <span class="address-type-icon">📍</span>
+                                <span data-i18n="address_other">Other</span>
+                            </button>
+                        </div>
+                        <input type="hidden" id="addressType" name="addressType" value="Home">
+
                         <!-- Saved Addresses Dropdown -->
                         <div id="savedAddressesContainer" class="form-group" style="display: none;">
                             <label data-i18n="saved_addresses">Saved Addresses</label>
@@ -495,7 +619,7 @@
                             <input type="hidden" id="lng" name="lng">
                             <small class="form-hint"
                                 style="color: var(--text-muted); font-size: 12px; margin-top: 5px; display: block;"
-                                data-i18n="drag_pin_hint">Drag the pin to your exact delivery location.</small>
+                                data-i18n="drag_pin_hint">Drag or tap the map to pin your exact delivery location.</small>
                         </div>
                     </div>
 

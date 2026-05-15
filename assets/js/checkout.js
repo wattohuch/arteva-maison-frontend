@@ -33,16 +33,17 @@ document.addEventListener('DOMContentLoaded', async function () {
     // 5. Initialize saved addresses (will use the map)
     await initSavedAddresses();
 
-    // 6. Initialize rest of the form
+    // 6. Initialize address type selector (Home/Work/Other)
+    initAddressTypeSelector();
+
+    // 7. Initialize rest of the form
     initCheckoutForm();
     initPaymentMethodSelection();
     updateOrderSummary();
 
-    // 7. Handle browser back-button from payment gateway
-    // pageshow fires when page is restored from bfcache (back/forward navigation)
+    // 8. Handle browser back-button from payment gateway
     window.addEventListener('pageshow', function (event) {
         if (event.persisted) {
-            // Page was restored from bfcache — user pressed back from payment gateway
             const submitBtn = document.querySelector('#checkoutForm button[type="submit"]');
             if (submitBtn) {
                 submitBtn.disabled = false;
@@ -73,6 +74,10 @@ function initApplePayVisibility() {
 // ============================================
 // Saved Addresses
 // ============================================
+// Track whether address was loaded from saved addresses
+window._addressAutofilled = false;
+window._savedAddresses = [];
+
 async function initSavedAddresses() {
     const container = document.getElementById('savedAddressesContainer');
     const selector = document.getElementById('savedAddressSelector');
@@ -86,6 +91,7 @@ async function initSavedAddresses() {
         }
 
         const addresses = response.data.addresses;
+        window._savedAddresses = addresses;
         container.style.display = 'block';
 
         addresses.forEach(addr => {
@@ -96,19 +102,20 @@ async function initSavedAddresses() {
             selector.appendChild(option);
         });
 
-        // Auto-select logic based on user request
+        // Auto-select logic
         const defaultAddr = addresses.find(a => a.isDefault);
-        
+
         if (addresses.length === 1) {
-            // If only 1 address, autofill it
             selector.value = JSON.stringify(addresses[0]);
             fillAddressForm(addresses[0]);
+            syncAddressTypeButton(addresses[0].label);
+            window._addressAutofilled = true;
         } else if (defaultAddr) {
-            // If multiple addresses and one is default, autofill default
             selector.value = JSON.stringify(defaultAddr);
             fillAddressForm(defaultAddr);
+            syncAddressTypeButton(defaultAddr.label);
+            window._addressAutofilled = true;
         } else {
-            // If multiple addresses and none is default, don't autofill, let them select ("it should ask which address")
             selector.value = "";
         }
 
@@ -117,13 +124,32 @@ async function initSavedAddresses() {
             if (e.target.value) {
                 const addr = JSON.parse(e.target.value);
                 fillAddressForm(addr);
+                syncAddressTypeButton(addr.label);
+                window._addressAutofilled = true;
             }
         });
 
     } catch (error) {
         // Silently fail - saved addresses are optional
-        // User can still enter address manually
     }
+}
+
+/**
+ * Sync address type button to match saved address label
+ */
+function syncAddressTypeButton(label) {
+    if (!label) return;
+    const normalized = label.toLowerCase();
+    let matchType = 'Other';
+    if (normalized === 'home' || normalized.includes('home') || normalized === 'منزل') matchType = 'Home';
+    else if (normalized === 'work' || normalized.includes('work') || normalized === 'عمل') matchType = 'Work';
+
+    const btns = document.querySelectorAll('.address-type-btn');
+    btns.forEach(btn => {
+        btn.classList.toggle('active', btn.dataset.type === matchType);
+    });
+    const typeInput = document.getElementById('addressType');
+    if (typeInput) typeInput.value = matchType;
 }
 
 function fillAddressForm(addr) {
@@ -228,6 +254,13 @@ function initMap() {
         updateCoordinates(position.lat, position.lng);
     });
 
+    // Click map to place pin (manual pinning)
+    window.map.on('click', function (e) {
+        const { lat, lng } = e.latlng;
+        window.marker.setLatLng([lat, lng]);
+        updateCoordinates(lat, lng);
+    });
+
     // Handle "Use Current Location"
     const locateBtn = document.getElementById('locateMeBtn');
     if (locateBtn) {
@@ -285,6 +318,67 @@ function updateCoordinates(lat, lng) {
     const lngInput = document.getElementById('lng');
     if (latInput) latInput.value = lat;
     if (lngInput) lngInput.value = lng;
+}
+
+// ============================================
+// Address Type Selector (Home / Work / Other)
+// ============================================
+function initAddressTypeSelector() {
+    const btns = document.querySelectorAll('.address-type-btn');
+    const typeInput = document.getElementById('addressType');
+    if (!btns.length || !typeInput) return;
+
+    btns.forEach(btn => {
+        btn.addEventListener('click', () => {
+            // Update active state
+            btns.forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            typeInput.value = btn.dataset.type;
+
+            // If "Other" is clicked and form was autofilled, clear fields for manual entry
+            if (btn.dataset.type === 'Other' && window._addressAutofilled) {
+                clearAddressForm();
+                window._addressAutofilled = false;
+            }
+
+            // If Home or Work is clicked, try to load matching saved address
+            if (btn.dataset.type !== 'Other' && window._savedAddresses.length > 0) {
+                const match = window._savedAddresses.find(a => {
+                    const lbl = (a.label || '').toLowerCase();
+                    return lbl === btn.dataset.type.toLowerCase() || lbl.includes(btn.dataset.type.toLowerCase());
+                });
+                if (match) {
+                    fillAddressForm(match);
+                    window._addressAutofilled = true;
+                    // Update selector dropdown too
+                    const selector = document.getElementById('savedAddressSelector');
+                    if (selector) selector.value = JSON.stringify(match);
+                }
+            }
+        });
+    });
+}
+
+/**
+ * Clear all address form fields
+ */
+function clearAddressForm() {
+    ['street', 'city', 'state', 'zipCode', 'phone'].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.value = '';
+    });
+    const countryEl = document.getElementById('country');
+    if (countryEl) countryEl.value = 'Kuwait';
+    // Reset saved address selector
+    const selector = document.getElementById('savedAddressSelector');
+    if (selector) selector.value = '';
+    // Reset map to default Kuwait
+    if (window.map && window.marker) {
+        const defaultLatLng = [29.3759, 47.9774];
+        window.marker.setLatLng(defaultLatLng);
+        window.map.setView(defaultLatLng, 11);
+        updateCoordinates(29.3759, 47.9774);
+    }
 }
 
 // ============================================
@@ -394,6 +488,7 @@ function collectShippingAddress() {
         country: document.getElementById('country')?.value || 'Kuwait',
         zipCode: document.getElementById('zipCode')?.value,
         phone: document.getElementById('phone')?.value,
+        label: document.getElementById('addressType')?.value || 'Home',
         coordinates: {
             lat: parseFloat(document.getElementById('lat')?.value || 0),
             lng: parseFloat(document.getElementById('lng')?.value || 0)
