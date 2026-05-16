@@ -166,8 +166,37 @@ function fillAddressForm(addr) {
     setVal('city', addr.city);
     setVal('state', addr.state || '');
     setVal('zipCode', addr.zipCode);
-    setVal('phone', addr.phone);
     setVal('country', addr.country || 'Kuwait');
+
+    // Parse phone — if it has a country code, split it into prefix + local
+    if (addr.phone) {
+        const phonePrefixMap = {
+            '+965': 'Kuwait', '+966': 'Saudi Arabia', '+971': 'UAE',
+            '+973': 'Bahrain', '+974': 'Qatar', '+968': 'Oman'
+        };
+        let matched = false;
+        for (const [prefix, _country] of Object.entries(phonePrefixMap)) {
+            const raw = String(addr.phone).replace(/\s/g, '');
+            if (raw.startsWith(prefix)) {
+                const codeEl = document.getElementById('phoneCountryCode');
+                if (codeEl) codeEl.value = prefix;
+                setVal('phone', raw.substring(prefix.length));
+                matched = true;
+                break;
+            }
+        }
+        // Also handle no-plus format (e.g. 96597295917)
+        if (!matched) {
+            const digits = String(addr.phone).replace(/[^\d]/g, '');
+            if (digits.startsWith('965') && digits.length === 11) {
+                const codeEl = document.getElementById('phoneCountryCode');
+                if (codeEl) codeEl.value = '+965';
+                setVal('phone', digits.substring(3));
+            } else {
+                setVal('phone', addr.phone);
+            }
+        }
+    }
 
     // Map coordinates - Update pin if coordinates exist
     if (addr.coordinates) {
@@ -481,13 +510,39 @@ async function syncCartToServer() {
 // Collect & validate shipping address
 // ============================================
 function collectShippingAddress() {
+    // Combine country code + local phone number
+    const countryCode = document.getElementById('phoneCountryCode')?.value || '+965';
+    let localPhone = (document.getElementById('phone')?.value || '').trim();
+
+    // Strip any accidental country code the user might have typed
+    const codeDigits = countryCode.replace('+', '');
+    let phoneDigits = localPhone.replace(/[^\d]/g, '');
+    // Remove leading 0 (local dialing)
+    if (phoneDigits.startsWith('0')) {
+        phoneDigits = phoneDigits.substring(1);
+    }
+    // Remove country code if user typed it redundantly
+    if (phoneDigits.startsWith(codeDigits)) {
+        phoneDigits = phoneDigits.substring(codeDigits.length);
+    }
+    // Remove 00 prefix if user typed it
+    if (phoneDigits.startsWith('00')) {
+        phoneDigits = phoneDigits.substring(2);
+        if (phoneDigits.startsWith(codeDigits)) {
+            phoneDigits = phoneDigits.substring(codeDigits.length);
+        }
+    }
+
+    const normalizedPhone = countryCode + phoneDigits;
+    console.log(`[CHECKOUT] Phone normalized: "${localPhone}" → "${normalizedPhone}"`);
+
     const shippingAddress = {
         street: document.getElementById('street')?.value,
         city: document.getElementById('city')?.value,
         state: document.getElementById('state')?.value,
         country: document.getElementById('country')?.value || 'Kuwait',
         zipCode: document.getElementById('zipCode')?.value,
-        phone: document.getElementById('phone')?.value,
+        phone: normalizedPhone,
         label: document.getElementById('addressType')?.value || 'Home',
         coordinates: {
             lat: parseFloat(document.getElementById('lat')?.value || 0),
@@ -497,6 +552,10 @@ function collectShippingAddress() {
 
     if (!shippingAddress.street || !shippingAddress.city) {
         showCheckoutNotification(window.getTranslation ? window.getTranslation('fill_required_fields') : 'Please fill in all required address fields', 'error');
+        return null;
+    }
+    if (!phoneDigits || phoneDigits.length < 7) {
+        showCheckoutNotification('Please enter a valid phone number', 'error');
         return null;
     }
     return shippingAddress;
@@ -553,6 +612,22 @@ function initCheckoutForm() {
     // Apple Pay: Direct order on button click
     // ============================================
     initApplePayDirectOrder();
+
+    // ============================================
+    // Country → Phone Code Sync
+    // ============================================
+    const countrySelect = document.getElementById('country');
+    const phoneCodeSelect = document.getElementById('phoneCountryCode');
+    if (countrySelect && phoneCodeSelect) {
+        const countryToCode = {
+            'Kuwait': '+965', 'Saudi Arabia': '+966', 'UAE': '+971',
+            'Bahrain': '+973', 'Qatar': '+974', 'Oman': '+968'
+        };
+        countrySelect.addEventListener('change', () => {
+            const code = countryToCode[countrySelect.value];
+            if (code) phoneCodeSelect.value = code;
+        });
+    }
 }
 
 // ============================================

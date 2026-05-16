@@ -598,8 +598,23 @@
                         </div>
                         <div class="form-group">
                             <label for="phone" data-i18n="phone_number">Phone Number *</label>
-                            <input type="tel" id="phone" name="phone" required placeholder="965XXXXXXXX"
-                                data-i18n-placeholder="phone_placeholder">
+                            <div style="display: flex; gap: 0;">
+                                <select id="phoneCountryCode" name="phoneCountryCode"
+                                    style="width: 110px; border-radius: var(--radius-sm) 0 0 var(--radius-sm); border-right: none; padding: 10px 6px; font-size: 14px; background: var(--bg-secondary); border: 1px solid var(--border-light); color: var(--text-primary); appearance: auto; flex-shrink: 0;">
+                                    <option value="+965" selected>🇰🇼 +965</option>
+                                    <option value="+966">🇸🇦 +966</option>
+                                    <option value="+971">🇦🇪 +971</option>
+                                    <option value="+973">🇧🇭 +973</option>
+                                    <option value="+974">🇶🇦 +974</option>
+                                    <option value="+968">🇴🇲 +968</option>
+                                </select>
+                                <input type="tel" id="phone" name="phone" required placeholder="XXXXXXXX"
+                                    data-i18n-placeholder="phone_placeholder"
+                                    style="border-radius: 0 var(--radius-sm) var(--radius-sm) 0; flex: 1; min-width: 0;">
+                            </div>
+                            <small class="form-hint" style="color: var(--text-tertiary); font-size: 11px; margin-top: 4px;">
+                                Enter your local number without country code
+                            </small>
                         </div>
 
                         <!-- Map Section -->
