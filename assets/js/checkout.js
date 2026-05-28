@@ -499,6 +499,10 @@ async function syncCartToServer() {
                 });
             }
         }
+
+        // Return promo code if applied (for order payload)
+        const appliedPromo = window.PromoModule ? window.PromoModule.getApplied() : null;
+        return appliedPromo ? appliedPromo.code : null;
     } catch (error) {
         console.error('Cart sync error:', error);
         throw new Error('Failed to sync cart. Please try again.');
@@ -590,14 +594,14 @@ function initCheckoutForm() {
 
         try {
             // Sync localStorage cart to server before payment
-            await syncCartToServer();
+            const promoCode = await syncCartToServer();
 
             if (paymentMethod === 'card') {
-                await processCardPayment(shippingAddress);
+                await processCardPayment(shippingAddress, promoCode);
             } else if (paymentMethod === 'knet') {
-                await processKNETPayment(shippingAddress);
+                await processKNETPayment(shippingAddress, promoCode);
             } else if (paymentMethod === 'applepay') {
-                await processApplePayPayment(shippingAddress);
+                await processApplePayPayment(shippingAddress, promoCode);
             }
         } catch (error) {
             showCheckoutNotification(error.message || (window.getTranslation ? window.getTranslation('payment_failed') : 'Payment failed'), 'error');
@@ -665,8 +669,8 @@ function initApplePayDirectOrder() {
         }
 
         try {
-            await syncCartToServer();
-            await processApplePayPayment(shippingAddress);
+            const promoCode = await syncCartToServer();
+            await processApplePayPayment(shippingAddress, promoCode);
         } catch (error) {
             showCheckoutNotification(error.message || (window.getTranslation ? window.getTranslation('payment_failed') : 'Payment failed'), 'error');
             applePayBtn.style.opacity = '1';
@@ -682,7 +686,7 @@ function initApplePayDirectOrder() {
 // ============================================
 // Process Card Payment (MyFatoorah)
 // ============================================
-async function processCardPayment(shippingAddress) {
+async function processCardPayment(shippingAddress, promoCode) {
     if (!window.AuthAPI?.isLoggedIn()) {
         showCheckoutNotification(window.getTranslation ? window.getTranslation('login_required') : 'Please login to checkout', 'error');
         window.location.href = '/account.html?redirect=checkout';
@@ -692,7 +696,7 @@ async function processCardPayment(shippingAddress) {
     // Use dynamic Payment Method ID from InitiatePayment API
     const methodId = getPaymentMethodId('card');
     console.log('Card payment - using method ID:', methodId);
-    const data = await window.PaymentsAPI.executePayment(methodId, shippingAddress);
+    const data = await window.PaymentsAPI.executePayment(methodId, shippingAddress, promoCode);
 
     // Redirect to MyFatoorah payment page
     if (data.success && data.data.paymentUrl) {
@@ -705,7 +709,7 @@ async function processCardPayment(shippingAddress) {
 // ============================================
 // Process KNET Payment (MyFatoorah)
 // ============================================
-async function processKNETPayment(shippingAddress) {
+async function processKNETPayment(shippingAddress, promoCode) {
     if (!window.AuthAPI?.isLoggedIn()) {
         showCheckoutNotification(window.getTranslation ? window.getTranslation('login_required') : 'Please login to checkout', 'error');
         window.location.href = '/account.html?redirect=checkout';
@@ -715,7 +719,7 @@ async function processKNETPayment(shippingAddress) {
     // Use dynamic Payment Method ID from InitiatePayment API
     const methodId = getPaymentMethodId('knet');
     console.log('KNET payment - using method ID:', methodId);
-    const data = await window.PaymentsAPI.executePayment(methodId, shippingAddress);
+    const data = await window.PaymentsAPI.executePayment(methodId, shippingAddress, promoCode);
 
     // Redirect to MyFatoorah KNET payment page
     if (data.success && data.data.paymentUrl) {
@@ -728,7 +732,7 @@ async function processKNETPayment(shippingAddress) {
 // ============================================
 // Process Apple Pay Payment (MyFatoorah)
 // ============================================
-async function processApplePayPayment(shippingAddress) {
+async function processApplePayPayment(shippingAddress, promoCode) {
     if (!window.AuthAPI?.isLoggedIn()) {
         showCheckoutNotification(window.getTranslation ? window.getTranslation('login_required') : 'Please login to checkout', 'error');
         window.location.href = '/account.html?redirect=checkout';
@@ -738,7 +742,7 @@ async function processApplePayPayment(shippingAddress) {
     // Use dynamic Payment Method ID from InitiatePayment API
     const methodId = getPaymentMethodId('applepay');
     console.log('Apple Pay - using method ID:', methodId);
-    const data = await window.PaymentsAPI.executePayment(methodId, shippingAddress);
+    const data = await window.PaymentsAPI.executePayment(methodId, shippingAddress, promoCode);
 
     // Redirect to MyFatoorah Apple Pay page
     if (data.success && data.data.paymentUrl) {
@@ -800,7 +804,9 @@ function updateOrderSummary() {
     // Calculate totals
     let subtotal = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
     let shipping = 2.0; // Fixed 2 KD shipping for all orders in Kuwait
-    let total = subtotal + shipping;
+    const appliedPromo = window.PromoModule ? window.PromoModule.getApplied() : null;
+    const discount = appliedPromo ? appliedPromo.totalDiscount : 0;
+    let total = subtotal + shipping - discount;
 
     // Render items
     const lang = localStorage.getItem('site_lang') || 'en';

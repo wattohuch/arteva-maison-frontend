@@ -775,6 +775,8 @@
                 </div>
             </div>
 
+            <div id="promoFilterBtns" style="display:flex;gap:8px;margin-bottom:16px;"></div>
+
             <div class="admin-table-wrap">
                 <div class="admin-table-scroll">
                     <table class="admin-table">
@@ -785,13 +787,14 @@
                                 <th>Status</th>
                                 <th>Expires</th>
                                 <th style="text-align:center;">Products</th>
+                                <th style="text-align:center;">Discount</th>
                                 <th style="text-align:center;">Used</th>
                                 <th>Actions</th>
                             </tr>
                         </thead>
                         <tbody id="promoCodesTableBody">
                             <tr>
-                                <td colspan="7" style="text-align:center;padding:40px;color:var(--admin-text-muted);">Loading promo codes...</td>
+                                <td colspan="8" style="text-align:center;padding:40px;color:var(--admin-text-muted);">Loading promo codes...</td>
                             </tr>
                         </tbody>
                     </table>
@@ -832,6 +835,10 @@
                                 <label>Max Usage <small style="color:var(--admin-text-muted);font-weight:normal;">(0 = unlimited)</small></label>
                                 <input type="number" id="promoMaxUsage" name="maxUsage" min="0" value="0" placeholder="0 = unlimited">
                             </div>
+                        </div>
+                        <div class="admin-form-group">
+                            <label>Per User Limit <small style="color:var(--admin-text-muted);font-weight:normal;">(0 = unlimited per user)</small></label>
+                            <input type="number" id="promoPerUserLimit" name="perUserLimit" min="0" value="0" placeholder="0 = unlimited">
                         </div>
                         <div class="admin-form-actions" style="border:none;padding-top:0;">
                             <button type="button" class="admin-btn" onclick="closePromoModal()">Cancel</button>
@@ -877,6 +884,19 @@
                             </table>
                         </div>
                     </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Promo Details Modal -->
+        <div id="promoDetailsModal" class="admin-modal hidden">
+            <div class="admin-modal-content" style="max-width:800px;">
+                <div class="admin-modal-header">
+                    <h2>Promo Code Details</h2>
+                    <button class="admin-btn-icon" onclick="closePromoDetailsModal()">✕</button>
+                </div>
+                <div class="admin-modal-body" id="promoDetailsContent">
+                    <div style="text-align:center;padding:40px;color:var(--admin-text-muted);">Loading...</div>
                 </div>
             </div>
         </div>

@@ -762,6 +762,32 @@
                                 <span data-i18n="shipping">Shipping</span>
                                 <span id="checkoutShipping">2.000 KWD</span>
                             </div>
+
+                            <!-- Promo Code Section -->
+                            <div class="promo-code-section" style="padding: var(--space-2) 0; border-top: 1px solid var(--border-light); border-bottom: 1px solid var(--border-light); margin: var(--space-2) 0;">
+                                <div class="promo-input-row" style="display: flex; gap: 8px;">
+                                    <input type="text" class="promo-code-input" placeholder="Promo code" 
+                                        style="flex: 1; padding: 8px 12px; border: 1px solid var(--border-light); border-radius: var(--radius-sm); font-family: var(--font-body); font-size: 13px; text-transform: uppercase; letter-spacing: 0.5px;">
+                                    <button type="button" class="promo-apply-btn" 
+                                        style="padding: 8px 16px; background: var(--color-gold); color: white; border: none; border-radius: var(--radius-sm); font-family: var(--font-body); font-size: 13px; font-weight: 500; cursor: pointer; white-space: nowrap;"
+                                        data-i18n="apply">Apply</button>
+                                </div>
+                                <div class="promo-applied-row" style="display: none; align-items: center; justify-content: space-between; padding: 8px 0;">
+                                    <div style="display: flex; align-items: center; gap: 6px;">
+                                        <span style="color: #059669; font-size: 14px;">✓</span>
+                                        <code class="promo-applied-code" style="background: rgba(5,150,105,0.1); color: #059669; padding: 2px 8px; border-radius: 4px; font-size: 12px; font-weight: 600; letter-spacing: 0.5px;"></code>
+                                        <span class="promo-applied-saving" style="font-size: 12px; color: #059669; font-weight: 500;"></span>
+                                    </div>
+                                    <button type="button" class="promo-remove-btn" style="background: none; border: none; color: #ef4444; font-size: 12px; cursor: pointer; font-family: var(--font-body); text-decoration: underline;" data-i18n="remove">Remove</button>
+                                </div>
+                            </div>
+
+                            <!-- Discount Row -->
+                            <div class="promo-discount-row summary-row" style="display: none; color: #059669;">
+                                <span data-i18n="discount">Discount</span>
+                                <span class="promo-discount-amount">-0.000 KWD</span>
+                            </div>
+
                             <div class="summary-row total">
                                 <span data-i18n="total">Total</span>
                                 <span id="checkoutTotal">0.000 KWD</span>
@@ -804,9 +830,10 @@
     <script src="assets/js/api.js"></script>
     <script src="assets/js/i18n.js"></script>
     <script src="assets/js/main.js"></script>
-    <script src="assets/js/cart.js?v=11"></script>
+    <script src="assets/js/cart.js?v=12"></script>
+    <script src="assets/js/promo.js?v=1"></script>
     <script src="assets/js/currency.js"></script>
-    <script src="assets/js/checkout.js?v=4"></script>
+    <script src="assets/js/checkout.js?v=5"></script>
 
     <script>
         // Add selected state to payment methods

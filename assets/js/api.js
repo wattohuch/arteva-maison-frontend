@@ -144,6 +144,7 @@ const AuthAPI = {
         localStorage.removeItem('arteva_token');
         localStorage.removeItem('arteva_user');
         localStorage.removeItem('arteva_cart');
+        localStorage.removeItem('arteva_promo');
         window.location.href = '/account.html';
     },
 
@@ -570,10 +571,12 @@ const PaymentsAPI = {
     },
 
     // Execute payment with specific method
-    async executePayment(paymentMethodId, shippingAddress) {
+    async executePayment(paymentMethodId, shippingAddress, promoCode) {
+        const payload = { paymentMethodId, shippingAddress };
+        if (promoCode) payload.promoCode = promoCode;
         return apiRequest('/payments/execute', {
             method: 'POST',
-            body: JSON.stringify({ paymentMethodId, shippingAddress })
+            body: JSON.stringify(payload)
         });
     },
 

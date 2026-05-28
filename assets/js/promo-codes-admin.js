@@ -1,6 +1,6 @@
 /**
  * ARTÉVA Maison — Promo Codes Admin Panel
- * Full CRUD + product assignment management
+ * Full CRUD + product assignment + details modal + analytics
  */
 
 (function () {
@@ -26,6 +26,7 @@
     let allPromoCodes = [];
     let allProducts = [];
     let currentPromoId = null;
+    let currentFilter = 'all'; // 'all' | 'active' | 'expired'
 
     // ═══════════════════════════════════════════════════
     // LOAD & RENDER PROMO CODES LIST
@@ -39,10 +40,11 @@
             allPromoCodes = data.data || [];
             renderPromoTable();
             renderPromoStats();
+            initFilterButtons();
         } catch (err) {
             console.error('[PROMO] Load error:', err);
             document.getElementById('promoCodesTableBody').innerHTML =
-                `<tr><td colspan="7" style="text-align:center;padding:40px;color:#ef4444;">Failed to load promo codes</td></tr>`;
+                `<tr><td colspan="8" style="text-align:center;padding:40px;color:#ef4444;">Failed to load promo codes</td></tr>`;
         }
     };
 
@@ -58,15 +60,47 @@
         document.getElementById('statTotalPromoProducts').textContent = totalProducts;
     }
 
+    // ── Filter Buttons ──
+    function initFilterButtons() {
+        const container = document.getElementById('promoFilterBtns');
+        if (!container || container.dataset.initialized) return;
+        container.dataset.initialized = 'true';
+
+        container.innerHTML = `
+            <button class="admin-btn promo-filter-btn active" data-filter="all" style="padding:4px 14px;font-size:12px;border-radius:8px;">All</button>
+            <button class="admin-btn promo-filter-btn" data-filter="active" style="padding:4px 14px;font-size:12px;border-radius:8px;">Active</button>
+            <button class="admin-btn promo-filter-btn" data-filter="expired" style="padding:4px 14px;font-size:12px;border-radius:8px;">Expired</button>
+        `;
+
+        container.addEventListener('click', (e) => {
+            const btn = e.target.closest('.promo-filter-btn');
+            if (!btn) return;
+            container.querySelectorAll('.promo-filter-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            currentFilter = btn.dataset.filter;
+            renderPromoTable();
+        });
+    }
+
+    function getFilteredPromos() {
+        if (currentFilter === 'active') {
+            return allPromoCodes.filter(p => p.isActive && !(p.isExpired || new Date(p.expiresAt) < new Date()));
+        } else if (currentFilter === 'expired') {
+            return allPromoCodes.filter(p => p.isExpired || new Date(p.expiresAt) < new Date() || !p.isActive);
+        }
+        return allPromoCodes;
+    }
+
     function renderPromoTable() {
         const tbody = document.getElementById('promoCodesTableBody');
+        const filtered = getFilteredPromos();
 
-        if (allPromoCodes.length === 0) {
-            tbody.innerHTML = `<tr><td colspan="7" style="text-align:center;padding:40px;color:var(--admin-text-muted);">No promo codes yet. Create your first one!</td></tr>`;
+        if (filtered.length === 0) {
+            tbody.innerHTML = `<tr><td colspan="8" style="text-align:center;padding:40px;color:var(--admin-text-muted);">${currentFilter === 'all' ? 'No promo codes yet. Create your first one!' : 'No ' + currentFilter + ' promo codes.'}</td></tr>`;
             return;
         }
 
-        tbody.innerHTML = allPromoCodes.map(promo => {
+        tbody.innerHTML = filtered.map(promo => {
             const isExpired = promo.isExpired || new Date(promo.expiresAt) < new Date();
             const isValid = promo.isActive && !isExpired;
             const statusBg = isValid ? '#d1fae5' : isExpired ? '#fee2e2' : '#fef3c7';
@@ -84,13 +118,17 @@
                 ? `${promo.usageCount || 0}/${promo.maxUsage}`
                 : `${promo.usageCount || 0}`;
 
+            // Discount summary
+            const discountSummary = getDiscountSummary(promo);
+
             return `<tr>
-                <td><code style="background:var(--admin-surface-2);padding:4px 10px;border-radius:6px;font-weight:700;letter-spacing:1px;font-size:13px;">${promo.code}</code></td>
+                <td><code style="background:var(--admin-surface-2);padding:4px 10px;border-radius:6px;font-weight:700;letter-spacing:1px;font-size:13px;cursor:pointer;transition:background 0.15s;" onclick="openPromoDetailsModal('${promo._id}')" onmouseover="this.style.background='var(--admin-gold)';this.style.color='#000'" onmouseout="this.style.background='var(--admin-surface-2)';this.style.color=''">${promo.code}</code></td>
                 <td>${promo.name}</td>
                 <td><span style="display:inline-block;padding:3px 10px;border-radius:10px;font-size:11px;font-weight:600;background:${statusBg};color:${statusColor};">${statusText}</span></td>
                 <td><span style="font-size:12px;">${expiresDate}<br><span style="color:var(--admin-text-muted);">${expiresTime}</span></span></td>
                 <td style="text-align:center;"><span style="font-weight:600;">${promo.products?.length || 0}</span></td>
-                <td style="text-align:center;">${usageText}</td>
+                <td style="text-align:center;font-size:12px;color:var(--admin-text-muted);">${discountSummary}</td>
+                <td style="text-align:center;">${usageText}${promo.perUserLimit ? '<br><span style="font-size:10px;color:var(--admin-text-muted);">' + promo.perUserLimit + '/user</span>' : ''}</td>
                 <td>
                     <div style="display:flex;gap:6px;flex-wrap:wrap;">
                         <button class="admin-btn" style="padding:4px 10px;font-size:12px;" onclick="openPromoProductsModal('${promo._id}')">📦 Products</button>
@@ -103,6 +141,27 @@
         }).join('');
     }
 
+    function getDiscountSummary(promo) {
+        if (!promo.products || promo.products.length === 0) return '<span style="color:var(--admin-text-muted);">—</span>';
+
+        const types = new Set();
+        let minVal = Infinity, maxVal = -Infinity;
+        promo.products.forEach(pp => {
+            types.add(pp.discountType);
+            minVal = Math.min(minVal, pp.discountValue);
+            maxVal = Math.max(maxVal, pp.discountValue);
+        });
+
+        if (types.size === 1) {
+            const type = types.values().next().value;
+            const suffix = type === 'percentage' ? '%' : ' KWD';
+            if (minVal === maxVal) return `${minVal}${suffix} off`;
+            return `${minVal}–${maxVal}${suffix} off`;
+        }
+
+        return 'Mixed';
+    }
+
     // ═══════════════════════════════════════════════════
     // CREATE / EDIT PROMO CODE MODAL
     // ═══════════════════════════════════════════════════
@@ -113,6 +172,7 @@
         document.getElementById('promoName').value = '';
         document.getElementById('promoDescription').value = '';
         document.getElementById('promoMaxUsage').value = '0';
+        document.getElementById('promoPerUserLimit').value = '0';
         document.getElementById('promoModalTitle').textContent = 'Create Promo Code';
         document.getElementById('promoSubmitBtn').textContent = 'Create Promo Code';
 
@@ -132,6 +192,7 @@
         document.getElementById('promoName').value = promo.name;
         document.getElementById('promoDescription').value = promo.description || '';
         document.getElementById('promoMaxUsage').value = promo.maxUsage || 0;
+        document.getElementById('promoPerUserLimit').value = promo.perUserLimit || 0;
         document.getElementById('promoExpiresAt').value = new Date(promo.expiresAt).toISOString().slice(0, 16);
         document.getElementById('promoModalTitle').textContent = 'Edit Promo Code';
         document.getElementById('promoSubmitBtn').textContent = 'Save Changes';
@@ -155,7 +216,8 @@
                     name: document.getElementById('promoName').value,
                     description: document.getElementById('promoDescription').value,
                     expiresAt: document.getElementById('promoExpiresAt').value,
-                    maxUsage: parseInt(document.getElementById('promoMaxUsage').value) || 0
+                    maxUsage: parseInt(document.getElementById('promoMaxUsage').value) || 0,
+                    perUserLimit: parseInt(document.getElementById('promoPerUserLimit').value) || 0
                 };
 
                 try {
@@ -174,6 +236,160 @@
             });
         }
     });
+
+    // ═══════════════════════════════════════════════════
+    // PROMO CODE DETAILS MODAL
+    // ═══════════════════════════════════════════════════
+
+    window.openPromoDetailsModal = async function (promoId) {
+        const detailsModal = document.getElementById('promoDetailsModal');
+        if (!detailsModal) return;
+
+        detailsModal.classList.remove('hidden');
+        const content = document.getElementById('promoDetailsContent');
+        content.innerHTML = '<div style="text-align:center;padding:40px;color:var(--admin-text-muted);">Loading...</div>';
+
+        try {
+            const res = await fetch(`${API()}/promo-codes/${promoId}/stats`, { headers: headers() });
+            const data = await res.json();
+            if (!data.success) throw new Error(data.message);
+
+            const { promoCode: promo, stats, recentOrders } = data.data;
+
+            const isExpired = promo.isExpired || new Date(promo.expiresAt) < new Date();
+            const isValid = promo.isActive && !isExpired;
+            const statusBg = isValid ? '#d1fae5' : isExpired ? '#fee2e2' : '#fef3c7';
+            const statusColor = isValid ? '#065f46' : isExpired ? '#991b1b' : '#92400e';
+            const statusText = isValid ? 'Active' : isExpired ? 'Expired' : 'Disabled';
+
+            const expiresDate = new Date(promo.expiresAt).toLocaleDateString('en-US', {
+                weekday: 'short', month: 'short', day: 'numeric', year: 'numeric', hour: '2-digit', minute: '2-digit'
+            });
+
+            // Products table
+            const productsHtml = (promo.products && promo.products.length > 0) ? promo.products.map(pp => {
+                const product = pp.product;
+                if (!product) return '';
+                const originalPrice = product.price || 0;
+                let finalPrice = originalPrice;
+                if (pp.discountType === 'percentage') {
+                    finalPrice = originalPrice * (1 - pp.discountValue / 100);
+                } else {
+                    finalPrice = Math.max(0, originalPrice - pp.discountValue);
+                }
+                const discountLabel = pp.discountType === 'percentage' ? `${pp.discountValue}% OFF` : `${pp.discountValue.toFixed(3)} KWD OFF`;
+                return `<tr>
+                    <td style="font-size:13px;">${product.name}</td>
+                    <td style="font-size:13px;">${originalPrice.toFixed(3)} KWD</td>
+                    <td style="font-size:13px;"><span style="background:#fef3c7;color:#92400e;padding:2px 8px;border-radius:6px;font-weight:600;font-size:11px;">${discountLabel}</span></td>
+                    <td style="font-size:13px;font-weight:600;color:#059669;">${finalPrice.toFixed(3)} KWD</td>
+                </tr>`;
+            }).join('') : '<tr><td colspan="4" style="text-align:center;padding:20px;color:var(--admin-text-muted);">No products assigned</td></tr>';
+
+            // Recent orders table
+            const ordersHtml = (recentOrders && recentOrders.length > 0) ? recentOrders.map(order => {
+                const discount = order.promoCode?.totalDiscount || 0;
+                const paidBg = order.paymentStatus === 'paid' ? '#d1fae5' : '#fee2e2';
+                const paidColor = order.paymentStatus === 'paid' ? '#065f46' : '#991b1b';
+                const date = new Date(order.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+                return `<tr>
+                    <td style="font-size:12px;">${order.orderNumber || '—'}</td>
+                    <td style="font-size:12px;">${order.user?.name || '—'}</td>
+                    <td style="font-size:12px;">${order.total?.toFixed(3) || '0.000'} KWD</td>
+                    <td style="font-size:12px;color:#059669;font-weight:600;">-${discount.toFixed(3)} KWD</td>
+                    <td style="font-size:12px;"><span style="background:${paidBg};color:${paidColor};padding:2px 8px;border-radius:6px;font-size:10px;font-weight:600;">${order.paymentStatus}</span></td>
+                    <td style="font-size:12px;color:var(--admin-text-muted);">${date}</td>
+                </tr>`;
+            }).join('') : '<tr><td colspan="6" style="text-align:center;padding:20px;color:var(--admin-text-muted);">No orders have used this promo code yet</td></tr>';
+
+            content.innerHTML = `
+                <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;">
+                    <div>
+                        <code style="background:var(--admin-surface-2);padding:6px 16px;border-radius:8px;font-weight:700;letter-spacing:1.5px;font-size:18px;">${promo.code}</code>
+                        <span style="display:inline-block;padding:3px 10px;border-radius:10px;font-size:11px;font-weight:600;background:${statusBg};color:${statusColor};margin-left:10px;">${statusText}</span>
+                    </div>
+                </div>
+
+                <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:12px;margin-bottom:20px;">
+                    <div style="background:var(--admin-surface-2);padding:12px 16px;border-radius:10px;">
+                        <div style="font-size:11px;color:var(--admin-text-muted);margin-bottom:4px;">Display Name</div>
+                        <div style="font-weight:600;font-size:14px;">${promo.name}</div>
+                    </div>
+                    <div style="background:var(--admin-surface-2);padding:12px 16px;border-radius:10px;">
+                        <div style="font-size:11px;color:var(--admin-text-muted);margin-bottom:4px;">Expires</div>
+                        <div style="font-weight:500;font-size:13px;">${expiresDate}</div>
+                    </div>
+                    <div style="background:var(--admin-surface-2);padding:12px 16px;border-radius:10px;">
+                        <div style="font-size:11px;color:var(--admin-text-muted);margin-bottom:4px;">Usage</div>
+                        <div style="font-weight:600;font-size:14px;">${promo.usageCount || 0}${promo.maxUsage ? ' / ' + promo.maxUsage : ' (unlimited)'}</div>
+                    </div>
+                    <div style="background:var(--admin-surface-2);padding:12px 16px;border-radius:10px;">
+                        <div style="font-size:11px;color:var(--admin-text-muted);margin-bottom:4px;">Per User Limit</div>
+                        <div style="font-weight:600;font-size:14px;">${promo.perUserLimit || 'Unlimited'}</div>
+                    </div>
+                </div>
+
+                ${promo.description ? `<div style="background:var(--admin-surface-2);padding:12px 16px;border-radius:10px;margin-bottom:20px;font-size:13px;color:var(--admin-text-muted);">${promo.description}</div>` : ''}
+
+                <!-- Stats Cards -->
+                <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:24px;">
+                    <div style="background:linear-gradient(135deg,#1e3a5f,#2563eb);padding:14px;border-radius:10px;text-align:center;color:white;">
+                        <div style="font-size:20px;font-weight:700;">${stats.totalOrders}</div>
+                        <div style="font-size:10px;opacity:0.8;">Total Orders</div>
+                    </div>
+                    <div style="background:linear-gradient(135deg,#065f46,#059669);padding:14px;border-radius:10px;text-align:center;color:white;">
+                        <div style="font-size:20px;font-weight:700;">${stats.totalRevenue.toFixed(3)}</div>
+                        <div style="font-size:10px;opacity:0.8;">Revenue (KWD)</div>
+                    </div>
+                    <div style="background:linear-gradient(135deg,#92400e,#d97706);padding:14px;border-radius:10px;text-align:center;color:white;">
+                        <div style="font-size:20px;font-weight:700;">${stats.totalDiscountGiven.toFixed(3)}</div>
+                        <div style="font-size:10px;opacity:0.8;">Discount Given</div>
+                    </div>
+                    <div style="background:linear-gradient(135deg,#581c87,#9333ea);padding:14px;border-radius:10px;text-align:center;color:white;">
+                        <div style="font-size:20px;font-weight:700;">${stats.uniqueUsers}</div>
+                        <div style="font-size:10px;opacity:0.8;">Unique Users</div>
+                    </div>
+                </div>
+
+                <!-- Products -->
+                <h4 style="margin-bottom:10px;font-size:14px;font-weight:600;">Products & Discounts</h4>
+                <div style="overflow-x:auto;margin-bottom:24px;">
+                    <table style="width:100%;border-collapse:collapse;">
+                        <thead><tr style="background:var(--admin-surface-2);">
+                            <th style="padding:8px 12px;text-align:left;font-size:12px;font-weight:600;">Product</th>
+                            <th style="padding:8px 12px;text-align:left;font-size:12px;font-weight:600;">Original Price</th>
+                            <th style="padding:8px 12px;text-align:left;font-size:12px;font-weight:600;">Discount</th>
+                            <th style="padding:8px 12px;text-align:left;font-size:12px;font-weight:600;">Final Price</th>
+                        </tr></thead>
+                        <tbody>${productsHtml}</tbody>
+                    </table>
+                </div>
+
+                <!-- Recent Orders -->
+                <h4 style="margin-bottom:10px;font-size:14px;font-weight:600;">Recent Orders Using This Code</h4>
+                <div style="overflow-x:auto;max-height:300px;overflow-y:auto;">
+                    <table style="width:100%;border-collapse:collapse;">
+                        <thead><tr style="background:var(--admin-surface-2);position:sticky;top:0;">
+                            <th style="padding:8px 12px;text-align:left;font-size:12px;font-weight:600;">Order #</th>
+                            <th style="padding:8px 12px;text-align:left;font-size:12px;font-weight:600;">Customer</th>
+                            <th style="padding:8px 12px;text-align:left;font-size:12px;font-weight:600;">Total</th>
+                            <th style="padding:8px 12px;text-align:left;font-size:12px;font-weight:600;">Discount</th>
+                            <th style="padding:8px 12px;text-align:left;font-size:12px;font-weight:600;">Status</th>
+                            <th style="padding:8px 12px;text-align:left;font-size:12px;font-weight:600;">Date</th>
+                        </tr></thead>
+                        <tbody>${ordersHtml}</tbody>
+                    </table>
+                </div>
+            `;
+        } catch (err) {
+            content.innerHTML = `<div style="text-align:center;padding:40px;color:#ef4444;">Failed to load promo details: ${err.message}</div>`;
+        }
+    };
+
+    window.closePromoDetailsModal = function () {
+        const modal = document.getElementById('promoDetailsModal');
+        if (modal) modal.classList.add('hidden');
+    };
 
     // ═══════════════════════════════════════════════════
     // TOGGLE ACTIVE / DELETE
@@ -240,6 +456,7 @@
     };
 
     window.closePromoProductsModal = function () {
+        document.getElementById('promoProductsModal').classList.remove('hidden');
         document.getElementById('promoProductsModal').classList.add('hidden');
         document.getElementById('promoProductSearchResults').style.display = 'none';
         document.getElementById('promoProductSearch').value = '';

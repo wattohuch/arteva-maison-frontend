@@ -116,6 +116,9 @@ function addToCart(productId, quantity = 1, productData = null) {
     updateCartCount();
     updateCartDisplay();
 
+    // Re-validate promo code with new cart contents
+    if (window.PromoModule) window.PromoModule.revalidate();
+
     // Also add to server cart if logged in
     if (window.AuthAPI && window.AuthAPI.isLoggedIn() && window.CartAPI) {
         window.CartAPI.add(productId, quantity).catch(err => {
@@ -151,6 +154,9 @@ function removeFromCart(productId) {
         updateCartCount();
         updateCartDisplay();
 
+        // Re-validate promo code with updated cart
+        if (window.PromoModule) window.PromoModule.revalidate();
+
         // Also remove from server cart if logged in
         if (window.AuthAPI && window.AuthAPI.isLoggedIn() && window.CartAPI) {
             window.CartAPI.remove(productId).catch(err => {
@@ -181,6 +187,9 @@ function updateQuantity(productId, quantity) {
             updateCartCount();
             updateCartDisplay();
 
+            // Re-validate promo code with updated quantities
+            if (window.PromoModule) window.PromoModule.revalidate();
+
             // Also update server cart if logged in
             if (window.AuthAPI && window.AuthAPI.isLoggedIn() && window.CartAPI) {
                 window.CartAPI.update(productId, quantity).catch(err => {
@@ -199,6 +208,9 @@ function clearCart() {
     saveCart();
     updateCartCount();
     updateCartDisplay();
+
+    // Clear promo code when cart is cleared
+    if (window.PromoModule) window.PromoModule.remove();
 
     // Also clear server cart if logged in
     if (window.AuthAPI && window.AuthAPI.isLoggedIn() && window.CartAPI) {
