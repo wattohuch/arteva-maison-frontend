@@ -13,9 +13,6 @@
         href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600;700&family=Montserrat:wght@300;400;500;600&family=Noto+Sans+Arabic:wght@300;400;500;600&display=swap"
         rel="stylesheet">
 
-    <!-- QR Code Library -->
-    <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.4/build/qrcode.min.js"></script>
-
     <style>
         :root {
             --color-text: #2c241b;
@@ -27,341 +24,130 @@
             --font-arabic: 'Noto Sans Arabic', sans-serif;
         }
 
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
         body {
             font-family: var(--font-body);
             color: var(--color-text);
             background: #fff;
-            padding: 20px;
-            max-width: 800px;
-            margin: 0 auto;
-            font-size: 13px;
+            min-height: 100vh;
         }
 
-        .header {
+        /* Loading state */
+        .loading-wrap {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
             text-align: center;
-            margin-bottom: 16px;
-            padding-bottom: 10px;
-            border-bottom: 2px solid var(--color-gold);
+            padding: 40px;
         }
 
-        .logo {
+        .loading-wrap .logo {
             font-family: var(--font-display);
-            font-size: 26px;
+            font-size: 28px;
             font-weight: 700;
             letter-spacing: 2px;
-            margin-bottom: 4px;
             text-transform: uppercase;
+            margin-bottom: 8px;
         }
 
-        .receipt-title {
-            font-size: 11px;
-            text-transform: uppercase;
-            letter-spacing: 2px;
-            color: var(--color-text-light);
-        }
-
-        .receipt-title-ar {
-            font-family: var(--font-arabic);
-            font-size: 11px;
-            color: var(--color-text-light);
-            margin-top: 2px;
-            direction: rtl;
-        }
-
-        .bilingual-label {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        .bilingual-label .ar {
-            font-family: var(--font-arabic);
-            color: var(--color-text-light);
-            font-size: 10px;
-            direction: rtl;
-        }
-
-        .order-meta {
-            display: flex;
-            justify-content: space-between;
-            margin-bottom: 14px;
-        }
-
-        .meta-group h3 {
-            font-size: 10px;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            color: var(--color-text-light);
-            margin: 0 0 3px 0;
-        }
-
-        .meta-group .ar-label {
-            font-family: var(--font-arabic);
-            font-size: 9px;
-            color: #999;
-            direction: rtl;
-            display: block;
-        }
-
-        .meta-group p {
-            margin: 0;
-            font-weight: 500;
-            font-size: 13px;
-        }
-
-        .info-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 14px;
-            margin-bottom: 14px;
-            padding: 12px;
-            background: #fafaf8;
-            border-radius: 6px;
-            border: 1px solid var(--color-border);
-        }
-
-        .info-grid .meta-group p {
-            font-size: 12px;
-        }
-
-        .items-table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-bottom: 14px;
-        }
-
-        .items-table th {
-            text-align: left;
-            padding: 6px 4px;
-            border-bottom: 1px solid var(--color-border);
+        .loading-wrap .sub {
             font-family: var(--font-display);
-            font-size: 13px;
-        }
-
-        .items-table td {
-            padding: 8px 4px;
-            border-bottom: 1px solid var(--color-border);
             font-size: 12px;
-        }
-
-        .total-section {
-            width: 260px;
-            margin-left: auto;
-        }
-
-        .total-row {
-            display: flex;
-            justify-content: space-between;
-            padding: 3px 0;
-            font-size: 12px;
-        }
-
-        .total-row.final {
-            border-top: 2px solid var(--color-border);
-            margin-top: 6px;
-            padding-top: 6px;
-            font-weight: 700;
-            font-size: 15px;
-        }
-
-        .status-badge {
-            display: inline-block;
-            padding: 2px 8px;
-            border-radius: 10px;
-            font-size: 11px;
-            font-weight: 600;
-            text-transform: capitalize;
-        }
-        .status-paid { background: #d1fae5; color: #065f46; }
-        .status-pending { background: #fef3c7; color: #92400e; }
-        .status-failed { background: #fee2e2; color: #991b1b; }
-
-        /* Return Policy Section — Compact */
-        .return-policy {
-            margin-top: 14px;
-            padding: 10px 12px;
-            background: #fffbeb;
-            border: 1px solid #f59e0b33;
-            border-radius: 6px;
-            border-left: 3px solid var(--color-gold);
-        }
-
-        .return-policy h4 {
-            font-family: var(--font-display);
-            font-size: 14px;
-            margin: 0 0 4px;
-            color: var(--color-text);
-        }
-
-        .return-policy .ar-title {
-            font-family: var(--font-arabic);
-            font-size: 12px;
-            direction: rtl;
-            margin: 0 0 6px;
-            color: var(--color-text);
-            font-weight: 600;
-        }
-
-        .return-policy p {
-            margin: 2px 0;
-            font-size: 11px;
-            color: var(--color-text-light);
-            line-height: 1.5;
-        }
-
-        .return-policy .ar-text {
-            font-family: var(--font-arabic);
-            direction: rtl;
-            text-align: right;
-        }
-
-        .return-deadline {
-            margin-top: 8px;
-            padding: 6px 10px;
-            background: #fff;
-            border-radius: 4px;
-            border: 1px solid var(--color-border);
-            font-weight: 600;
-            font-size: 11px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        .return-deadline .ar {
-            font-family: var(--font-arabic);
-            direction: rtl;
-        }
-
-        /* QR Code Section */
-        .qr-section {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 16px;
-            margin-top: 14px;
-            padding: 12px;
-            border: 1px solid var(--color-border);
-            border-radius: 8px;
-            background: #fafaf8;
-        }
-
-        .qr-code-wrapper {
-            position: relative;
-            width: 100px;
-            height: 100px;
-            flex-shrink: 0;
-        }
-
-        .qr-code-wrapper canvas {
-            width: 100px !important;
-            height: 100px !important;
-            border: 2px solid var(--color-gold);
-            border-radius: 6px;
-        }
-
-        .qr-logo-overlay {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            width: 26px;
-            height: 26px;
-            background: #fff;
-            border-radius: 4px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-family: var(--font-display);
-            font-size: 14px;
-            font-weight: 700;
+            font-weight: 400;
+            letter-spacing: 0.3em;
             color: var(--color-gold);
-            border: 1px solid var(--color-gold);
-            line-height: 1;
+            margin-bottom: 24px;
         }
 
-        .qr-info {
+        .loading-wrap .status {
+            font-size: 13px;
+            color: var(--color-text-light);
+            margin-bottom: 8px;
+        }
+
+        .loading-wrap .status-ar {
+            font-family: var(--font-arabic);
+            font-size: 13px;
+            color: var(--color-text-light);
+            direction: rtl;
+        }
+
+        .spinner {
+            width: 32px;
+            height: 32px;
+            border: 3px solid var(--color-border);
+            border-top-color: var(--color-gold);
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+            margin: 16px auto;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        /* Error state */
+        .error-wrap {
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
             text-align: center;
+            padding: 40px;
         }
 
-        .qr-info .qr-label {
-            font-size: 11px;
+        .error-wrap .error-icon {
+            font-size: 48px;
+            margin-bottom: 16px;
+        }
+
+        .error-wrap .error-msg {
+            font-size: 16px;
+            font-weight: 500;
+            margin-bottom: 8px;
+        }
+
+        .error-wrap .error-detail {
+            font-size: 13px;
+            color: var(--color-text-light);
+            margin-bottom: 16px;
+            max-width: 400px;
+        }
+
+        .error-wrap .error-detail-ar {
+            font-family: var(--font-arabic);
+            font-size: 13px;
+            color: var(--color-text-light);
+            direction: rtl;
+            margin-bottom: 16px;
+        }
+
+        .btn-retry {
+            background: var(--color-gold);
+            color: white;
+            border: none;
+            padding: 10px 24px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-family: var(--font-body);
             font-weight: 600;
-            color: var(--color-text);
-            margin-bottom: 2px;
+            font-size: 13px;
         }
 
-        .qr-info .qr-label-ar {
-            font-family: var(--font-arabic);
-            font-size: 10px;
-            color: var(--color-text-light);
-            direction: rtl;
+        /* Receipt container — holds server-rendered HTML */
+        #receiptContainer {
+            display: none;
         }
 
-        .footer {
-            margin-top: 14px;
-            text-align: center;
-            font-size: 11px;
-            color: var(--color-text-light);
-            border-top: 1px solid var(--color-border);
-            padding-top: 10px;
-        }
-
-        .footer .ar-footer {
-            font-family: var(--font-arabic);
-            direction: rtl;
-            margin-top: 4px;
-        }
-
-        /* Print Styles — Force Single Page */
-        @page {
-            size: A4;
-            margin: 8mm 10mm;
-        }
-
-        @media print {
-            body {
-                padding: 0;
-                font-size: 11px;
-                -webkit-print-color-adjust: exact;
-                print-color-adjust: exact;
-            }
-            .no-print { display: none !important; }
-            .info-grid { background: #fafaf8 !important; border: 1px solid #ddd; }
-            .return-policy { background: #fffbeb !important; }
-            .qr-section { background: #fafaf8 !important; }
-
-            .header { margin-bottom: 10px; padding-bottom: 8px; }
-            .logo { font-size: 22px; }
-            .order-meta { margin-bottom: 10px; }
-            .info-grid { margin-bottom: 10px; padding: 8px; gap: 10px; }
-            .items-table { margin-bottom: 10px; }
-            .items-table th { padding: 4px 2px; font-size: 11px; }
-            .items-table td { padding: 5px 2px; font-size: 10px; }
-            .total-section { width: 220px; }
-            .total-row { font-size: 10px; }
-            .total-row.final { font-size: 13px; }
-            .return-policy { margin-top: 10px; padding: 8px; }
-            .return-policy h4 { font-size: 12px; }
-            .return-policy p { font-size: 9px; }
-            .qr-section { margin-top: 10px; padding: 8px; }
-            .qr-code-wrapper { width: 80px; height: 80px; }
-            .qr-code-wrapper canvas { width: 80px !important; height: 80px !important; }
-            .footer { margin-top: 10px; font-size: 9px; padding-top: 6px; }
-
-            /* Prevent page break inside these sections */
-            .info-grid, .items-table, .total-section, .return-policy, .qr-section, .footer {
-                page-break-inside: avoid;
-            }
-        }
-
-        @media (max-width: 600px) {
-            .info-grid { grid-template-columns: 1fr; gap: 12px; }
-            .order-meta { flex-direction: column; gap: 10px; }
-            .total-section { width: 100%; }
-            .qr-section { flex-direction: column; }
-        }
-
+        /* Print button */
         .btn-print {
             position: fixed;
             bottom: 30px;
@@ -375,315 +161,158 @@
             font-family: var(--font-body);
             font-weight: 600;
             box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            z-index: 100;
         }
 
-        .sku-col {
-            color: var(--color-text-light);
-            font-size: 11px;
-            font-family: monospace;
+        @media print {
+            .btn-print { display: none !important; }
         }
     </style>
 </head>
 
 <body>
-    <button class="btn-print no-print" onclick="window.print()">Print Receipt / طباعة الإيصال</button>
 
-    <div class="header">
-        <div class="logo">ARTÉVA MAISON</div>
-        <div class="receipt-title">Order Receipt</div>
-        <div class="receipt-title-ar">إيصال الطلب</div>
+    <!-- Loading State -->
+    <div class="loading-wrap" id="loadingState">
+        <div class="logo">ARTÉVA</div>
+        <div class="sub">MAISON</div>
+        <div class="spinner"></div>
+        <div class="status">Loading receipt details...</div>
+        <div class="status-ar">جاري تحميل تفاصيل الإيصال...</div>
     </div>
 
-    <div class="loading" id="loading">Loading receipt details... / جاري تحميل تفاصيل الإيصال...</div>
-
-    <div id="receiptContent" style="display: none;">
-        <!-- Order Info Row -->
-        <div class="order-meta">
-            <div class="meta-group">
-                <h3>Order Number <span class="ar-label">رقم الطلب</span></h3>
-                <p id="orderNumber">...</p>
-            </div>
-            <div class="meta-group">
-                <h3>Date <span class="ar-label">التاريخ</span></h3>
-                <p id="orderDate">...</p>
-            </div>
-            <div class="meta-group">
-                <h3>Order Status <span class="ar-label">حالة الطلب</span></h3>
-                <p><span id="orderStatus" class="status-badge">...</span></p>
-            </div>
-        </div>
-
-        <!-- Customer & Shipping Details -->
-        <div class="info-grid">
-            <div class="meta-group">
-                <h3>Customer Details <span class="ar-label">بيانات العميل</span></h3>
-                <p id="customerName" style="font-weight: 600; margin-bottom: 2px;">...</p>
-                <p id="customerEmail" style="font-size: 11px; color: #666; font-weight: 400;">...</p>
-                <p id="customerPhone" style="font-size: 11px; color: #666; font-weight: 400;">...</p>
-            </div>
-            <div class="meta-group">
-                <h3>Shipping Address <span class="ar-label">عنوان الشحن</span></h3>
-                <p id="shippingAddress" style="white-space: pre-line; line-height: 1.4; font-weight: 400; font-size: 11px;"></p>
-            </div>
-        </div>
-
-        <!-- Payment Info -->
-        <div class="info-grid">
-            <div class="meta-group">
-                <h3>Payment Method <span class="ar-label">طريقة الدفع</span></h3>
-                <p id="paymentMethod" style="text-transform: uppercase;">...</p>
-            </div>
-            <div class="meta-group">
-                <h3>Payment Status <span class="ar-label">حالة الدفع</span></h3>
-                <p><span id="paymentStatus" class="status-badge">...</span></p>
-            </div>
-        </div>
-
-        <!-- Items Table -->
-        <table class="items-table">
-            <thead>
-                <tr>
-                    <th width="10%">SKU / رقم</th>
-                    <th width="40%">Item / المنتج</th>
-                    <th width="18%">Unit Price / السعر</th>
-                    <th width="10%" style="text-align: center;">Qty / الكمية</th>
-                    <th width="22%" style="text-align: right;">Total / المجموع</th>
-                </tr>
-            </thead>
-            <tbody id="itemsList">
-                <!-- Items here -->
-            </tbody>
-        </table>
-
-        <!-- Price Breakdown -->
-        <div class="total-section">
-            <div class="total-row">
-                <span>Subtotal / المجموع الفرعي</span>
-                <span id="subtotal">0.000 KWD</span>
-            </div>
-            <div class="total-row">
-                <span>Delivery / التوصيل</span>
-                <span id="shipping">0.000 KWD</span>
-            </div>
-            <div class="total-row final">
-                <span>Total Paid / المبلغ المدفوع</span>
-                <span id="total">0.000 KWD</span>
-            </div>
-        </div>
-
-        <!-- QR Code Section -->
-        <div class="qr-section">
-            <div class="qr-code-wrapper">
-                <canvas id="qrCanvas"></canvas>
-                <div class="qr-logo-overlay">A</div>
-            </div>
-            <div class="qr-info">
-                <div class="qr-label">Scan for Digital Receipt</div>
-                <div class="qr-label-ar">امسح للإيصال الرقمي</div>
-            </div>
-        </div>
-
-        <!-- Return Policy Section -->
-        <div class="return-policy">
-            <h4>Return & Exchange Policy</h4>
-            <div class="ar-title">سياسة الإرجاع والاستبدال</div>
-            <p>Products may be returned or exchanged within <strong>14 days</strong> of delivery, provided they are <strong>unopened</strong> and in their <strong>original condition and packaging</strong>.</p>
-            <p class="ar-text">يمكن إرجاع أو استبدال المنتجات خلال <strong>١٤ يومًا</strong> من التسليم، بشرط أن تكون <strong>غير مفتوحة</strong> وفي <strong>حالتها وتغليفها الأصلي</strong>.</p>
-            <p style="margin-top: 4px;">Contact us via WhatsApp: <strong>+965 5068 3207</strong></p>
-            <p class="ar-text">تواصلوا معنا عبر واتساب: <strong>٩٦٥٥٥٦٣٦٣٢١+</strong></p>
-            <div class="return-deadline" id="returnDeadline" style="display: none;">
-                <span id="returnDeadlineEn"></span>
-                <span class="ar" id="returnDeadlineAr"></span>
-            </div>
-        </div>
+    <!-- Error State -->
+    <div class="error-wrap" id="errorState">
+        <div class="error-icon">⚠️</div>
+        <div class="error-msg" id="errorMsg">Receipt not found</div>
+        <div class="error-detail" id="errorDetail">The receipt you're looking for could not be loaded.</div>
+        <div class="error-detail-ar" id="errorDetailAr">لم يتم العثور على الإيصال المطلوب.</div>
+        <button class="btn-retry" onclick="loadReceipt()">Try Again / حاول مرة أخرى</button>
     </div>
 
-    <div class="footer">
-        <p>Thank you for shopping with ARTÉVA Maison.</p>
-        <p class="ar-footer">شكراً لتسوقكم مع أرتيفا ميزون</p>
-        <p>artevamaison@gmail.com • www.artevamaisonkw.com</p>
-    </div>
+    <!-- Server-Rendered Receipt HTML (injected here) -->
+    <div id="receiptContainer"></div>
 
-    <script src="assets/js/config.js"></script>
-    <script src="assets/js/api.js"></script>
+    <!-- Print button (shown only when receipt is loaded) -->
+    <button class="btn-print" id="printBtn" style="display:none;" onclick="window.print()">Print Receipt / طباعة الإيصال</button>
+
     <script>
-        document.addEventListener('DOMContentLoaded', async () => {
-            const urlParams = new URLSearchParams(window.location.search);
-            const orderId = urlParams.get('id');
-            const orderNumber = urlParams.get('order');
+        /**
+         * Receipt Page — Loads server-rendered receipt HTML
+         * Uses the SAME template as the Raspberry Pi print agent
+         * for pixel-perfect consistency across all devices.
+         */
 
-            if (!orderId && !orderNumber) {
-                document.getElementById('loading').textContent = 'Order ID not provided.';
+        const API_BASE = (function () {
+            if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
+                return 'http://localhost:5000/api';
+            }
+            return 'https://arteva-maison-backend-gy1x.onrender.com/api';
+        })();
+
+        function getOrderNumber() {
+            const params = new URLSearchParams(window.location.search);
+            return params.get('order') || params.get('orderNumber') || '';
+        }
+
+        async function loadReceipt() {
+            const orderNumber = getOrderNumber();
+            if (!orderNumber) {
+                showError('No order number provided', 'Please use the link from your receipt or WhatsApp message.', 'يرجى استخدام الرابط من الإيصال أو رسالة واتساب.');
                 return;
             }
 
+            // Show loading
+            document.getElementById('loadingState').style.display = 'flex';
+            document.getElementById('errorState').style.display = 'none';
+            document.getElementById('receiptContainer').style.display = 'none';
+            document.getElementById('printBtn').style.display = 'none';
+
             try {
-                let order;
+                // Fetch the FULL server-rendered receipt HTML
+                const res = await fetch(`${API_BASE}/orders/receipt/${encodeURIComponent(orderNumber)}/html`);
 
-                if (orderNumber) {
-                    const token = localStorage.getItem('arteva_token');
-                    const res = await fetch((window.API_BASE_URL || 'https://arteva-maison-backend-gy1x.onrender.com/api') + '/orders/by-number/' + orderNumber, {
-                        headers: token ? { 'Authorization': 'Bearer ' + token } : {}
-                    });
-                    if (!res.ok) {
-                        document.getElementById('loading').textContent = 'Order not found.';
-                        return;
-                    }
-                    const data = await res.json();
-                    order = data.success ? data.data : null;
-                } else if (orderId && orderId.match(/^[0-9a-fA-F]{24}$/)) {
-                    const res = await window.API.orders.getById(orderId);
-                    order = res.data;
-                } else {
-                    document.getElementById('loading').textContent = 'Invalid Order ID format.';
-                    return;
-                }
-
-                if (!order) {
-                    document.getElementById('loading').textContent = 'Order not found.';
-                    return;
-                }
-
-                // === PAYMENT STATUS GATE ===
-                const isPaid = order.paymentStatus === 'paid';
-                const isCOD = order.paymentMethod === 'cod' && (order.paymentStatus === 'pending' || order.paymentStatus === 'paid');
-
-                if (!isPaid && !isCOD) {
-                    document.getElementById('loading').innerHTML =
-                        '<div style="text-align:center; padding: 40px;">' +
-                        '<h2 style="color: #dc2626; font-family: var(--font-display);">Receipt Unavailable</h2>' +
-                        '<p style="color: #666; margin-top: 10px;">This receipt cannot be displayed because payment has not been confirmed.</p>' +
-                        '<p style="font-family: var(--font-arabic); direction: rtl; color: #666; margin-top: 8px;">لا يمكن عرض الإيصال لأن الدفع لم يتم تأكيده.</p>' +
-                        '<a href="account.html" style="display:inline-block; margin-top:20px; color: var(--color-gold);">View My Orders</a>' +
-                        '</div>';
-                    return;
-                }
-
-                // === POPULATE RECEIPT DATA ===
-
-                // Order info
-                document.getElementById('orderNumber').textContent = order.orderNumber;
-                document.getElementById('orderDate').textContent = new Date(order.createdAt).toLocaleDateString('en-US', {
-                    year: 'numeric', month: 'long', day: 'numeric'
-                });
-
-                // Order status badge
-                const statusEl = document.getElementById('orderStatus');
-                const statusText = (order.orderStatus || 'pending').replace(/_/g, ' ');
-                statusEl.textContent = statusText;
-                if (['confirmed', 'delivered'].includes(order.orderStatus)) {
-                    statusEl.classList.add('status-paid');
-                } else if (['cancelled'].includes(order.orderStatus)) {
-                    statusEl.classList.add('status-failed');
-                } else {
-                    statusEl.classList.add('status-pending');
-                }
-
-                // Customer details
-                document.getElementById('customerName').textContent = order.user ? order.user.name : (order.shippingAddress?.firstName || 'Guest');
-                document.getElementById('customerEmail').textContent = order.user?.email || '';
-                document.getElementById('customerPhone').textContent = order.shippingAddress?.phone || order.user?.phone || '';
-
-                // Shipping address
-                const addr = order.shippingAddress;
-                if (addr) {
-                    let addressParts = [addr.street];
-                    if (addr.city) addressParts.push(addr.city + (addr.state ? ', ' + addr.state : '') + (addr.zipCode ? ' ' + addr.zipCode : ''));
-                    if (addr.country) addressParts.push(addr.country);
-                    document.getElementById('shippingAddress').textContent = addressParts.filter(Boolean).join('\n');
-                }
-
-                // Payment info
-                const paymentMethodNames = {
-                    'cod': 'Cash on Delivery / الدفع عند الاستلام',
-                    'knet': 'KNET / كي نت',
-                    'card': 'Credit/Debit Card / بطاقة ائتمان',
-                    'applepay': 'Apple Pay / أبل باي',
-                    'myfatoorah': 'Online Payment / دفع إلكتروني'
-                };
-                document.getElementById('paymentMethod').textContent = paymentMethodNames[order.paymentMethod] || order.paymentMethod || 'N/A';
-
-                const paymentStatusEl = document.getElementById('paymentStatus');
-                paymentStatusEl.textContent = (order.paymentStatus || 'pending').replace(/_/g, ' ');
-                if (order.paymentStatus === 'paid') {
-                    paymentStatusEl.classList.add('status-paid');
-                } else if (order.paymentStatus === 'failed') {
-                    paymentStatusEl.classList.add('status-failed');
-                } else {
-                    paymentStatusEl.classList.add('status-pending');
-                }
-
-                // Items with SKU
-                const tbody = document.getElementById('itemsList');
-                tbody.innerHTML = order.items.map(function(item) {
-                    const sku = item.sku || item.product?.sku || '—';
-                    return '<tr>' +
-                        '<td class="sku-col">' + sku + '</td>' +
-                        '<td>' +
-                            '<div style="font-weight: 500;">' + item.name + '</div>' +
-                            (item.nameAr ? '<div style="font-size: 10px; color: #888; font-family: var(--font-arabic); direction: rtl;">' + item.nameAr + '</div>' : '') +
-                            (item.variant ? '<div style="font-size: 10px; color: #888;">' + item.variant + '</div>' : '') +
-                        '</td>' +
-                        '<td>' + item.price.toFixed(3) + ' KWD</td>' +
-                        '<td style="text-align: center;">' + item.quantity + '</td>' +
-                        '<td style="text-align: right;">' + (item.price * item.quantity).toFixed(3) + ' KWD</td>' +
-                    '</tr>';
-                }).join('');
-
-                // Totals
-                document.getElementById('subtotal').textContent = order.subtotal.toFixed(3) + ' KWD';
-                document.getElementById('shipping').textContent = (order.shippingCost || 0).toFixed(3) + ' KWD';
-                document.getElementById('total').textContent = order.total.toFixed(3) + ' KWD';
-
-                // QR Code Generation
-                try {
-                    const receiptUrl = 'https://www.artevamaisonkw.com/receipt.html?order=' + order.orderNumber;
-                    const qrCanvas = document.getElementById('qrCanvas');
-
-                    if (typeof QRCode !== 'undefined' && qrCanvas) {
-                        QRCode.toCanvas(qrCanvas, receiptUrl, {
-                            width: 100,
-                            margin: 1,
-                            color: {
-                                dark: '#2c241b',
-                                light: '#ffffff'
-                            },
-                            errorCorrectionLevel: 'H' // High error correction for logo overlay
-                        });
-                    }
-                } catch (qrErr) {
-                    console.warn('QR code generation failed:', qrErr);
-                }
-
-                // Return deadline calculation
-                if (order.deliveredAt) {
-                    const deliveredDate = new Date(order.deliveredAt);
-                    const deadlineDate = new Date(deliveredDate.getTime() + 14 * 24 * 60 * 60 * 1000);
-                    const now = new Date();
-                    const returnDeadlineEl = document.getElementById('returnDeadline');
-                    const deadlineDateStr = deadlineDate.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
-                    
-                    if (now <= deadlineDate) {
-                        document.getElementById('returnDeadlineEn').innerHTML = '✅ Return eligible until: <strong>' + deadlineDateStr + '</strong>';
-                        document.getElementById('returnDeadlineAr').innerHTML = '✅ مؤهل للإرجاع حتى: <strong>' + deadlineDateStr + '</strong>';
+                if (!res.ok) {
+                    if (res.status === 404) {
+                        showError('Order not found', `Order "${orderNumber}" was not found in our system.`, `لم يتم العثور على الطلب "${orderNumber}" في نظامنا.`);
+                    } else if (res.status === 403) {
+                        showError('Receipt not available', 'This receipt is not available — payment may not be confirmed yet.', 'هذا الإيصال غير متاح — قد لا يكون الدفع مؤكدًا بعد.');
                     } else {
-                        document.getElementById('returnDeadlineEn').innerHTML = '❌ Return period ended: <strong>' + deadlineDateStr + '</strong>';
-                        document.getElementById('returnDeadlineAr').innerHTML = '❌ انتهت فترة الإرجاع: <strong>' + deadlineDateStr + '</strong>';
+                        showError('Error loading receipt', `Server returned status ${res.status}. Please try again.`, 'حدث خطأ أثناء تحميل الإيصال. يرجى المحاولة مرة أخرى.');
                     }
-                    returnDeadlineEl.style.display = 'flex';
+                    return;
                 }
 
-                // Show content
-                document.getElementById('loading').style.display = 'none';
-                document.getElementById('receiptContent').style.display = 'block';
+                const html = await res.text();
 
-            } catch (error) {
-                console.error(error);
-                document.getElementById('loading').textContent = 'Error loading receipt.';
+                // Extract the <body> content from the server-rendered HTML
+                // The server returns a complete HTML document; we inject just the body content
+                const bodyMatch = html.match(/<body[^>]*>([\s\S]*)<\/body>/i);
+                const styleMatch = html.match(/<style>([\s\S]*?)<\/style>/i);
+
+                if (bodyMatch) {
+                    // Inject styles into head
+                    if (styleMatch) {
+                        const styleEl = document.createElement('style');
+                        styleEl.id = 'receipt-styles';
+                        styleEl.textContent = styleMatch[1];
+                        document.head.appendChild(styleEl);
+                    }
+
+                    // Inject body content
+                    const container = document.getElementById('receiptContainer');
+                    container.innerHTML = bodyMatch[1];
+                    container.style.display = 'block';
+
+                    // Hide loading, show print button
+                    document.getElementById('loadingState').style.display = 'none';
+                    document.getElementById('printBtn').style.display = 'block';
+
+                    // Execute any inline scripts from the receipt (e.g., the A4 scaler)
+                    const scripts = container.querySelectorAll('script');
+                    scripts.forEach(script => {
+                        const newScript = document.createElement('script');
+                        newScript.textContent = script.textContent;
+                        document.body.appendChild(newScript);
+                        script.remove();
+                    });
+
+                    // Update page title
+                    document.title = `Receipt ${orderNumber} | ARTÉVA Maison`;
+                } else {
+                    // Fallback: if we can't parse body, use iframe approach
+                    const container = document.getElementById('receiptContainer');
+                    const iframe = document.createElement('iframe');
+                    iframe.style.cssText = 'width:100%;border:none;min-height:100vh;';
+                    iframe.srcdoc = html;
+                    container.innerHTML = '';
+                    container.appendChild(iframe);
+                    container.style.display = 'block';
+
+                    document.getElementById('loadingState').style.display = 'none';
+                    document.getElementById('printBtn').style.display = 'block';
+                }
+
+            } catch (err) {
+                console.error('[Receipt] Load error:', err);
+                showError('Connection error', 'Unable to connect to the server. Please check your internet connection and try again.', 'تعذر الاتصال بالخادم. يرجى التحقق من اتصال الإنترنت والمحاولة مرة أخرى.');
             }
-        });
-    </script>
+        }
 
+        function showError(title, detail, detailAr) {
+            document.getElementById('loadingState').style.display = 'none';
+            document.getElementById('receiptContainer').style.display = 'none';
+            document.getElementById('printBtn').style.display = 'none';
+
+            document.getElementById('errorMsg').textContent = title;
+            document.getElementById('errorDetail').textContent = detail;
+            document.getElementById('errorDetailAr').textContent = detailAr || '';
+            document.getElementById('errorState').style.display = 'flex';
+        }
+
+        // Load on page ready
+        loadReceipt();
+    </script>
 </body>
 
 </html>

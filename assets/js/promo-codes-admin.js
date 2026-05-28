@@ -1,0 +1,439 @@
+/**
+ * ARTÉVA Maison — Promo Codes Admin Panel
+ * Full CRUD + product assignment management
+ */
+
+(function () {
+    'use strict';
+
+    // ── Load promo codes when section becomes visible ──
+    window.addEventListener('hashchange', function () {
+        if (location.hash === '#promo-codes') loadPromoCodes();
+    });
+    document.addEventListener('DOMContentLoaded', function () {
+        if (location.hash === '#promo-codes') loadPromoCodes();
+    });
+
+    const API = () => window.API_BASE_URL || (window.location.hostname === 'localhost'
+        ? 'http://localhost:5000/api'
+        : 'https://arteva-maison-backend-gy1x.onrender.com/api');
+    const TOKEN = () => localStorage.getItem('arteva_token');
+    const headers = () => ({
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${TOKEN()}`
+    });
+
+    let allPromoCodes = [];
+    let allProducts = [];
+    let currentPromoId = null;
+
+    // ═══════════════════════════════════════════════════
+    // LOAD & RENDER PROMO CODES LIST
+    // ═══════════════════════════════════════════════════
+
+    window.loadPromoCodes = async function () {
+        try {
+            const res = await fetch(`${API()}/promo-codes`, { headers: headers() });
+            const data = await res.json();
+            if (!data.success) throw new Error(data.message);
+            allPromoCodes = data.data || [];
+            renderPromoTable();
+            renderPromoStats();
+        } catch (err) {
+            console.error('[PROMO] Load error:', err);
+            document.getElementById('promoCodesTableBody').innerHTML =
+                `<tr><td colspan="7" style="text-align:center;padding:40px;color:#ef4444;">Failed to load promo codes</td></tr>`;
+        }
+    };
+
+    function renderPromoStats() {
+        const total = allPromoCodes.length;
+        const active = allPromoCodes.filter(p => p.isActive && !p.isExpired).length;
+        const expired = allPromoCodes.filter(p => p.isExpired || (!p.isActive)).length;
+        const totalProducts = allPromoCodes.reduce((sum, p) => sum + (p.products?.length || 0), 0);
+
+        document.getElementById('statTotalPromos').textContent = total;
+        document.getElementById('statActivePromos').textContent = active;
+        document.getElementById('statExpiredPromos').textContent = expired;
+        document.getElementById('statTotalPromoProducts').textContent = totalProducts;
+    }
+
+    function renderPromoTable() {
+        const tbody = document.getElementById('promoCodesTableBody');
+
+        if (allPromoCodes.length === 0) {
+            tbody.innerHTML = `<tr><td colspan="7" style="text-align:center;padding:40px;color:var(--admin-text-muted);">No promo codes yet. Create your first one!</td></tr>`;
+            return;
+        }
+
+        tbody.innerHTML = allPromoCodes.map(promo => {
+            const isExpired = promo.isExpired || new Date(promo.expiresAt) < new Date();
+            const isValid = promo.isActive && !isExpired;
+            const statusBg = isValid ? '#d1fae5' : isExpired ? '#fee2e2' : '#fef3c7';
+            const statusColor = isValid ? '#065f46' : isExpired ? '#991b1b' : '#92400e';
+            const statusText = isValid ? 'Active' : isExpired ? 'Expired' : 'Disabled';
+
+            const expiresDate = new Date(promo.expiresAt).toLocaleDateString('en-US', {
+                month: 'short', day: 'numeric', year: 'numeric'
+            });
+            const expiresTime = new Date(promo.expiresAt).toLocaleTimeString('en-US', {
+                hour: '2-digit', minute: '2-digit'
+            });
+
+            const usageText = promo.maxUsage
+                ? `${promo.usageCount || 0}/${promo.maxUsage}`
+                : `${promo.usageCount || 0}`;
+
+            return `<tr>
+                <td><code style="background:var(--admin-surface-2);padding:4px 10px;border-radius:6px;font-weight:700;letter-spacing:1px;font-size:13px;">${promo.code}</code></td>
+                <td>${promo.name}</td>
+                <td><span style="display:inline-block;padding:3px 10px;border-radius:10px;font-size:11px;font-weight:600;background:${statusBg};color:${statusColor};">${statusText}</span></td>
+                <td><span style="font-size:12px;">${expiresDate}<br><span style="color:var(--admin-text-muted);">${expiresTime}</span></span></td>
+                <td style="text-align:center;"><span style="font-weight:600;">${promo.products?.length || 0}</span></td>
+                <td style="text-align:center;">${usageText}</td>
+                <td>
+                    <div style="display:flex;gap:6px;flex-wrap:wrap;">
+                        <button class="admin-btn" style="padding:4px 10px;font-size:12px;" onclick="openPromoProductsModal('${promo._id}')">📦 Products</button>
+                        <button class="admin-btn" style="padding:4px 10px;font-size:12px;" onclick="openEditPromoModal('${promo._id}')">✏️</button>
+                        <button class="admin-btn" style="padding:4px 10px;font-size:12px;" onclick="togglePromoActive('${promo._id}', ${!promo.isActive})">${promo.isActive ? '⏸️' : '▶️'}</button>
+                        <button class="admin-btn" style="padding:4px 10px;font-size:12px;color:#ef4444;" onclick="deletePromo('${promo._id}')">🗑️</button>
+                    </div>
+                </td>
+            </tr>`;
+        }).join('');
+    }
+
+    // ═══════════════════════════════════════════════════
+    // CREATE / EDIT PROMO CODE MODAL
+    // ═══════════════════════════════════════════════════
+
+    window.openCreatePromoModal = function () {
+        document.getElementById('promoId').value = '';
+        document.getElementById('promoCode').value = '';
+        document.getElementById('promoName').value = '';
+        document.getElementById('promoDescription').value = '';
+        document.getElementById('promoMaxUsage').value = '0';
+        document.getElementById('promoModalTitle').textContent = 'Create Promo Code';
+        document.getElementById('promoSubmitBtn').textContent = 'Create Promo Code';
+
+        // Default expiry: 30 days from now
+        const future = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000);
+        document.getElementById('promoExpiresAt').value = future.toISOString().slice(0, 16);
+
+        document.getElementById('promoModal').classList.remove('hidden');
+    };
+
+    window.openEditPromoModal = function (promoId) {
+        const promo = allPromoCodes.find(p => p._id === promoId);
+        if (!promo) return;
+
+        document.getElementById('promoId').value = promo._id;
+        document.getElementById('promoCode').value = promo.code;
+        document.getElementById('promoName').value = promo.name;
+        document.getElementById('promoDescription').value = promo.description || '';
+        document.getElementById('promoMaxUsage').value = promo.maxUsage || 0;
+        document.getElementById('promoExpiresAt').value = new Date(promo.expiresAt).toISOString().slice(0, 16);
+        document.getElementById('promoModalTitle').textContent = 'Edit Promo Code';
+        document.getElementById('promoSubmitBtn').textContent = 'Save Changes';
+
+        document.getElementById('promoModal').classList.remove('hidden');
+    };
+
+    window.closePromoModal = function () {
+        document.getElementById('promoModal').classList.add('hidden');
+    };
+
+    // Form submit handler
+    document.addEventListener('DOMContentLoaded', () => {
+        const form = document.getElementById('promoForm');
+        if (form) {
+            form.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const id = document.getElementById('promoId').value;
+                const payload = {
+                    code: document.getElementById('promoCode').value,
+                    name: document.getElementById('promoName').value,
+                    description: document.getElementById('promoDescription').value,
+                    expiresAt: document.getElementById('promoExpiresAt').value,
+                    maxUsage: parseInt(document.getElementById('promoMaxUsage').value) || 0
+                };
+
+                try {
+                    const url = id ? `${API()}/promo-codes/${id}` : `${API()}/promo-codes`;
+                    const method = id ? 'PUT' : 'POST';
+                    const res = await fetch(url, { method, headers: headers(), body: JSON.stringify(payload) });
+                    const data = await res.json();
+                    if (!data.success) throw new Error(data.message);
+
+                    closePromoModal();
+                    await loadPromoCodes();
+                    showToast(id ? 'Promo code updated!' : 'Promo code created!', 'success');
+                } catch (err) {
+                    showToast(err.message || 'Failed to save promo code', 'error');
+                }
+            });
+        }
+    });
+
+    // ═══════════════════════════════════════════════════
+    // TOGGLE ACTIVE / DELETE
+    // ═══════════════════════════════════════════════════
+
+    window.togglePromoActive = async function (promoId, newActive) {
+        try {
+            const res = await fetch(`${API()}/promo-codes/${promoId}`, {
+                method: 'PUT',
+                headers: headers(),
+                body: JSON.stringify({ isActive: newActive })
+            });
+            const data = await res.json();
+            if (!data.success) throw new Error(data.message);
+            await loadPromoCodes();
+            showToast(newActive ? 'Promo code activated' : 'Promo code disabled', 'success');
+        } catch (err) {
+            showToast(err.message || 'Failed to update', 'error');
+        }
+    };
+
+    window.deletePromo = async function (promoId) {
+        const promo = allPromoCodes.find(p => p._id === promoId);
+        if (!confirm(`Delete promo code "${promo?.code || promoId}"? This cannot be undone.`)) return;
+
+        try {
+            const res = await fetch(`${API()}/promo-codes/${promoId}`, {
+                method: 'DELETE', headers: headers()
+            });
+            const data = await res.json();
+            if (!data.success) throw new Error(data.message);
+            await loadPromoCodes();
+            showToast('Promo code deleted', 'success');
+        } catch (err) {
+            showToast(err.message || 'Failed to delete', 'error');
+        }
+    };
+
+    // ═══════════════════════════════════════════════════
+    // PRODUCT ASSIGNMENT MODAL
+    // ═══════════════════════════════════════════════════
+
+    window.openPromoProductsModal = async function (promoId) {
+        currentPromoId = promoId;
+        const promo = allPromoCodes.find(p => p._id === promoId);
+        if (!promo) return;
+
+        document.getElementById('promoProductsTitle').textContent = `Products for "${promo.code}"`;
+        document.getElementById('promoProductsModal').classList.remove('hidden');
+
+        // Load all products for the search
+        if (allProducts.length === 0) {
+            try {
+                const res = await fetch(`${API()}/products`, { headers: headers() });
+                const data = await res.json();
+                allProducts = data.data || data.products || [];
+            } catch (err) {
+                console.error('[PROMO] Products load error:', err);
+            }
+        }
+
+        renderPromoProducts(promo);
+        setupProductSearch(promo);
+    };
+
+    window.closePromoProductsModal = function () {
+        document.getElementById('promoProductsModal').classList.add('hidden');
+        document.getElementById('promoProductSearchResults').style.display = 'none';
+        document.getElementById('promoProductSearch').value = '';
+        currentPromoId = null;
+    };
+
+    function renderPromoProducts(promo) {
+        const tbody = document.getElementById('promoProductsTableBody');
+
+        if (!promo.products || promo.products.length === 0) {
+            tbody.innerHTML = `<tr><td colspan="6" style="text-align:center;padding:30px;color:var(--admin-text-muted);">No products assigned. Use the search above to add products.</td></tr>`;
+            return;
+        }
+
+        tbody.innerHTML = promo.products.map(pp => {
+            const product = pp.product;
+            if (!product) return '';
+            const originalPrice = product.price || 0;
+            let finalPrice = originalPrice;
+            if (pp.discountType === 'percentage') {
+                finalPrice = originalPrice * (1 - pp.discountValue / 100);
+            } else {
+                finalPrice = Math.max(0, originalPrice - pp.discountValue);
+            }
+
+            const img = product.images?.[0]?.url || '';
+            const imgHtml = img ? `<img src="${img}" style="width:36px;height:36px;object-fit:cover;border-radius:6px;margin-right:8px;" alt="">` : '';
+
+            return `<tr>
+                <td><div style="display:flex;align-items:center;">${imgHtml}<span>${product.name}</span></div></td>
+                <td>${originalPrice.toFixed(3)} KWD</td>
+                <td>
+                    <select onchange="updatePromoProductDiscount('${promo._id}', '${product._id}', this.value, null)" style="padding:4px 8px;border-radius:6px;border:1px solid var(--admin-border);background:var(--admin-surface-2);color:var(--admin-text);font-size:12px;">
+                        <option value="percentage" ${pp.discountType === 'percentage' ? 'selected' : ''}>Percentage %</option>
+                        <option value="fixed" ${pp.discountType === 'fixed' ? 'selected' : ''}>Fixed KWD</option>
+                    </select>
+                </td>
+                <td>
+                    <input type="number" value="${pp.discountValue}" step="0.1" min="0" style="width:80px;padding:4px 8px;border-radius:6px;border:1px solid var(--admin-border);background:var(--admin-surface-2);color:var(--admin-text);font-size:13px;font-weight:600;"
+                        onchange="updatePromoProductDiscount('${promo._id}', '${product._id}', null, this.value)">
+                </td>
+                <td><strong style="color:${finalPrice < originalPrice ? '#059669' : 'var(--admin-text)'};">${finalPrice.toFixed(3)} KWD</strong></td>
+                <td style="text-align:center;">
+                    <button class="admin-btn" style="padding:4px 10px;font-size:12px;color:#ef4444;" onclick="removePromoProduct('${promo._id}', '${product._id}')">✕ Remove</button>
+                </td>
+            </tr>`;
+        }).join('');
+    }
+
+    function setupProductSearch(promo) {
+        const input = document.getElementById('promoProductSearch');
+        const resultsDiv = document.getElementById('promoProductSearchResults');
+
+        // Remove old listener by replacing input
+        const newInput = input.cloneNode(true);
+        input.parentNode.replaceChild(newInput, input);
+
+        let debounce;
+        newInput.addEventListener('input', () => {
+            clearTimeout(debounce);
+            debounce = setTimeout(() => {
+                const q = newInput.value.toLowerCase().trim();
+                if (q.length < 2) {
+                    resultsDiv.style.display = 'none';
+                    return;
+                }
+
+                const existingIds = new Set((promo.products || []).map(p => p.product?._id || p.product));
+                const matches = allProducts
+                    .filter(p => !existingIds.has(p._id))
+                    .filter(p => p.name.toLowerCase().includes(q) || (p.nameAr && p.nameAr.includes(q)) || (p.sku && p.sku.toLowerCase().includes(q)))
+                    .slice(0, 8);
+
+                if (matches.length === 0) {
+                    resultsDiv.innerHTML = '<div style="padding:12px;color:var(--admin-text-muted);text-align:center;">No matching products</div>';
+                    resultsDiv.style.display = 'block';
+                    return;
+                }
+
+                resultsDiv.innerHTML = matches.map(p => {
+                    const img = p.images?.[0]?.url || '';
+                    const imgHtml = img ? `<img src="${img}" style="width:32px;height:32px;object-fit:cover;border-radius:4px;margin-right:10px;" alt="">` : '';
+                    return `<div style="display:flex;align-items:center;padding:10px 14px;cursor:pointer;border-bottom:1px solid var(--admin-border);transition:background 0.15s;" 
+                        onmouseover="this.style.background='var(--admin-surface-2)'" onmouseout="this.style.background='transparent'"
+                        onclick="addProductToPromo('${promo._id}', '${p._id}', '${p.name.replace(/'/g, "\\'")}', ${p.price})">
+                        ${imgHtml}
+                        <div style="flex:1;">
+                            <div style="font-weight:500;font-size:13px;">${p.name}</div>
+                            <div style="font-size:11px;color:var(--admin-text-muted);">${p.price.toFixed(3)} KWD${p.sku ? ' · ' + p.sku : ''}</div>
+                        </div>
+                        <span style="color:var(--admin-gold,#D4AF37);font-weight:600;font-size:13px;">+ Add</span>
+                    </div>`;
+                }).join('');
+                resultsDiv.style.display = 'block';
+            }, 300);
+        });
+    }
+
+    window.addProductToPromo = async function (promoId, productId, productName, price) {
+        try {
+            const res = await fetch(`${API()}/promo-codes/${promoId}/products`, {
+                method: 'POST',
+                headers: headers(),
+                body: JSON.stringify({
+                    products: [{ product: productId, discountType: 'percentage', discountValue: 10 }]
+                })
+            });
+            const data = await res.json();
+            if (!data.success) throw new Error(data.message);
+
+            // Refresh promo codes and re-render
+            await loadPromoCodes();
+            const updatedPromo = allPromoCodes.find(p => p._id === promoId);
+            if (updatedPromo) {
+                renderPromoProducts(updatedPromo);
+                setupProductSearch(updatedPromo);
+            }
+            document.getElementById('promoProductSearch').value = '';
+            document.getElementById('promoProductSearchResults').style.display = 'none';
+            showToast(`Added "${productName}" with 10% discount`, 'success');
+        } catch (err) {
+            showToast(err.message || 'Failed to add product', 'error');
+        }
+    };
+
+    window.updatePromoProductDiscount = async function (promoId, productId, newType, newValue) {
+        const promo = allPromoCodes.find(p => p._id === promoId);
+        if (!promo) return;
+        const pp = promo.products.find(p => (p.product?._id || p.product) === productId);
+        if (!pp) return;
+
+        const discountType = newType || pp.discountType;
+        const discountValue = newValue !== null ? parseFloat(newValue) : pp.discountValue;
+
+        try {
+            const res = await fetch(`${API()}/promo-codes/${promoId}/products`, {
+                method: 'POST',
+                headers: headers(),
+                body: JSON.stringify({
+                    products: [{ product: productId, discountType, discountValue }]
+                })
+            });
+            const data = await res.json();
+            if (!data.success) throw new Error(data.message);
+
+            await loadPromoCodes();
+            const updatedPromo = allPromoCodes.find(p => p._id === promoId);
+            if (updatedPromo) renderPromoProducts(updatedPromo);
+        } catch (err) {
+            showToast(err.message || 'Failed to update discount', 'error');
+        }
+    };
+
+    window.removePromoProduct = async function (promoId, productId) {
+        try {
+            const res = await fetch(`${API()}/promo-codes/${promoId}/products/${productId}`, {
+                method: 'DELETE', headers: headers()
+            });
+            const data = await res.json();
+            if (!data.success) throw new Error(data.message);
+
+            await loadPromoCodes();
+            const updatedPromo = allPromoCodes.find(p => p._id === promoId);
+            if (updatedPromo) {
+                renderPromoProducts(updatedPromo);
+                setupProductSearch(updatedPromo);
+            }
+            showToast('Product removed from promo', 'success');
+        } catch (err) {
+            showToast(err.message || 'Failed to remove product', 'error');
+        }
+    };
+
+    // ═══════════════════════════════════════════════════
+    // TOAST HELPER (uses existing admin toast if available)
+    // ═══════════════════════════════════════════════════
+
+    function showToast(message, type) {
+        if (window.showAdminToast) {
+            window.showAdminToast(message, type);
+            return;
+        }
+        // Fallback toast
+        const existing = document.querySelector('.promo-toast');
+        if (existing) existing.remove();
+
+        const toast = document.createElement('div');
+        toast.className = 'promo-toast';
+        toast.style.cssText = `position:fixed;bottom:24px;right:24px;padding:12px 24px;border-radius:10px;font-size:14px;font-weight:500;z-index:99999;
+            color:white;background:${type === 'error' ? '#ef4444' : '#10b981'};box-shadow:0 8px 32px rgba(0,0,0,0.2);
+            animation:slideInUp 0.3s ease;transition:opacity 0.3s ease;`;
+        toast.textContent = message;
+        document.body.appendChild(toast);
+        setTimeout(() => { toast.style.opacity = '0'; setTimeout(() => toast.remove(), 300); }, 3000);
+    }
+
+})();

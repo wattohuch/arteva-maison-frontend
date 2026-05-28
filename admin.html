@@ -63,6 +63,8 @@
                         class="nav-text">Receipts</span></a></li>
             <li><a href="#visitors" class="sidebar-link"><span class="icon">🌐</span> <span
                         class="nav-text">Visitors</span></a></li>
+            <li><a href="#promo-codes" class="sidebar-link"><span class="icon">🎟️</span> <span
+                        class="nav-text">Promo Codes</span></a></li>
             <li><a href="#social-contacts" class="sidebar-link"><span class="icon">📱</span> <span
                         class="nav-text">Social Contacts</span></a></li>
             <li><a href="#" id="logoutBtn" class="sidebar-link" data-i18n="admin_logout"><span class="icon">🚪</span>
@@ -735,6 +737,150 @@
             </div>
         </div>
 
+        <!-- ========== PROMO CODES ========== -->
+        <div id="promo-codes" class="admin-section hidden">
+            <div class="admin-page-header">
+                <h1 class="admin-page-title">🎟️ Promo Codes</h1>
+                <button class="admin-btn admin-btn-primary" onclick="openCreatePromoModal()">+ Create Promo Code</button>
+            </div>
+
+            <div class="admin-stats" id="promoStats" style="margin-bottom: 20px;">
+                <div class="admin-stat-card">
+                    <div class="stat-icon-wrap">🎟️</div>
+                    <div class="stat-content">
+                        <h3 id="statTotalPromos">0</h3>
+                        <p>Total Promos</p>
+                    </div>
+                </div>
+                <div class="admin-stat-card">
+                    <div class="stat-icon-wrap">✅</div>
+                    <div class="stat-content">
+                        <h3 id="statActivePromos">0</h3>
+                        <p>Active</p>
+                    </div>
+                </div>
+                <div class="admin-stat-card">
+                    <div class="stat-icon-wrap">⏰</div>
+                    <div class="stat-content">
+                        <h3 id="statExpiredPromos">0</h3>
+                        <p>Expired</p>
+                    </div>
+                </div>
+                <div class="admin-stat-card">
+                    <div class="stat-icon-wrap">📦</div>
+                    <div class="stat-content">
+                        <h3 id="statTotalPromoProducts">0</h3>
+                        <p>Products w/ Discounts</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="admin-table-wrap">
+                <div class="admin-table-scroll">
+                    <table class="admin-table">
+                        <thead>
+                            <tr>
+                                <th>Code</th>
+                                <th>Name</th>
+                                <th>Status</th>
+                                <th>Expires</th>
+                                <th style="text-align:center;">Products</th>
+                                <th style="text-align:center;">Used</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="promoCodesTableBody">
+                            <tr>
+                                <td colspan="7" style="text-align:center;padding:40px;color:var(--admin-text-muted);">Loading promo codes...</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Promo Code Create/Edit Modal -->
+        <div id="promoModal" class="admin-modal hidden">
+            <div class="admin-modal-content" style="max-width:550px;">
+                <div class="admin-modal-header">
+                    <h2 id="promoModalTitle">Create Promo Code</h2>
+                    <button class="admin-btn-icon" onclick="closePromoModal()">✕</button>
+                </div>
+                <div class="admin-modal-body">
+                    <form id="promoForm">
+                        <input type="hidden" id="promoId">
+                        <div class="admin-form-row">
+                            <div class="admin-form-group">
+                                <label>Promo Code</label>
+                                <input type="text" id="promoCode" name="code" required placeholder="e.g. SUMMER50" style="text-transform:uppercase;font-weight:600;letter-spacing:1px;">
+                            </div>
+                            <div class="admin-form-group">
+                                <label>Display Name</label>
+                                <input type="text" id="promoName" name="name" required placeholder="e.g. Summer Sale 2026">
+                            </div>
+                        </div>
+                        <div class="admin-form-group">
+                            <label>Description <small style="color:var(--admin-text-muted);font-weight:normal;">(optional)</small></label>
+                            <textarea id="promoDescription" name="description" rows="2" placeholder="Admin notes..."></textarea>
+                        </div>
+                        <div class="admin-form-row">
+                            <div class="admin-form-group">
+                                <label>Expires At</label>
+                                <input type="datetime-local" id="promoExpiresAt" name="expiresAt" required>
+                            </div>
+                            <div class="admin-form-group">
+                                <label>Max Usage <small style="color:var(--admin-text-muted);font-weight:normal;">(0 = unlimited)</small></label>
+                                <input type="number" id="promoMaxUsage" name="maxUsage" min="0" value="0" placeholder="0 = unlimited">
+                            </div>
+                        </div>
+                        <div class="admin-form-actions" style="border:none;padding-top:0;">
+                            <button type="button" class="admin-btn" onclick="closePromoModal()">Cancel</button>
+                            <button type="submit" class="admin-btn admin-btn-primary" id="promoSubmitBtn">Create Promo Code</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Promo Products Modal -->
+        <div id="promoProductsModal" class="admin-modal hidden">
+            <div class="admin-modal-content" style="max-width:800px;">
+                <div class="admin-modal-header">
+                    <h2 id="promoProductsTitle">Manage Products</h2>
+                    <button class="admin-btn-icon" onclick="closePromoProductsModal()">✕</button>
+                </div>
+                <div class="admin-modal-body">
+                    <div style="display:flex;gap:12px;margin-bottom:16px;align-items:center;">
+                        <div class="admin-search-wrap" style="flex:1;margin-bottom:0;">
+                            <span class="admin-search-icon">🔍</span>
+                            <input type="text" class="admin-search" id="promoProductSearch" placeholder="Search products to add...">
+                        </div>
+                    </div>
+                    <div id="promoProductSearchResults" style="max-height:200px;overflow-y:auto;border:1px solid var(--admin-border);border-radius:8px;margin-bottom:16px;display:none;"></div>
+                    <h3 style="font-size:14px;margin-bottom:12px;color:var(--admin-text);">Assigned Products</h3>
+                    <div class="admin-table-wrap">
+                        <div class="admin-table-scroll">
+                            <table class="admin-table">
+                                <thead>
+                                    <tr>
+                                        <th>Product</th>
+                                        <th>Original Price</th>
+                                        <th>Discount Type</th>
+                                        <th>Discount Value</th>
+                                        <th>Final Price</th>
+                                        <th style="text-align:center;">Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="promoProductsTableBody">
+                                    <tr><td colspan="6" style="text-align:center;padding:30px;color:var(--admin-text-muted);">No products assigned yet</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
     </main>
 
     <!-- ========== MODALS ========== -->
@@ -1279,6 +1425,7 @@
     <script src="assets/js/order-notification.js"></script>
     <script src="assets/js/revenue-auth.js"></script>
     <script src="assets/js/receipts-admin.js"></script>
+    <script src="assets/js/promo-codes-admin.js"></script>
     <script src="assets/js/admin.js?v=11"></script>
 </body>
 
