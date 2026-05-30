@@ -125,6 +125,26 @@
                 </div>
             </div>
 
+            <!-- Quick Links -->
+            <h2 style="font-family: 'Playfair Display', serif; font-size: 20px; margin-bottom: 16px;"
+                >Quick Links</h2>
+            <div class="admin-stats" style="margin-bottom: 28px;">
+                <div class="admin-stat-card" onclick="navigateToSection('promo-codes')" style="cursor: pointer; border-left: 3px solid #e74c3c;" title="Click to manage promo codes">
+                    <div class="stat-icon-wrap" style="background: rgba(231, 76, 60, 0.1);">🎟️</div>
+                    <div class="stat-content">
+                        <h3 style="font-size: 16px;">Promo Codes</h3>
+                        <p>Manage Offers</p>
+                    </div>
+                </div>
+                <div class="admin-stat-card" onclick="navigateToSection('discounts')" style="cursor: pointer; border-left: 3px solid var(--admin-gold);" title="Click to manage discounts">
+                    <div class="stat-icon-wrap" style="background: var(--admin-gold-glow);">🏷️</div>
+                    <div class="stat-content">
+                        <h3 style="font-size: 16px;">Discounts</h3>
+                        <p>Pricing & Sales</p>
+                    </div>
+                </div>
+            </div>
+
             <h2 style="font-family: 'Playfair Display', serif; font-size: 20px; margin-bottom: 16px;"
                 data-i18n="admin_recent_orders">Recent Orders</h2>
             <div class="admin-table-wrap">
@@ -593,7 +613,7 @@
             </div>
 
             <!-- Stat Cards -->
-            <div class="admin-stats-grid" style="margin-bottom: 24px;">
+            <div class="admin-stats" style="margin-bottom: 24px;">
                 <div class="admin-stat-card">
                     <div class="stat-icon-wrap">👁️</div>
                     <div class="stat-content">
@@ -620,6 +640,39 @@
                     <div class="stat-content">
                         <h3 id="visitorStatAvgDaily">0</h3>
                         <p>Avg Daily Visitors</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Site Visit Stats (actual website visits) -->
+            <h3 style="font-family:'Playfair Display',serif;font-size:16px;margin-bottom:12px;color:var(--admin-text);">🌍 Website Visit Tracking</h3>
+            <div class="admin-stats" style="margin-bottom: 24px;">
+                <div class="admin-stat-card">
+                    <div class="stat-icon-wrap">🌐</div>
+                    <div class="stat-content">
+                        <h3 id="siteVisitTotal">0</h3>
+                        <p>Total Website Visits</p>
+                    </div>
+                </div>
+                <div class="admin-stat-card">
+                    <div class="stat-icon-wrap">👤</div>
+                    <div class="stat-content">
+                        <h3 id="siteVisitUnique">0</h3>
+                        <p>Unique Visitors</p>
+                    </div>
+                </div>
+                <div class="admin-stat-card">
+                    <div class="stat-icon-wrap">📍</div>
+                    <div class="stat-content">
+                        <h3 id="siteVisitToday">0</h3>
+                        <p>Today's Visitors</p>
+                    </div>
+                </div>
+                <div class="admin-stat-card">
+                    <div class="stat-icon-wrap">📆</div>
+                    <div class="stat-content">
+                        <h3 id="siteVisitLast30">0</h3>
+                        <p>Last 30 Days</p>
                     </div>
                 </div>
             </div>
@@ -857,13 +910,66 @@
                     <button class="admin-btn-icon" onclick="closePromoProductsModal()">✕</button>
                 </div>
                 <div class="admin-modal-body">
-                    <div style="display:flex;gap:12px;margin-bottom:16px;align-items:center;">
-                        <div class="admin-search-wrap" style="flex:1;margin-bottom:0;">
-                            <span class="admin-search-icon">🔍</span>
-                            <input type="text" class="admin-search" id="promoProductSearch" placeholder="Search products to add...">
+                    <!-- Global Discount Controls -->
+                    <div style="background:var(--admin-surface-2);border:1px solid var(--admin-border-gold);border-radius:12px;padding:16px;margin-bottom:16px;">
+                        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
+                            <h4 style="margin:0;font-size:13px;font-weight:700;color:var(--admin-text);text-transform:uppercase;letter-spacing:0.06em;">Discount Settings</h4>
+                            <button class="admin-btn" style="padding:8px 14px;font-size:12px;background:linear-gradient(135deg,#e74c3c,#c0392b);color:white;border:none;font-weight:600;white-space:nowrap;" onclick="openEnableAllProductsPanel()" title="Apply this promo discount to all products at once">
+                                🚀 All Products
+                            </button>
+                        </div>
+                        <div style="display:flex;gap:12px;flex-wrap:wrap;align-items:flex-end;">
+                            <div style="flex:1;min-width:140px;">
+                                <label style="display:block;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:0.06em;color:var(--admin-text-muted);margin-bottom:6px;">Discount Type</label>
+                                <select id="promoGlobalDiscountType" style="width:100%;padding:10px 12px;border:1px solid var(--admin-border);border-radius:8px;font-size:14px;background:var(--admin-surface);color:var(--admin-text);">
+                                    <option value="percentage">Percentage %</option>
+                                    <option value="fixed">Fixed KWD</option>
+                                </select>
+                            </div>
+                            <div style="flex:1;min-width:100px;">
+                                <label style="display:block;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:0.06em;color:var(--admin-text-muted);margin-bottom:6px;">Discount Value</label>
+                                <input type="number" id="promoGlobalDiscountValue" value="10" min="0" step="0.1" style="width:100%;padding:10px 12px;border:1px solid var(--admin-border);border-radius:8px;font-size:14px;font-weight:700;background:var(--admin-surface);color:var(--admin-text);">
+                            </div>
+                        </div>
+                        <p style="font-size:11px;color:var(--admin-text-muted);margin:8px 0 0;line-height:1.4;">This discount will apply automatically to any product you add below.</p>
+                    </div>
+
+                    <!-- Enable for All Products Panel (hidden by default) -->
+                    <div id="enableAllProductsPanel" style="display:none;background:linear-gradient(135deg,#fff5f5,#fff0f0);border:1px solid #fecaca;border-radius:12px;padding:20px;margin-bottom:16px;">
+                        <h4 style="margin:0 0 12px;font-size:14px;font-weight:700;color:#991b1b;display:flex;align-items:center;gap:8px;">🚀 Enable Offer for All Products</h4>
+                        <p style="font-size:12px;color:#7f1d1d;margin:0 0 16px;line-height:1.5;">This will apply the selected discount to <strong>all products</strong> in your store. Products already assigned will have their discount updated.</p>
+                        <div style="display:flex;gap:12px;flex-wrap:wrap;align-items:flex-end;">
+                            <div style="flex:1;min-width:140px;">
+                                <label style="display:block;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:0.06em;color:#991b1b;margin-bottom:6px;">Discount Type</label>
+                                <select id="enableAllDiscountType" style="width:100%;padding:10px 12px;border:1px solid #fecaca;border-radius:8px;font-size:14px;background:white;color:#1a1a2e;">
+                                    <option value="percentage">Percentage %</option>
+                                    <option value="fixed">Fixed KWD</option>
+                                </select>
+                            </div>
+                            <div style="flex:1;min-width:100px;">
+                                <label style="display:block;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:0.06em;color:#991b1b;margin-bottom:6px;">Discount Value</label>
+                                <input type="number" id="enableAllDiscountValue" value="10" min="0" step="0.1" style="width:100%;padding:10px 12px;border:1px solid #fecaca;border-radius:8px;font-size:14px;font-weight:700;background:white;color:#1a1a2e;">
+                            </div>
+                            <div style="display:flex;gap:8px;">
+                                <button class="admin-btn" style="padding:10px 20px;font-size:13px;background:linear-gradient(135deg,#e74c3c,#c0392b);color:white;border:none;font-weight:700;" onclick="enablePromoForAllProducts()">
+                                    ✅ Apply to All
+                                </button>
+                                <button class="admin-btn" style="padding:10px 16px;font-size:13px;" onclick="document.getElementById('enableAllProductsPanel').style.display='none'">
+                                    Cancel
+                                </button>
+                            </div>
                         </div>
                     </div>
-                    <div id="promoProductSearchResults" style="max-height:200px;overflow-y:auto;border:1px solid var(--admin-border);border-radius:8px;margin-bottom:16px;display:none;"></div>
+
+                    <!-- Searchable Product Dropdown -->
+                    <div style="margin-bottom:16px;position:relative;" id="promoProductDropdownWrap">
+                        <label style="display:block;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:0.06em;color:var(--admin-text-muted);margin-bottom:6px;">Add Products</label>
+                        <div style="position:relative;">
+                            <span style="position:absolute;left:14px;top:50%;transform:translateY(-50%);font-size:16px;pointer-events:none;">🔍</span>
+                            <input type="text" class="admin-search" id="promoProductSearch" placeholder="Click or type to search products..." style="padding-left:40px;width:100%;cursor:pointer;" autocomplete="off">
+                        </div>
+                        <div id="promoProductSearchResults" style="max-height:260px;overflow-y:auto;border:1px solid var(--admin-border);border-radius:0 0 12px 12px;border-top:none;background:var(--admin-surface);display:none;position:absolute;left:0;right:0;z-index:100;box-shadow:0 8px 24px rgba(0,0,0,0.12);"></div>
+                    </div>
                     <h3 style="font-size:14px;margin-bottom:12px;color:var(--admin-text);">Assigned Products</h3>
                     <div class="admin-table-wrap">
                         <div class="admin-table-scroll">

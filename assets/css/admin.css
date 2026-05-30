@@ -668,8 +668,8 @@ body.admin-body {
     border-radius: 24px 24px 0 0;
     box-shadow: 0 -8px 60px rgba(0, 0, 0, 0.5);
     width: 100%;
-    max-height: 92vh;
-    max-height: 92dvh;
+    max-height: 94vh;
+    max-height: 94dvh;
     overflow-y: auto;
     -webkit-overflow-scrolling: touch;
     animation: modalSlideUp 0.35s cubic-bezier(0.16, 1, 0.3, 1);
@@ -1972,9 +1972,32 @@ body.admin-body {
         box-shadow: var(--admin-shadow-gold);
     }
 
-    /* Modal: larger max-width */
+    /* Modal: big, centered, and resizable on desktop */
+    .admin-modal {
+        align-items: center;
+        padding: 24px;
+    }
+
     .admin-modal-content {
-        max-width: 640px;
+        max-width: 900px;
+        width: 90%;
+        max-height: 85vh;
+        border-radius: var(--admin-radius);
+        resize: both;
+        overflow: auto;
+        min-width: 400px;
+        min-height: 300px;
+        animation: modalScaleIn 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+        box-shadow: 0 24px 80px rgba(0, 0, 0, 0.35);
+    }
+
+    .admin-modal-content::before {
+        display: none;
+    }
+
+    @keyframes modalScaleIn {
+        from { opacity: 0; transform: scale(0.95) translateY(20px); }
+        to { opacity: 1; transform: scale(1) translateY(0); }
     }
 
     /* Hide bottom nav on desktop */

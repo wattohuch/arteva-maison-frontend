@@ -2038,6 +2038,20 @@ async function loadVisitorPage() {
     const dateFilter = document.getElementById('visitorDateFilter')?.value || '';
     const queryParam = dateFilter ? `?date=${dateFilter}&limit=1000` : '?limit=1000';
 
+    // Fetch site visit stats in parallel (non-blocking)
+    fetch(`${API_BASE_URL}/admin/analytics/site-visits`, {
+        headers: { 'Authorization': `Bearer ${localStorage.getItem('arteva_token')}` }
+    }).then(r => r.json()).then(result => {
+        if (result.success && result.data) {
+            const d = result.data;
+            const el = (id) => document.getElementById(id);
+            if (el('siteVisitTotal')) el('siteVisitTotal').textContent = (d.totalVisits || 0).toLocaleString();
+            if (el('siteVisitUnique')) el('siteVisitUnique').textContent = (d.totalUniqueVisitors || 0).toLocaleString();
+            if (el('siteVisitToday')) el('siteVisitToday').textContent = (d.todayVisitors || 0).toLocaleString();
+            if (el('siteVisitLast30')) el('siteVisitLast30').textContent = (d.last30DaysVisitors || 0).toLocaleString();
+        }
+    }).catch(() => { /* site visit stats are non-critical */ });
+
     try {
         const response = await fetch(`${API_BASE_URL}/admin/analytics/visitor-log${queryParam}`, {
             headers: { 'Authorization': `Bearer ${localStorage.getItem('arteva_token')}` }

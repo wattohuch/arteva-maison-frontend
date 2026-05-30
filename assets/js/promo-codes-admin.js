@@ -514,54 +514,78 @@
         const newInput = input.cloneNode(true);
         input.parentNode.replaceChild(newInput, input);
 
+        function renderDropdown(query) {
+            const q = (query || '').toLowerCase().trim();
+            const existingIds = new Set((promo.products || []).map(p => p.product?._id || p.product));
+            
+            let matches = allProducts.filter(p => !existingIds.has(p._id));
+            
+            if (q.length > 0) {
+                matches = matches.filter(p => 
+                    p.name.toLowerCase().includes(q) || 
+                    (p.nameAr && p.nameAr.includes(q)) || 
+                    (p.sku && p.sku.toLowerCase().includes(q))
+                );
+            }
+
+            if (matches.length === 0) {
+                resultsDiv.innerHTML = `<div style="padding:16px;color:var(--admin-text-muted);text-align:center;font-size:13px;">${q ? 'No matching products' : 'All products already assigned'}</div>`;
+                resultsDiv.style.display = 'block';
+                return;
+            }
+
+            // Show up to 20 products
+            const shown = matches.slice(0, 20);
+            const remaining = matches.length - shown.length;
+
+            resultsDiv.innerHTML = shown.map(p => {
+                const img = p.images?.[0]?.url || '';
+                const imgHtml = img ? `<img src="${img}" style="width:36px;height:36px;object-fit:cover;border-radius:6px;flex-shrink:0;" alt="" onerror="this.style.display='none'">` : '<div style="width:36px;height:36px;border-radius:6px;background:var(--admin-surface-3);flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:14px;">📦</div>';
+                return `<div style="display:flex;align-items:center;gap:12px;padding:10px 14px;cursor:pointer;border-bottom:1px solid var(--admin-border);transition:background 0.15s;" 
+                    onmouseover="this.style.background='var(--admin-surface-2)'" onmouseout="this.style.background='transparent'"
+                    onclick="addProductToPromo('${promo._id}', '${p._id}', '${p.name.replace(/'/g, "\\'")}', ${p.price})">
+                    ${imgHtml}
+                    <div style="flex:1;min-width:0;">
+                        <div style="font-weight:500;font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${p.name}</div>
+                        <div style="font-size:11px;color:var(--admin-text-muted);">${p.price.toFixed(3)} KWD${p.sku ? ' · ' + p.sku : ''}</div>
+                    </div>
+                    <span style="color:var(--admin-gold,#D4AF37);font-weight:600;font-size:12px;white-space:nowrap;background:var(--admin-gold-glow);padding:4px 10px;border-radius:6px;">+ Add</span>
+                </div>`;
+            }).join('') + (remaining > 0 ? `<div style="padding:10px;text-align:center;font-size:11px;color:var(--admin-text-muted);">+${remaining} more products — type to filter</div>` : '');
+            resultsDiv.style.display = 'block';
+        }
+
+        // Show dropdown on focus/click
+        newInput.addEventListener('focus', () => renderDropdown(newInput.value));
+        newInput.addEventListener('click', () => renderDropdown(newInput.value));
+
+        // Filter on input
         let debounce;
         newInput.addEventListener('input', () => {
             clearTimeout(debounce);
-            debounce = setTimeout(() => {
-                const q = newInput.value.toLowerCase().trim();
-                if (q.length < 2) {
-                    resultsDiv.style.display = 'none';
-                    return;
-                }
+            debounce = setTimeout(() => renderDropdown(newInput.value), 150);
+        });
 
-                const existingIds = new Set((promo.products || []).map(p => p.product?._id || p.product));
-                const matches = allProducts
-                    .filter(p => !existingIds.has(p._id))
-                    .filter(p => p.name.toLowerCase().includes(q) || (p.nameAr && p.nameAr.includes(q)) || (p.sku && p.sku.toLowerCase().includes(q)))
-                    .slice(0, 8);
-
-                if (matches.length === 0) {
-                    resultsDiv.innerHTML = '<div style="padding:12px;color:var(--admin-text-muted);text-align:center;">No matching products</div>';
-                    resultsDiv.style.display = 'block';
-                    return;
-                }
-
-                resultsDiv.innerHTML = matches.map(p => {
-                    const img = p.images?.[0]?.url || '';
-                    const imgHtml = img ? `<img src="${img}" style="width:32px;height:32px;object-fit:cover;border-radius:4px;margin-right:10px;" alt="">` : '';
-                    return `<div style="display:flex;align-items:center;padding:10px 14px;cursor:pointer;border-bottom:1px solid var(--admin-border);transition:background 0.15s;" 
-                        onmouseover="this.style.background='var(--admin-surface-2)'" onmouseout="this.style.background='transparent'"
-                        onclick="addProductToPromo('${promo._id}', '${p._id}', '${p.name.replace(/'/g, "\\'")}', ${p.price})">
-                        ${imgHtml}
-                        <div style="flex:1;">
-                            <div style="font-weight:500;font-size:13px;">${p.name}</div>
-                            <div style="font-size:11px;color:var(--admin-text-muted);">${p.price.toFixed(3)} KWD${p.sku ? ' · ' + p.sku : ''}</div>
-                        </div>
-                        <span style="color:var(--admin-gold,#D4AF37);font-weight:600;font-size:13px;">+ Add</span>
-                    </div>`;
-                }).join('');
-                resultsDiv.style.display = 'block';
-            }, 300);
+        // Close dropdown when clicking outside
+        document.addEventListener('click', (e) => {
+            const wrap = document.getElementById('promoProductDropdownWrap');
+            if (wrap && !wrap.contains(e.target)) {
+                resultsDiv.style.display = 'none';
+            }
         });
     }
 
     window.addProductToPromo = async function (promoId, productId, productName, price) {
+        // Read global discount settings from the UI
+        const discountType = document.getElementById('promoGlobalDiscountType')?.value || 'percentage';
+        const discountValue = parseFloat(document.getElementById('promoGlobalDiscountValue')?.value) || 10;
+
         try {
             const res = await fetch(`${API()}/promo-codes/${promoId}/products`, {
                 method: 'POST',
                 headers: headers(),
                 body: JSON.stringify({
-                    products: [{ product: productId, discountType: 'percentage', discountValue: 10 }]
+                    products: [{ product: productId, discountType, discountValue }]
                 })
             });
             const data = await res.json();
@@ -576,7 +600,9 @@
             }
             document.getElementById('promoProductSearch').value = '';
             document.getElementById('promoProductSearchResults').style.display = 'none';
-            showToast(`Added "${productName}" with 10% discount`, 'success');
+
+            const discountLabel = discountType === 'percentage' ? `${discountValue}%` : `${discountValue} KWD`;
+            showToast(`Added "${productName}" with ${discountLabel} discount`, 'success');
         } catch (err) {
             showToast(err.message || 'Failed to add product', 'error');
         }
@@ -627,6 +653,95 @@
             showToast('Product removed from promo', 'success');
         } catch (err) {
             showToast(err.message || 'Failed to remove product', 'error');
+        }
+    };
+
+    // ═══════════════════════════════════════════════════
+    // ENABLE FOR ALL PRODUCTS
+    // ═══════════════════════════════════════════════════
+
+    window.openEnableAllProductsPanel = function () {
+        const panel = document.getElementById('enableAllProductsPanel');
+        if (panel) {
+            panel.style.display = panel.style.display === 'none' ? 'block' : 'none';
+        }
+    };
+
+    window.enablePromoForAllProducts = async function () {
+        if (!currentPromoId) {
+            showToast('No promo code selected', 'error');
+            return;
+        }
+
+        const discountType = document.getElementById('enableAllDiscountType').value;
+        const discountValue = parseFloat(document.getElementById('enableAllDiscountValue').value);
+
+        if (!discountValue || discountValue <= 0) {
+            showToast('Please enter a valid discount value', 'error');
+            return;
+        }
+
+        if (discountType === 'percentage' && discountValue > 100) {
+            showToast('Percentage discount cannot exceed 100%', 'error');
+            return;
+        }
+
+        const promo = allPromoCodes.find(p => p._id === currentPromoId);
+        if (!promo) return;
+
+        const confirmMsg = `Apply ${discountValue}${discountType === 'percentage' ? '%' : ' KWD'} discount to ALL products for promo "${promo.code}"?\n\nThis will add/update all products in your store.`;
+        if (!confirm(confirmMsg)) return;
+
+        try {
+            // Load all products if not already loaded
+            if (allProducts.length === 0) {
+                const res = await fetch(`${API()}/products`, { headers: headers() });
+                const data = await res.json();
+                allProducts = data.data || data.products || [];
+            }
+
+            if (allProducts.length === 0) {
+                showToast('No products found in your store', 'error');
+                return;
+            }
+
+            // Build the products payload
+            const productsPayload = allProducts.map(p => ({
+                product: p._id,
+                discountType: discountType,
+                discountValue: discountValue
+            }));
+
+            // Send in batches of 50 to avoid payload size issues
+            const BATCH_SIZE = 50;
+            let totalAdded = 0;
+
+            for (let i = 0; i < productsPayload.length; i += BATCH_SIZE) {
+                const batch = productsPayload.slice(i, i + BATCH_SIZE);
+                const res = await fetch(`${API()}/promo-codes/${currentPromoId}/products`, {
+                    method: 'POST',
+                    headers: headers(),
+                    body: JSON.stringify({ products: batch })
+                });
+                const data = await res.json();
+                if (!data.success) throw new Error(data.message);
+                totalAdded += batch.length;
+            }
+
+            // Hide the panel
+            document.getElementById('enableAllProductsPanel').style.display = 'none';
+
+            // Refresh and re-render
+            await loadPromoCodes();
+            const updatedPromo = allPromoCodes.find(p => p._id === currentPromoId);
+            if (updatedPromo) {
+                renderPromoProducts(updatedPromo);
+                setupProductSearch(updatedPromo);
+            }
+
+            showToast(`✅ Applied ${discountValue}${discountType === 'percentage' ? '%' : ' KWD'} discount to ${totalAdded} products!`, 'success');
+        } catch (err) {
+            showToast(err.message || 'Failed to enable for all products', 'error');
         }
     };
 
