@@ -1697,35 +1697,39 @@ function renderCategoriesTable(categories) {
 // Category Sorting
 // ==========================================
 window.moveCategoryUp = async (id) => {
+    // Ensure all categories have a sortOrder
+    allCategories.forEach((c, idx) => {
+        if (c.sortOrder === undefined) c.sortOrder = idx;
+    });
+
     const index = allCategories.findIndex(c => c._id === id);
     if (index <= 0) return;
-    
-    // Assign initial sortOrder if undefined
-    if (allCategories[index].sortOrder === undefined) allCategories[index].sortOrder = index;
-    if (allCategories[index - 1].sortOrder === undefined) allCategories[index - 1].sortOrder = index - 1;
     
     // Swap
     const temp = allCategories[index].sortOrder;
     allCategories[index].sortOrder = allCategories[index - 1].sortOrder;
     allCategories[index - 1].sortOrder = temp;
     
-    allCategories.sort((a, b) => (a.sortOrder !== undefined ? a.sortOrder : 0) - (b.sortOrder !== undefined ? b.sortOrder : 0));
+    allCategories.sort((a, b) => a.sortOrder - b.sortOrder);
     renderCategoriesTable(allCategories);
     await saveCategoryOrder();
 };
 
 window.moveCategoryDown = async (id) => {
+    // Ensure all categories have a sortOrder
+    allCategories.forEach((c, idx) => {
+        if (c.sortOrder === undefined) c.sortOrder = idx;
+    });
+
     const index = allCategories.findIndex(c => c._id === id);
     if (index === -1 || index === allCategories.length - 1) return;
     
-    if (allCategories[index].sortOrder === undefined) allCategories[index].sortOrder = index;
-    if (allCategories[index + 1].sortOrder === undefined) allCategories[index + 1].sortOrder = index + 1;
-    
+    // Swap
     const temp = allCategories[index].sortOrder;
     allCategories[index].sortOrder = allCategories[index + 1].sortOrder;
     allCategories[index + 1].sortOrder = temp;
     
-    allCategories.sort((a, b) => (a.sortOrder !== undefined ? a.sortOrder : 0) - (b.sortOrder !== undefined ? b.sortOrder : 0));
+    allCategories.sort((a, b) => a.sortOrder - b.sortOrder);
     renderCategoriesTable(allCategories);
     await saveCategoryOrder();
 };
