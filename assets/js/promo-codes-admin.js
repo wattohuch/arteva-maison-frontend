@@ -173,6 +173,7 @@
         document.getElementById('promoDescription').value = '';
         document.getElementById('promoMaxUsage').value = '0';
         document.getElementById('promoPerUserLimit').value = '0';
+        document.getElementById('promoMaxQuantityPerOrder').value = '0';
         document.getElementById('promoModalTitle').textContent = 'Create Promo Code';
         document.getElementById('promoSubmitBtn').textContent = 'Create Promo Code';
 
@@ -193,6 +194,7 @@
         document.getElementById('promoDescription').value = promo.description || '';
         document.getElementById('promoMaxUsage').value = promo.maxUsage || 0;
         document.getElementById('promoPerUserLimit').value = promo.perUserLimit || 0;
+        document.getElementById('promoMaxQuantityPerOrder').value = promo.maxQuantityPerOrder || 0;
         document.getElementById('promoExpiresAt').value = new Date(promo.expiresAt).toISOString().slice(0, 16);
         document.getElementById('promoModalTitle').textContent = 'Edit Promo Code';
         document.getElementById('promoSubmitBtn').textContent = 'Save Changes';
@@ -217,7 +219,8 @@
                     description: document.getElementById('promoDescription').value,
                     expiresAt: document.getElementById('promoExpiresAt').value,
                     maxUsage: parseInt(document.getElementById('promoMaxUsage').value) || 0,
-                    perUserLimit: parseInt(document.getElementById('promoPerUserLimit').value) || 0
+                    perUserLimit: parseInt(document.getElementById('promoPerUserLimit').value) || 0,
+                    maxQuantityPerOrder: parseInt(document.getElementById('promoMaxQuantityPerOrder').value) || 0
                 };
 
                 try {
@@ -467,7 +470,7 @@
         const tbody = document.getElementById('promoProductsTableBody');
 
         if (!promo.products || promo.products.length === 0) {
-            tbody.innerHTML = `<tr><td colspan="6" style="text-align:center;padding:30px;color:var(--admin-text-muted);">No products assigned. Use the search above to add products.</td></tr>`;
+            tbody.innerHTML = `<tr><td colspan="7" style="text-align:center;padding:30px;color:var(--admin-text-muted);">No products assigned. Use the search above to add products.</td></tr>`;
             return;
         }
 
@@ -496,7 +499,11 @@
                 </td>
                 <td>
                     <input type="number" value="${pp.discountValue}" step="0.1" min="0" style="width:80px;padding:4px 8px;border-radius:6px;border:1px solid var(--admin-border);background:var(--admin-surface-2);color:var(--admin-text);font-size:13px;font-weight:600;"
-                        onchange="updatePromoProductDiscount('${promo._id}', '${product._id}', null, this.value)">
+                        onchange="updatePromoProductDiscount('${promo._id}', '${product._id}', null, this.value, null)">
+                </td>
+                <td>
+                    <input type="number" value="${pp.maxDiscountedQuantity || 0}" min="0" style="width:70px;padding:4px 8px;border-radius:6px;border:1px solid var(--admin-border);background:var(--admin-surface-2);color:var(--admin-text);font-size:13px;"
+                        onchange="updatePromoProductDiscount('${promo._id}', '${product._id}', null, null, this.value)" placeholder="0=∞">
                 </td>
                 <td><strong style="color:${finalPrice < originalPrice ? '#059669' : 'var(--admin-text)'};">${finalPrice.toFixed(3)} KWD</strong></td>
                 <td style="text-align:center;">
@@ -579,13 +586,14 @@
         // Read global discount settings from the UI
         const discountType = document.getElementById('promoGlobalDiscountType')?.value || 'percentage';
         const discountValue = parseFloat(document.getElementById('promoGlobalDiscountValue')?.value) || 10;
+        const maxDiscountedQuantity = parseInt(document.getElementById('promoGlobalMaxQuantity')?.value) || null;
 
         try {
             const res = await fetch(`${API()}/promo-codes/${promoId}/products`, {
                 method: 'POST',
                 headers: headers(),
                 body: JSON.stringify({
-                    products: [{ product: productId, discountType, discountValue }]
+                    products: [{ product: productId, discountType, discountValue, maxDiscountedQuantity }]
                 })
             });
             const data = await res.json();
@@ -608,7 +616,7 @@
         }
     };
 
-    window.updatePromoProductDiscount = async function (promoId, productId, newType, newValue) {
+    window.updatePromoProductDiscount = async function (promoId, productId, newType, newValue, newMaxQty) {
         const promo = allPromoCodes.find(p => p._id === promoId);
         if (!promo) return;
         const pp = promo.products.find(p => (p.product?._id || p.product) === productId);
@@ -616,13 +624,14 @@
 
         const discountType = newType || pp.discountType;
         const discountValue = newValue !== null ? parseFloat(newValue) : pp.discountValue;
+        const maxDiscountedQuantity = newMaxQty !== null ? (parseInt(newMaxQty) || null) : pp.maxDiscountedQuantity;
 
         try {
             const res = await fetch(`${API()}/promo-codes/${promoId}/products`, {
                 method: 'POST',
                 headers: headers(),
                 body: JSON.stringify({
-                    products: [{ product: productId, discountType, discountValue }]
+                    products: [{ product: productId, discountType, discountValue, maxDiscountedQuantity }]
                 })
             });
             const data = await res.json();
@@ -675,6 +684,7 @@
 
         const discountType = document.getElementById('enableAllDiscountType').value;
         const discountValue = parseFloat(document.getElementById('enableAllDiscountValue').value);
+        const maxDiscountedQuantity = parseInt(document.getElementById('enableAllMaxQuantity').value) || null;
 
         if (!discountValue || discountValue <= 0) {
             showToast('Please enter a valid discount value', 'error');
@@ -709,7 +719,8 @@
             const productsPayload = allProducts.map(p => ({
                 product: p._id,
                 discountType: discountType,
-                discountValue: discountValue
+                discountValue: discountValue,
+                maxDiscountedQuantity: maxDiscountedQuantity
             }));
 
             // Send in batches of 50 to avoid payload size issues

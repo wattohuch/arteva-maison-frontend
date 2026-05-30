@@ -1979,14 +1979,15 @@ body.admin-body {
     }
 
     .admin-modal-content {
-        max-width: 900px;
-        width: 90%;
-        max-height: 85vh;
+        max-width: 1100px;
+        width: 95%;
+        height: 85vh;
+        max-height: 90vh;
         border-radius: var(--admin-radius);
         resize: both;
         overflow: auto;
-        min-width: 400px;
-        min-height: 300px;
+        min-width: 600px;
+        min-height: 500px;
         animation: modalScaleIn 0.3s cubic-bezier(0.16, 1, 0.3, 1);
         box-shadow: 0 24px 80px rgba(0, 0, 0, 0.35);
     }

@@ -889,9 +889,15 @@
                                 <input type="number" id="promoMaxUsage" name="maxUsage" min="0" value="0" placeholder="0 = unlimited">
                             </div>
                         </div>
-                        <div class="admin-form-group">
-                            <label>Per User Limit <small style="color:var(--admin-text-muted);font-weight:normal;">(0 = unlimited per user)</small></label>
-                            <input type="number" id="promoPerUserLimit" name="perUserLimit" min="0" value="0" placeholder="0 = unlimited">
+                        <div class="admin-form-row">
+                            <div class="admin-form-group">
+                                <label>Per User Limit <small style="color:var(--admin-text-muted);font-weight:normal;">(0 = unlimited per user)</small></label>
+                                <input type="number" id="promoPerUserLimit" name="perUserLimit" min="0" value="0" placeholder="0 = unlimited">
+                            </div>
+                            <div class="admin-form-group">
+                                <label>Max Quantity Per Order <small style="color:var(--admin-text-muted);font-weight:normal;">(0 = unlimited)</small></label>
+                                <input type="number" id="promoMaxQuantityPerOrder" name="maxQuantityPerOrder" min="0" value="0" placeholder="0 = unlimited">
+                            </div>
                         </div>
                         <div class="admin-form-actions" style="border:none;padding-top:0;">
                             <button type="button" class="admin-btn" onclick="closePromoModal()">Cancel</button>
@@ -930,6 +936,10 @@
                                 <label style="display:block;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:0.06em;color:var(--admin-text-muted);margin-bottom:6px;">Discount Value</label>
                                 <input type="number" id="promoGlobalDiscountValue" value="10" min="0" step="0.1" style="width:100%;padding:10px 12px;border:1px solid var(--admin-border);border-radius:8px;font-size:14px;font-weight:700;background:var(--admin-surface);color:var(--admin-text);">
                             </div>
+                            <div style="flex:1;min-width:120px;">
+                                <label style="display:block;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:0.06em;color:var(--admin-text-muted);margin-bottom:6px;">Max Qty / Product</label>
+                                <input type="number" id="promoGlobalMaxQuantity" value="0" min="0" placeholder="0 = unlimited" style="width:100%;padding:10px 12px;border:1px solid var(--admin-border);border-radius:8px;font-size:14px;background:var(--admin-surface);color:var(--admin-text);">
+                            </div>
                         </div>
                         <p style="font-size:11px;color:var(--admin-text-muted);margin:8px 0 0;line-height:1.4;">This discount will apply automatically to any product you add below.</p>
                     </div>
@@ -949,6 +959,10 @@
                             <div style="flex:1;min-width:100px;">
                                 <label style="display:block;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:0.06em;color:#991b1b;margin-bottom:6px;">Discount Value</label>
                                 <input type="number" id="enableAllDiscountValue" value="10" min="0" step="0.1" style="width:100%;padding:10px 12px;border:1px solid #fecaca;border-radius:8px;font-size:14px;font-weight:700;background:white;color:#1a1a2e;">
+                            </div>
+                            <div style="flex:1;min-width:120px;">
+                                <label style="display:block;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:0.06em;color:#991b1b;margin-bottom:6px;">Max Qty / Product</label>
+                                <input type="number" id="enableAllMaxQuantity" value="0" min="0" placeholder="0 = unlimited" style="width:100%;padding:10px 12px;border:1px solid #fecaca;border-radius:8px;font-size:14px;background:white;color:#1a1a2e;">
                             </div>
                             <div style="display:flex;gap:8px;">
                                 <button class="admin-btn" style="padding:10px 20px;font-size:13px;background:linear-gradient(135deg,#e74c3c,#c0392b);color:white;border:none;font-weight:700;" onclick="enablePromoForAllProducts()">
@@ -980,6 +994,7 @@
                                         <th>Original Price</th>
                                         <th>Discount Type</th>
                                         <th>Discount Value</th>
+                                        <th>Max Qty</th>
                                         <th>Final Price</th>
                                         <th style="text-align:center;">Actions</th>
                                     </tr>
