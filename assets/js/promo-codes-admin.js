@@ -623,8 +623,8 @@
         if (!pp) return;
 
         const discountType = newType || pp.discountType;
-        const discountValue = newValue !== null ? parseFloat(newValue) : pp.discountValue;
-        const maxDiscountedQuantity = newMaxQty !== null ? (parseInt(newMaxQty) || null) : pp.maxDiscountedQuantity;
+        const discountValue = newValue !== null && newValue !== '' ? parseFloat(newValue) : pp.discountValue;
+        const maxDiscountedQuantity = newMaxQty !== null && newMaxQty !== '' ? (parseInt(newMaxQty) || null) : pp.maxDiscountedQuantity;
 
         try {
             const res = await fetch(`${API()}/promo-codes/${promoId}/products`, {

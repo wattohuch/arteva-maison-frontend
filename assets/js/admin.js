@@ -1676,7 +1676,7 @@ function renderCategoriesTable(categories) {
         return;
     }
 
-    tbody.innerHTML = categories.map(cat => `
+    tbody.innerHTML = categories.map((cat, index) => `
         <tr>
             <td><img src="${cat.image || 'assets/images/products/placeholder.png'}" class="product-thumb" alt="${cat.name}" style="width: 50px; height: 50px; object-fit: cover; border-radius: 4px;" onerror="this.src='assets/images/products/placeholder.png'"></td>
             <td><strong>${cat.name}</strong></td>
@@ -1684,11 +1684,72 @@ function renderCategoriesTable(categories) {
             <td><code style="background: #f0f0f0; padding: 2px 6px; border-radius: 3px; font-size: 12px;">${cat.slug}</code></td>
             <td><span class="status-badge ${cat.isActive ? 'confirmed' : 'cancelled'}">${cat.isActive ? 'Active' : 'Inactive'}</span></td>
             <td onclick="event.stopPropagation()">
+                <button class="admin-btn-icon" onclick="moveCategoryUp('${cat._id}')" title="Move Up" ${index === 0 ? 'disabled style="opacity:0.3;cursor:not-allowed;"' : ''}>⬆️</button>
+                <button class="admin-btn-icon" onclick="moveCategoryDown('${cat._id}')" title="Move Down" ${index === categories.length - 1 ? 'disabled style="opacity:0.3;cursor:not-allowed;"' : ''}>⬇️</button>
                 <button class="admin-btn-icon" onclick="editCategory('${cat._id}')" title="Edit">✏️</button>
                 <button class="admin-btn-icon delete" onclick="deleteCategory('${cat._id}')" title="Delete">🗑️</button>
             </td>
         </tr>
     `).join('');
+}
+
+// ==========================================
+// Category Sorting
+// ==========================================
+window.moveCategoryUp = async (id) => {
+    const index = allCategories.findIndex(c => c._id === id);
+    if (index <= 0) return;
+    
+    // Assign initial sortOrder if undefined
+    if (allCategories[index].sortOrder === undefined) allCategories[index].sortOrder = index;
+    if (allCategories[index - 1].sortOrder === undefined) allCategories[index - 1].sortOrder = index - 1;
+    
+    // Swap
+    const temp = allCategories[index].sortOrder;
+    allCategories[index].sortOrder = allCategories[index - 1].sortOrder;
+    allCategories[index - 1].sortOrder = temp;
+    
+    allCategories.sort((a, b) => (a.sortOrder !== undefined ? a.sortOrder : 0) - (b.sortOrder !== undefined ? b.sortOrder : 0));
+    renderCategoriesTable(allCategories);
+    await saveCategoryOrder();
+};
+
+window.moveCategoryDown = async (id) => {
+    const index = allCategories.findIndex(c => c._id === id);
+    if (index === -1 || index === allCategories.length - 1) return;
+    
+    if (allCategories[index].sortOrder === undefined) allCategories[index].sortOrder = index;
+    if (allCategories[index + 1].sortOrder === undefined) allCategories[index + 1].sortOrder = index + 1;
+    
+    const temp = allCategories[index].sortOrder;
+    allCategories[index].sortOrder = allCategories[index + 1].sortOrder;
+    allCategories[index + 1].sortOrder = temp;
+    
+    allCategories.sort((a, b) => (a.sortOrder !== undefined ? a.sortOrder : 0) - (b.sortOrder !== undefined ? b.sortOrder : 0));
+    renderCategoriesTable(allCategories);
+    await saveCategoryOrder();
+};
+
+async function saveCategoryOrder() {
+    const payload = allCategories.map((c, idx) => ({ 
+        id: c._id, 
+        sortOrder: c.sortOrder !== undefined ? c.sortOrder : idx 
+    }));
+    
+    try {
+        const res = await fetch(`${API_BASE_URL}/categories/reorder`, {
+            method: 'PUT',
+            headers: { 
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${localStorage.getItem('arteva_token')}` 
+            },
+            body: JSON.stringify({ categories: payload })
+        });
+        if (!res.ok) throw new Error('Failed to save order');
+    } catch(err) {
+        console.error('Error saving category order:', err);
+        showToast('Failed to save category order', 'error');
+    }
 }
 
 window.openAddCategoryModal = () => {
@@ -2038,11 +2099,15 @@ async function loadVisitorPage() {
     const dateFilter = document.getElementById('visitorDateFilter')?.value || '';
     const queryParam = dateFilter ? `?date=${dateFilter}&limit=1000` : '?limit=1000';
 
-    // Fetch site visit stats in parallel (non-blocking)
-    fetch(`${API_BASE_URL}/admin/analytics/site-visits`, {
-        headers: { 'Authorization': `Bearer ${localStorage.getItem('arteva_token')}` }
-    }).then(r => r.json()).then(result => {
+    // Fetch site visit stats first
+    let siteVisitData = null;
+    try {
+        const r = await fetch(`${API_BASE_URL}/admin/analytics/site-visits`, {
+            headers: { 'Authorization': `Bearer ${localStorage.getItem('arteva_token')}` }
+        });
+        const result = await r.json();
         if (result.success && result.data) {
+            siteVisitData = result.data;
             const d = result.data;
             const el = (id) => document.getElementById(id);
             if (el('siteVisitTotal')) el('siteVisitTotal').textContent = (d.totalVisits || 0).toLocaleString();
@@ -2050,7 +2115,9 @@ async function loadVisitorPage() {
             if (el('siteVisitToday')) el('siteVisitToday').textContent = (d.todayVisitors || 0).toLocaleString();
             if (el('siteVisitLast30')) el('siteVisitLast30').textContent = (d.last30DaysVisitors || 0).toLocaleString();
         }
-    }).catch(() => { /* site visit stats are non-critical */ });
+    } catch (err) {
+        console.error('Failed to load site visits', err);
+    }
 
     try {
         const response = await fetch(`${API_BASE_URL}/admin/analytics/visitor-log${queryParam}`, {
@@ -2077,16 +2144,30 @@ async function loadVisitorPage() {
 
         // Daily summary aggregation
         const dailyMap = {};
+
+        // 1. Add Website Visits (from siteVisitData)
+        if (siteVisitData && siteVisitData.dailyBreakdown) {
+            siteVisitData.dailyBreakdown.forEach(d => {
+                if (!dailyMap[d.date]) dailyMap[d.date] = { siteVisitors: 0, siteHits: 0, ips: new Set(), views: 0, products: {} };
+                dailyMap[d.date].siteVisitors = d.uniqueVisitors;
+                dailyMap[d.date].siteHits = d.totalVisits;
+            });
+        }
+
+        // 2. Add Product Views (from visitor-log data)
         data.forEach(v => {
-            if (!dailyMap[v.date]) dailyMap[v.date] = { ips: new Set(), views: 0, products: {} };
+            if (!dailyMap[v.date]) dailyMap[v.date] = { siteVisitors: 0, siteHits: 0, ips: new Set(), views: 0, products: {} };
             dailyMap[v.date].ips.add(v.ip);
             dailyMap[v.date].views++;
             const pn = v.productName || '—';
             dailyMap[v.date].products[pn] = (dailyMap[v.date].products[pn] || 0) + 1;
         });
+
         const dailySummary = Object.entries(dailyMap)
             .map(([date, d]) => ({
                 date,
+                siteVisitors: d.siteVisitors,
+                siteHits: d.siteHits,
                 uniqueIPs: d.ips.size,
                 totalViews: d.views,
                 topProduct: Object.entries(d.products).sort((a, b) => b[1] - a[1])[0]?.[0] || '—'
@@ -2113,8 +2194,9 @@ async function loadVisitorPage() {
                 summaryBody.innerHTML = dailySummary.map(d => `
                     <tr>
                         <td style="font-weight:600;">${d.date}</td>
-                        <td style="text-align:right;font-weight:700;color:#2563eb;">${d.uniqueIPs}</td>
-                        <td style="text-align:right;">${d.totalViews}</td>
+                        <td style="text-align:right;font-weight:700;color:#059669;">${d.siteVisitors || 0}</td>
+                        <td style="text-align:right;color:#64748b;">${d.siteHits || 0}</td>
+                        <td style="text-align:right;font-weight:700;color:#2563eb;">${d.uniqueIPs || 0}</td>
                         <td>${d.topProduct}</td>
                     </tr>
                 `).join('');

@@ -692,14 +692,15 @@
                     <table class="admin-table" id="visitorDailySummaryTable">
                         <thead>
                             <tr>
-                                <th>Date</th>
-                                <th style="text-align:right;">Customers</th>
-                                <th style="text-align:right;">Total Views</th>
-                                <th>Top Product</th>
+                                <th style="font-size:10px;">DATE</th>
+                                <th style="text-align:right;font-size:10px;">WEBSITE VISITORS</th>
+                                <th style="text-align:right;font-size:10px;">WEBSITE HITS</th>
+                                <th style="text-align:right;font-size:10px;">PRODUCT VIEWERS</th>
+                                <th style="font-size:10px;">TOP PRODUCT</th>
                             </tr>
                         </thead>
                         <tbody id="visitorDailySummaryBody">
-                            <tr><td colspan="4" style="text-align:center;padding:30px;color:var(--admin-text-muted);">Loading...</td></tr>
+                            <tr><td colspan="5" style="text-align:center;padding:30px;color:var(--admin-text-muted);">Loading...</td></tr>
                         </tbody>
                     </table>
                 </div>
@@ -920,9 +921,14 @@
                     <div style="background:var(--admin-surface-2);border:1px solid var(--admin-border-gold);border-radius:12px;padding:16px;margin-bottom:16px;">
                         <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
                             <h4 style="margin:0;font-size:13px;font-weight:700;color:var(--admin-text);text-transform:uppercase;letter-spacing:0.06em;">Discount Settings</h4>
-                            <button class="admin-btn" style="padding:8px 14px;font-size:12px;background:linear-gradient(135deg,#e74c3c,#c0392b);color:white;border:none;font-weight:600;white-space:nowrap;" onclick="openEnableAllProductsPanel()" title="Apply this promo discount to all products at once">
-                                🚀 All Products
-                            </button>
+                            <div style="display:flex;gap:8px;">
+                                <button class="admin-btn" style="padding:8px 14px;font-size:12px;background:var(--admin-surface);color:var(--admin-text);border:1px solid var(--admin-border);font-weight:600;white-space:nowrap;" onclick="updateAssignedPromoProducts()" title="Apply settings below to all currently assigned products">
+                                    🔄 Update Assigned
+                                </button>
+                                <button class="admin-btn" style="padding:8px 14px;font-size:12px;background:linear-gradient(135deg,#e74c3c,#c0392b);color:white;border:none;font-weight:600;white-space:nowrap;" onclick="openEnableAllProductsPanel()" title="Apply this promo discount to all products at once">
+                                    🚀 All Products
+                                </button>
+                            </div>
                         </div>
                         <div style="display:flex;gap:12px;flex-wrap:wrap;align-items:flex-end;">
                             <div style="flex:1;min-width:140px;">
