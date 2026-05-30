@@ -1697,18 +1697,15 @@ function renderCategoriesTable(categories) {
 // Category Sorting
 // ==========================================
 window.moveCategoryUp = async (id) => {
-    // Ensure all categories have a sortOrder
-    allCategories.forEach((c, idx) => {
-        if (c.sortOrder === undefined) c.sortOrder = idx;
-    });
+    // Force strictly sequential sortOrders based on current visual order
+    allCategories.forEach((c, idx) => { c.sortOrder = idx; });
 
     const index = allCategories.findIndex(c => c._id === id);
     if (index <= 0) return;
     
-    // Swap
-    const temp = allCategories[index].sortOrder;
-    allCategories[index].sortOrder = allCategories[index - 1].sortOrder;
-    allCategories[index - 1].sortOrder = temp;
+    // Swap their sortOrders
+    allCategories[index].sortOrder = index - 1;
+    allCategories[index - 1].sortOrder = index;
     
     allCategories.sort((a, b) => a.sortOrder - b.sortOrder);
     renderCategoriesTable(allCategories);
@@ -1716,18 +1713,15 @@ window.moveCategoryUp = async (id) => {
 };
 
 window.moveCategoryDown = async (id) => {
-    // Ensure all categories have a sortOrder
-    allCategories.forEach((c, idx) => {
-        if (c.sortOrder === undefined) c.sortOrder = idx;
-    });
+    // Force strictly sequential sortOrders based on current visual order
+    allCategories.forEach((c, idx) => { c.sortOrder = idx; });
 
     const index = allCategories.findIndex(c => c._id === id);
     if (index === -1 || index === allCategories.length - 1) return;
     
-    // Swap
-    const temp = allCategories[index].sortOrder;
-    allCategories[index].sortOrder = allCategories[index + 1].sortOrder;
-    allCategories[index + 1].sortOrder = temp;
+    // Swap their sortOrders
+    allCategories[index].sortOrder = index + 1;
+    allCategories[index + 1].sortOrder = index;
     
     allCategories.sort((a, b) => a.sortOrder - b.sortOrder);
     renderCategoriesTable(allCategories);
