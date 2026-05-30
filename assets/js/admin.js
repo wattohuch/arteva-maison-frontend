@@ -2194,8 +2194,8 @@ async function loadVisitorPage() {
                 summaryBody.innerHTML = dailySummary.map(d => `
                     <tr>
                         <td style="font-weight:600;">${d.date}</td>
-                        <td style="text-align:right;font-weight:700;color:#059669;">${d.siteVisitors || 0}</td>
-                        <td style="text-align:right;color:#64748b;">${d.siteHits || 0}</td>
+                        <td style="text-align:right;font-weight:700;color:#059669;">${Math.max(d.siteVisitors || 0, d.uniqueIPs || 0)}</td>
+                        <td style="text-align:right;color:#64748b;">${Math.max(d.siteHits || 0, d.totalViews || 0)}</td>
                         <td style="text-align:right;font-weight:700;color:#2563eb;">${d.uniqueIPs || 0}</td>
                         <td>${d.topProduct}</td>
                     </tr>

@@ -779,4 +779,66 @@
         setTimeout(() => { toast.style.opacity = '0'; setTimeout(() => toast.remove(), 300); }, 3000);
     }
 
+    // ==========================================
+    // Update All Assigned Products Bulk
+    // ==========================================
+    window.updateAssignedPromoProducts = async function () {
+        const discountType = document.getElementById('promoGlobalDiscountType').value;
+        const discountValue = parseFloat(document.getElementById('promoGlobalDiscountValue').value);
+        const maxDiscountedQuantity = parseInt(document.getElementById('promoGlobalMaxQuantity').value) || null;
+
+        if (!discountValue || discountValue <= 0) {
+            showToast('Please enter a valid discount value', 'error');
+            return;
+        }
+
+        const promo = allPromoCodes.find(p => p._id === currentPromoId);
+        if (!promo) return;
+        if (!promo.products || promo.products.length === 0) {
+            showToast('No products are currently assigned to this promo code.', 'error');
+            return;
+        }
+
+        const confirmMsg = `Update all ${promo.products.length} assigned products to use a ${discountValue}${discountType === 'percentage' ? '%' : ' KWD'} discount?`;
+        if (!confirm(confirmMsg)) return;
+
+        try {
+            showToast(`Updating ${promo.products.length} products...`, 'info');
+
+            const productsPayload = promo.products.map(p => ({
+                product: p.product?._id || p.product,
+                discountType: discountType,
+                discountValue: discountValue,
+                maxDiscountedQuantity: maxDiscountedQuantity
+            }));
+
+            const BATCH_SIZE = 50;
+            let successCount = 0;
+
+            for (let i = 0; i < productsPayload.length; i += BATCH_SIZE) {
+                const batch = productsPayload.slice(i, i + BATCH_SIZE);
+                const res = await fetch(`${API()}/promo-codes/${currentPromoId}/products`, {
+                    method: 'POST',
+                    headers: headers(),
+                    body: JSON.stringify({ products: batch })
+                });
+
+                const data = await res.json();
+                if (!data.success) throw new Error(data.message || 'Failed to update batch');
+                successCount += batch.length;
+            }
+
+            await loadPromoCodes();
+            const updatedPromo = allPromoCodes.find(p => p._id === currentPromoId);
+            if (updatedPromo) {
+                renderPromoProducts(updatedPromo);
+            }
+
+            showToast(`✅ Successfully updated ${successCount} products!`, 'success');
+        } catch (err) {
+            console.error('Update Assigned Error:', err);
+            showToast(err.message || 'Failed to update assigned products', 'error');
+        }
+    };
+
 })();
