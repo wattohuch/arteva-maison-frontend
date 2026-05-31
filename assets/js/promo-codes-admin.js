@@ -448,7 +448,7 @@
         // Load all products for the search
         if (allProducts.length === 0) {
             try {
-                const res = await fetch(`${API()}/products`, { headers: headers() });
+                const res = await fetch(`${API()}/admin/products`, { headers: headers() });
                 const data = await res.json();
                 allProducts = data.data || data.products || [];
             } catch (err) {
@@ -864,8 +864,7 @@
         try {
             // Load all products if not already loaded
             if (allProducts.length === 0) {
-                const res = await fetch(`${API()}/products`, { headers: headers() });
-                const data = await res.json();
+                const data = await (await fetch(`${API()}/admin/products`, { headers: headers() })).json();
                 allProducts = data.data || data.products || [];
             }
 
