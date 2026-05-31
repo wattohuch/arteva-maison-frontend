@@ -572,17 +572,24 @@
                 const pp = existingMap[p._id];
 
                 if (isAssigned) {
-                    // Already assigned — show current discount info + hint to edit in table
-                    const discLabel = pp.discountType === 'percentage' ? `${pp.discountValue}%` : `${pp.discountValue} KWD`;
-                    return `<div style="display:flex;align-items:center;gap:12px;padding:10px 14px;cursor:pointer;border-bottom:1px solid var(--admin-border);transition:background 0.15s;background:rgba(5,150,105,0.05);" 
-                        onmouseover="this.style.background='rgba(5,150,105,0.1)'" onmouseout="this.style.background='rgba(5,150,105,0.05)'"
-                        onclick="document.getElementById('promoProductsTableBody').scrollIntoView({behavior:'smooth',block:'center'});document.getElementById('promoProductSearchResults').style.display='none';">
+                    return `<div style="display:flex;align-items:center;gap:12px;padding:10px 14px;border-bottom:1px solid var(--admin-border);background:rgba(5,150,105,0.05);">
                         ${imgHtml}
                         <div style="flex:1;min-width:0;">
                             <div style="font-weight:500;font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${p.name}</div>
-                            <div style="font-size:11px;color:#059669;font-weight:600;">✅ Assigned · ${discLabel} off · Max Qty: ${pp.maxDiscountedQuantity || '∞'}</div>
+                            <div style="font-size:11px;color:#059669;font-weight:600;margin-top:2px;">✅ Assigned · ${p.price.toFixed(3)} KWD</div>
                         </div>
-                        <span style="color:#059669;font-weight:600;font-size:11px;white-space:nowrap;background:rgba(5,150,105,0.1);padding:4px 10px;border-radius:6px;">✏️ Edit below</span>
+                        <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;justify-content:flex-end;" onclick="event.stopPropagation()">
+                            <select id="edit_type_${p._id}" style="padding:4px;border-radius:4px;border:1px solid var(--admin-border);font-size:11px;background:var(--admin-surface);">
+                                <option value="percentage" ${pp.discountType === 'percentage' ? 'selected' : ''}>%</option>
+                                <option value="fixed" ${pp.discountType === 'fixed' ? 'selected' : ''}>KWD</option>
+                            </select>
+                            <input type="number" id="edit_val_${p._id}" value="${pp.discountValue}" step="0.1" min="0" style="width:60px;padding:4px;border-radius:4px;border:1px solid var(--admin-border);font-size:11px;background:var(--admin-surface);" placeholder="Disc">
+                            <input type="number" id="edit_qty_${p._id}" value="${pp.maxDiscountedQuantity || ''}" min="0" style="width:50px;padding:4px;border-radius:4px;border:1px solid var(--admin-border);font-size:11px;background:var(--admin-surface);" placeholder="Qty(∞)">
+                            <button class="admin-btn" style="padding:4px 10px;font-size:11px;background:#059669;color:white;border:none;" 
+                                onclick="updatePromoProductDiscount('${promo._id}', '${p._id}', document.getElementById('edit_type_${p._id}').value, document.getElementById('edit_val_${p._id}').value, document.getElementById('edit_qty_${p._id}').value)">
+                                Apply
+                            </button>
+                        </div>
                     </div>`;
                 } else {
                     // Not assigned — show + Add button
