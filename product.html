@@ -264,6 +264,7 @@
                         <div class="product-price-display">
                             <span class="product-current-price price-display" id="productPrice">0.000 KWD</span>
                         </div>
+                        <div id="productSizeText" class="product-size-text" style="color: #666; font-size: 14px; margin-bottom: 20px; font-weight: 500; display: none;"></div>
 
                         <p class="product-description" id="productDescription">
                             Discover the exceptional craftsmanship of this exquisite piece. Each item in our collection
@@ -615,6 +616,15 @@
 
                 // Trigger currency update if API exists
                 if (window.CurrencyAPI) window.CurrencyAPI.updatePagePrices();
+
+                // Set Size Text
+                const sizeTextEl = document.getElementById('productSizeText');
+                if (product.sizeText) {
+                    sizeTextEl.textContent = product.sizeText;
+                    sizeTextEl.style.display = 'block';
+                } else {
+                    sizeTextEl.style.display = 'none';
+                }
 
                 document.getElementById('mainImage').src = getProductImage(product);
                 document.getElementById('mainImage').alt = productName;

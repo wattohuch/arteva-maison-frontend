@@ -683,11 +683,70 @@ function renderProductsTable(products, isFiltered = false) {
             <td>${p.price.toFixed(3)}</td>
             <td>${p.stock}</td>
             <td onclick="event.stopPropagation()">
+                <button class="admin-btn-icon" onclick="moveProductUp('${p._id}')" title="Move Up" ${isFiltered ? 'disabled style="opacity:0.3;cursor:not-allowed;"' : ''}>⬆️</button>
+                <button class="admin-btn-icon" onclick="moveProductDown('${p._id}')" title="Move Down" ${isFiltered ? 'disabled style="opacity:0.3;cursor:not-allowed;"' : ''}>⬇️</button>
                 <button class="admin-btn-icon" onclick="editProduct('${p._id}')" title="Edit">✏️</button>
                 <button class="admin-btn-icon delete" onclick="deleteProduct('${p._id}')" title="Delete">🗑️</button>
             </td>
         </tr>
     `).join('');
+}
+
+// ==========================================
+// Product Sorting
+// ==========================================
+window.moveProductUp = async (id) => {
+    // Force strictly sequential sortOrders based on current visual order
+    allProducts.forEach((p, idx) => { p.sortOrder = idx; });
+
+    const index = allProducts.findIndex(p => p._id === id);
+    if (index <= 0) return;
+    
+    // Swap their sortOrders
+    allProducts[index].sortOrder = index - 1;
+    allProducts[index - 1].sortOrder = index;
+    
+    allProducts.sort((a, b) => a.sortOrder - b.sortOrder);
+    renderProductsTable(allProducts);
+    await saveProductOrder();
+};
+
+window.moveProductDown = async (id) => {
+    // Force strictly sequential sortOrders based on current visual order
+    allProducts.forEach((p, idx) => { p.sortOrder = idx; });
+
+    const index = allProducts.findIndex(p => p._id === id);
+    if (index === -1 || index === allProducts.length - 1) return;
+    
+    // Swap their sortOrders
+    allProducts[index].sortOrder = index + 1;
+    allProducts[index + 1].sortOrder = index;
+    
+    allProducts.sort((a, b) => a.sortOrder - b.sortOrder);
+    renderProductsTable(allProducts);
+    await saveProductOrder();
+};
+
+async function saveProductOrder() {
+    const payload = allProducts.map((p, idx) => ({ 
+        id: p._id, 
+        sortOrder: p.sortOrder !== undefined ? p.sortOrder : idx 
+    }));
+    
+    try {
+        const res = await fetch(`${API_BASE_URL}/products/reorder`, {
+            method: 'PUT',
+            headers: { 
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${localStorage.getItem('arteva_token')}` 
+            },
+            body: JSON.stringify({ products: payload })
+        });
+        if (!res.ok) throw new Error('Failed to save product order');
+    } catch(err) {
+        console.error('Error saving product order:', err);
+        showToast('Failed to save product order', 'error');
+    }
 }
 
 // ==========================================
@@ -831,6 +890,7 @@ window.editProduct = async (id) => {
             if (productForm.price) productForm.price.value = p.price;
             if (productForm.stock) productForm.stock.value = p.stock;
             if (productForm.sku) productForm.sku.value = p.sku || '';
+            if (productForm.sizeText) productForm.sizeText.value = p.sizeText || '';
             if (productForm.description) productForm.description.value = p.description || '';
             if (productForm.descriptionAr) productForm.descriptionAr.value = p.descriptionAr || '';
             if (productForm.category) {

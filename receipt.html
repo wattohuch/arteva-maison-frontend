@@ -215,6 +215,11 @@
             return params.get('order') || params.get('orderNumber') || '';
         }
 
+        function getToken() {
+            const params = new URLSearchParams(window.location.search);
+            return params.get('token') || '';
+        }
+
         async function loadReceipt() {
             const orderNumber = getOrderNumber();
             if (!orderNumber) {
@@ -230,7 +235,9 @@
 
             try {
                 // Fetch the FULL server-rendered receipt HTML
-                const res = await fetch(`${API_BASE}/orders/receipt/${encodeURIComponent(orderNumber)}/html`);
+                const token = getToken();
+                const tokenParam = token ? `?token=${encodeURIComponent(token)}` : '';
+                const res = await fetch(`${API_BASE}/orders/receipt/${encodeURIComponent(orderNumber)}/html${tokenParam}`);
 
                 if (!res.ok) {
                     if (res.status === 404) {

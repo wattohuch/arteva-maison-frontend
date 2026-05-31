@@ -335,7 +335,7 @@
 
                     trackOrderBtn.href = `track-order.html?order=${finalOrderNumber}`;
                     if (receiptBtn) {
-                        receiptBtn.href = `receipt.html?order=${finalOrderNumber}`;
+                        receiptBtn.href = `receipt.html?order=${finalOrderNumber}&token=${order.trackingToken}`;
                         receiptBtn.style.display = '';
                     }
                 } else if (order && (order.paymentStatus === 'failed' || order.paymentStatus === 'cancelled')) {
@@ -362,7 +362,7 @@
                     if (window.clearCart) window.clearCart();
                     trackOrderBtn.href = `track-order.html?order=${finalOrderNumber}`;
                     if (receiptBtn) {
-                        receiptBtn.href = `receipt.html?order=${finalOrderNumber}`;
+                        receiptBtn.href = `receipt.html?order=${finalOrderNumber}&token=${order.trackingToken}`;
                         receiptBtn.style.display = '';
                     }
                 } else {

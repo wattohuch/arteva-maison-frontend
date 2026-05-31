@@ -642,7 +642,11 @@
         tabsContainer.innerHTML = activeCategories.map(cat => {
             const count = allProducts.filter(p => {
                 const catId = p.category?._id || p.category;
-                return catId === cat._id;
+                if (catId === cat._id) return true;
+                if (p.additionalCategories && p.additionalCategories.length > 0) {
+                    return p.additionalCategories.some(ac => (ac?._id || ac) === cat._id);
+                }
+                return false;
             }).length;
             return `<button class="admin-btn promo-cat-tab" data-cat-id="${cat._id}" 
                 style="padding:5px 14px;font-size:12px;border-radius:8px;border:1px solid var(--admin-border);background:var(--admin-surface);color:var(--admin-text);cursor:pointer;transition:all 0.15s;white-space:nowrap;"
@@ -676,7 +680,11 @@
         // Filter products by category
         const categoryProducts = allProducts.filter(p => {
             const catId = p.category?._id || p.category;
-            return catId === categoryId;
+            if (catId === categoryId) return true;
+            if (p.additionalCategories && p.additionalCategories.length > 0) {
+                return p.additionalCategories.some(ac => (ac?._id || ac) === categoryId);
+            }
+            return false;
         });
 
         const existingMap = {};
