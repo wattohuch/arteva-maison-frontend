@@ -2097,7 +2097,7 @@ async function loadVisitorPage() {
     const dateFilter = document.getElementById('visitorDateFilter')?.value || '';
     const queryParam = dateFilter ? `?date=${dateFilter}&limit=1000` : '?limit=1000';
 
-    // Fetch site visit stats first
+    // ── 1. Fetch site visit stats (SiteVisit model — actual website visits) ──
     let siteVisitData = null;
     try {
         const r = await fetch(`${API_BASE_URL}/admin/analytics/site-visits`, {
@@ -2106,170 +2106,152 @@ async function loadVisitorPage() {
         const result = await r.json();
         if (result.success && result.data) {
             siteVisitData = result.data;
-            const d = result.data;
-            const el = (id) => document.getElementById(id);
-            if (el('siteVisitTotal')) el('siteVisitTotal').textContent = (d.totalVisits || 0).toLocaleString();
-            if (el('siteVisitUnique')) el('siteVisitUnique').textContent = (d.totalUniqueVisitors || 0).toLocaleString();
-            if (el('siteVisitToday')) el('siteVisitToday').textContent = (d.todayVisitors || 0).toLocaleString();
-            if (el('siteVisitLast30')) el('siteVisitLast30').textContent = (d.last30DaysVisitors || 0).toLocaleString();
         }
     } catch (err) {
         console.error('Failed to load site visits', err);
     }
 
+    // ── 2. Fetch product view log (ProductView model — product page clicks) ──
+    let productViewData = [];
     try {
         const response = await fetch(`${API_BASE_URL}/admin/analytics/visitor-log${queryParam}`, {
             headers: { 'Authorization': `Bearer ${localStorage.getItem('arteva_token')}` }
         });
         const result = await response.json();
-
-        if (!result.success) throw new Error('Failed');
-
-        const data = result.data || [];
-
-        // ── Compute stats ──
-        const today = new Date().toISOString().split('T')[0];
-        const todayRecords = data.filter(v => v.date === today);
-        const todayUniqueIPs = [...new Set(todayRecords.map(v => v.ip))].length;
-
-        // Top product today
-        const todayProductCounts = {};
-        todayRecords.forEach(v => {
-            const name = v.productName || '—';
-            todayProductCounts[name] = (todayProductCounts[name] || 0) + 1;
-        });
-        const topProductToday = Object.entries(todayProductCounts).sort((a, b) => b[1] - a[1])[0]?.[0] || '—';
-
-        // Daily summary aggregation
-        const dailyMap = {};
-
-        // 1. Add Website Visits (from siteVisitData)
-        if (siteVisitData && siteVisitData.dailyBreakdown) {
-            siteVisitData.dailyBreakdown.forEach(d => {
-                if (!dailyMap[d.date]) dailyMap[d.date] = { siteVisitors: 0, siteHits: 0, ips: new Set(), views: 0, products: {} };
-                dailyMap[d.date].siteVisitors = d.uniqueVisitors;
-                dailyMap[d.date].siteHits = d.totalVisits;
-            });
+        if (result.success) {
+            productViewData = result.data || [];
         }
-
-        // 2. Add Product Views (from visitor-log data)
-        data.forEach(v => {
-            if (!dailyMap[v.date]) dailyMap[v.date] = { siteVisitors: 0, siteHits: 0, ips: new Set(), views: 0, products: {} };
-            dailyMap[v.date].ips.add(v.ip);
-            dailyMap[v.date].views++;
-            const pn = v.productName || '—';
-            dailyMap[v.date].products[pn] = (dailyMap[v.date].products[pn] || 0) + 1;
-        });
-
-        const dailySummary = Object.entries(dailyMap)
-            .map(([date, d]) => ({
-                date,
-                siteVisitors: d.siteVisitors,
-                siteHits: d.siteHits,
-                uniqueIPs: d.ips.size,
-                totalViews: d.views,
-                topProduct: Object.entries(d.products).sort((a, b) => b[1] - a[1])[0]?.[0] || '—'
-            }))
-            .sort((a, b) => b.date.localeCompare(a.date));
-
-        const avgDaily = dailySummary.length > 0
-            ? Math.round(dailySummary.reduce((s, d) => s + d.uniqueIPs, 0) / dailySummary.length)
-            : 0;
-
-        // ── Stat tiles ──
-        const el = (id) => document.getElementById(id);
-        if (el('visitorStatTotal')) el('visitorStatTotal').textContent = data.length.toLocaleString();
-        if (el('visitorStatTodayIPs')) el('visitorStatTodayIPs').textContent = todayUniqueIPs.toLocaleString();
-        if (el('visitorStatTopProduct')) el('visitorStatTopProduct').textContent = topProductToday.length > 20 ? topProductToday.substring(0, 20) + '…' : topProductToday;
-        if (el('visitorStatAvgDaily')) el('visitorStatAvgDaily').textContent = avgDaily.toLocaleString();
-
-        // ── Daily Summary Table ──
-        const summaryBody = document.getElementById('visitorDailySummaryBody');
-        if (summaryBody) {
-            if (dailySummary.length === 0) {
-                summaryBody.innerHTML = '<tr><td colspan="4" style="text-align:center;padding:30px;color:var(--admin-text-muted);">No data yet.</td></tr>';
-            } else {
-                summaryBody.innerHTML = dailySummary.map(d => `
-                    <tr>
-                        <td style="font-weight:600;">${d.date}</td>
-                        <td style="text-align:right;font-weight:700;color:#059669;">${Math.max(d.siteVisitors || 0, d.uniqueIPs || 0)}</td>
-                        <td style="text-align:right;color:#64748b;">${Math.max(d.siteHits || 0, d.totalViews || 0)}</td>
-                        <td style="text-align:right;font-weight:700;color:#2563eb;">${d.uniqueIPs || 0}</td>
-                        <td>${d.topProduct}</td>
-                    </tr>
-                `).join('');
-            }
-        }
-
-        // ── Full Log Table with Date Grouping ──
-        const logBody = document.getElementById('visitorFullLogBody');
-        if (logBody) {
-            if (data.length === 0) {
-                logBody.innerHTML = '<tr><td colspan="5" style="text-align:center;padding:40px;color:var(--admin-text-muted);">No visitors recorded yet.</td></tr>';
-            } else {
-                // Group by date
-                const groupedByDate = {};
-                data.forEach(v => {
-                    const dateKey = v.date || (v.createdAt ? new Date(v.createdAt).toISOString().split('T')[0] : 'Unknown');
-                    if (!groupedByDate[dateKey]) {
-                        groupedByDate[dateKey] = [];
-                    }
-                    groupedByDate[dateKey].push(v);
-                });
-
-                // Sort dates descending
-                const sortedDates = Object.keys(groupedByDate).sort((a, b) => b.localeCompare(a));
-
-                let html = '';
-                sortedDates.forEach((date, index) => {
-                    const visitors = groupedByDate[date];
-                    const uniqueIPs = [...new Set(visitors.map(v => v.ip))].length;
-                    const isExpanded = index === 0; // First date expanded by default
-
-                    // Date header row (clickable)
-                    html += `
-                        <tr class="date-group-header" onclick="toggleDateGroup('${date}')" style="background: #f9fafb; cursor: pointer; border-top: 2px solid #e5e7eb;">
-                            <td colspan="5" style="padding: 12px 16px; font-weight: 600; color: #111827;">
-                                <span id="date-icon-${date}" style="display: inline-block; width: 20px; transition: transform 0.2s;">${isExpanded ? '▼' : '▶'}</span>
-                                ${date}
-                                <span style="margin-left: 12px; font-size: 13px; color: #6b7280; font-weight: 400;">
-                                    ${visitors.length} views • ${uniqueIPs} unique IP${uniqueIPs !== 1 ? 's' : ''}
-                                </span>
-                            </td>
-                        </tr>
-                    `;
-
-                    // Visitor rows for this date
-                    visitors.forEach(v => {
-                        const ua = v.userAgent || '';
-                        const shortUA = ua.length > 50 ? ua.substring(0, 50) + '…' : ua;
-                        const ref = v.referrer || '—';
-                        const shortRef = ref.length > 35 ? ref.substring(0, 35) + '…' : ref;
-                        const productName = v.productName || '—';
-                        const imageUrl = v.productImage ? resolveImageUrl(v.productImage) : '';
-                        const imgTag = imageUrl ? `<img src="${imageUrl}" style="width:32px;height:32px;border-radius:4px;object-fit:cover;margin-right:8px;vertical-align:middle;" onerror="this.style.display='none'">` : '';
-                        const timeStr = v.createdAt ? new Date(v.createdAt).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', second: '2-digit' }) : '—';
-
-                        html += `
-                            <tr class="date-group-row date-group-${date}" style="display: ${isExpanded ? 'table-row' : 'none'};">
-                                <td style="font-family: monospace; font-size: 12px; font-weight: 600; padding-left: 40px;">${v.ip || '—'}</td>
-                                <td style="font-size: 12px; color: #6b7280;">${timeStr}</td>
-                                <td>${imgTag}<span>${productName}</span></td>
-                                <td style="font-size: 11px; color: #9ca3af;" title="${ua}">${shortUA}</td>
-                                <td style="font-size: 11px; color: #9ca3af;" title="${ref}">${shortRef}</td>
-                            </tr>
-                        `;
-                    });
-                });
-
-                logBody.innerHTML = html;
-            }
-        }
-
     } catch (err) {
         console.error('Failed to load visitor page:', err);
-        const logBody = document.getElementById('visitorFullLogBody');
-        if (logBody) logBody.innerHTML = '<tr><td colspan="5" style="text-align:center;padding:40px;color:var(--admin-text-muted);">Failed to load visitors.</td></tr>';
+    }
+
+    // ── 3. Populate stat tiles with CORRECT values ──
+    const el = (id) => document.getElementById(id);
+
+    // Customer Visits = total site visit records (each = unique IP per day)
+    if (el('visitorStatCustomerVisits')) {
+        el('visitorStatCustomerVisits').textContent = (siteVisitData?.totalVisits || 0).toLocaleString();
+    }
+    // Unique Customers = distinct IPs all-time from SiteVisit
+    if (el('visitorStatUniqueCustomers')) {
+        el('visitorStatUniqueCustomers').textContent = (siteVisitData?.totalUniqueVisitors || 0).toLocaleString();
+    }
+    // Product Views = total product page click records
+    if (el('visitorStatProductViews')) {
+        el('visitorStatProductViews').textContent = productViewData.length.toLocaleString();
+    }
+    // Today's Visitors = unique IPs visiting today from SiteVisit
+    if (el('visitorStatToday')) {
+        el('visitorStatToday').textContent = (siteVisitData?.todayVisitors || 0).toLocaleString();
+    }
+
+    // ── 4. Build daily summary — keep data sources SEPARATE ──
+    const dailyMap = {};
+
+    // Add Website Visits from SiteVisit daily breakdown
+    if (siteVisitData && siteVisitData.dailyBreakdown) {
+        siteVisitData.dailyBreakdown.forEach(d => {
+            if (!dailyMap[d.date]) dailyMap[d.date] = { siteVisitors: 0, productViewerIPs: new Set(), productViews: 0, products: {} };
+            // SiteVisit has unique compound index (ip+date), so uniqueVisitors = totalVisits per day
+            dailyMap[d.date].siteVisitors = d.uniqueVisitors || d.totalVisits || 0;
+        });
+    }
+
+    // Add Product Views from ProductView visitor-log
+    productViewData.forEach(v => {
+        if (!dailyMap[v.date]) dailyMap[v.date] = { siteVisitors: 0, productViewerIPs: new Set(), productViews: 0, products: {} };
+        dailyMap[v.date].productViewerIPs.add(v.ip);
+        dailyMap[v.date].productViews++;
+        const pn = v.productName || '—';
+        dailyMap[v.date].products[pn] = (dailyMap[v.date].products[pn] || 0) + 1;
+    });
+
+    const dailySummary = Object.entries(dailyMap)
+        .map(([date, d]) => ({
+            date,
+            siteVisitors: d.siteVisitors,                    // Customer Visits (from SiteVisit)
+            uniqueProductViewers: d.productViewerIPs.size,    // Unique Customers who clicked products (from ProductView)
+            productViews: d.productViews,                     // Total product view clicks (from ProductView)
+            topProduct: Object.entries(d.products).sort((a, b) => b[1] - a[1])[0]?.[0] || '—'
+        }))
+        .sort((a, b) => b.date.localeCompare(a.date));
+
+    // ── 5. Render Daily Summary Table ──
+    const summaryBody = document.getElementById('visitorDailySummaryBody');
+    if (summaryBody) {
+        if (dailySummary.length === 0) {
+            summaryBody.innerHTML = '<tr><td colspan="5" style="text-align:center;padding:30px;color:var(--admin-text-muted);">No data yet.</td></tr>';
+        } else {
+            summaryBody.innerHTML = dailySummary.map(d => `
+                <tr>
+                    <td style="font-weight:600;">${d.date}</td>
+                    <td style="text-align:right;font-weight:700;color:#059669;">${d.siteVisitors}</td>
+                    <td style="text-align:right;font-weight:700;color:#2563eb;">${d.uniqueProductViewers}</td>
+                    <td style="text-align:right;color:#64748b;">${d.productViews}</td>
+                    <td>${d.topProduct}</td>
+                </tr>
+            `).join('');
+        }
+    }
+
+    // ── 6. Full Log Table with Date Grouping ──
+    const logBody = document.getElementById('visitorFullLogBody');
+    if (logBody) {
+        if (productViewData.length === 0) {
+            logBody.innerHTML = '<tr><td colspan="5" style="text-align:center;padding:40px;color:var(--admin-text-muted);">No visitors recorded yet.</td></tr>';
+        } else {
+            // Group by date
+            const groupedByDate = {};
+            productViewData.forEach(v => {
+                const dateKey = v.date || (v.createdAt ? new Date(v.createdAt).toISOString().split('T')[0] : 'Unknown');
+                if (!groupedByDate[dateKey]) groupedByDate[dateKey] = [];
+                groupedByDate[dateKey].push(v);
+            });
+
+            const sortedDates = Object.keys(groupedByDate).sort((a, b) => b.localeCompare(a));
+
+            let html = '';
+            sortedDates.forEach((date, index) => {
+                const visitors = groupedByDate[date];
+                const uniqueIPs = [...new Set(visitors.map(v => v.ip))].length;
+                const isExpanded = index === 0;
+
+                html += `
+                    <tr class="date-group-header" onclick="toggleDateGroup('${date}')" style="background: #f9fafb; cursor: pointer; border-top: 2px solid #e5e7eb;">
+                        <td colspan="5" style="padding: 12px 16px; font-weight: 600; color: #111827;">
+                            <span id="date-icon-${date}" style="display: inline-block; width: 20px; transition: transform 0.2s;">${isExpanded ? '▼' : '▶'}</span>
+                            ${date}
+                            <span style="margin-left: 12px; font-size: 13px; color: #6b7280; font-weight: 400;">
+                                ${visitors.length} views • ${uniqueIPs} unique IP${uniqueIPs !== 1 ? 's' : ''}
+                            </span>
+                        </td>
+                    </tr>
+                `;
+
+                visitors.forEach(v => {
+                    const ua = v.userAgent || '';
+                    const shortUA = ua.length > 50 ? ua.substring(0, 50) + '…' : ua;
+                    const ref = v.referrer || '—';
+                    const shortRef = ref.length > 35 ? ref.substring(0, 35) + '…' : ref;
+                    const productName = v.productName || '—';
+                    const imageUrl = v.productImage ? resolveImageUrl(v.productImage) : '';
+                    const imgTag = imageUrl ? `<img src="${imageUrl}" style="width:32px;height:32px;border-radius:4px;object-fit:cover;margin-right:8px;vertical-align:middle;" onerror="this.style.display='none'">` : '';
+                    const timeStr = v.createdAt ? new Date(v.createdAt).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', second: '2-digit' }) : '—';
+
+                    html += `
+                        <tr class="date-group-row date-group-${date}" style="display: ${isExpanded ? 'table-row' : 'none'};">
+                            <td style="font-family: monospace; font-size: 12px; font-weight: 600; padding-left: 40px;">${v.ip || '—'}</td>
+                            <td style="font-size: 12px; color: #6b7280;">${timeStr}</td>
+                            <td>${imgTag}<span>${productName}</span></td>
+                            <td style="font-size: 11px; color: #9ca3af;" title="${ua}">${shortUA}</td>
+                            <td style="font-size: 11px; color: #9ca3af;" title="${ref}">${shortRef}</td>
+                        </tr>
+                    `;
+                });
+            });
+
+            logBody.innerHTML = html;
+        }
     }
 }
 

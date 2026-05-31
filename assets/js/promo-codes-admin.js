@@ -435,6 +435,8 @@
     // PRODUCT ASSIGNMENT MODAL
     // ═══════════════════════════════════════════════════
 
+    let allCategoriesForPromo = [];
+
     window.openPromoProductsModal = async function (promoId) {
         currentPromoId = promoId;
         const promo = allPromoCodes.find(p => p._id === promoId);
@@ -454,8 +456,20 @@
             }
         }
 
+        // Load categories for the browse-by-category tabs
+        if (allCategoriesForPromo.length === 0) {
+            try {
+                const res = await fetch(`${API()}/categories`, { headers: headers() });
+                const data = await res.json();
+                allCategoriesForPromo = data.data || data.categories || [];
+            } catch (err) {
+                console.error('[PROMO] Categories load error:', err);
+            }
+        }
+
         renderPromoProducts(promo);
         setupProductSearch(promo);
+        setupCategoryTabs(promo);
     };
 
     window.closePromoProductsModal = function () {
@@ -523,48 +537,72 @@
 
         function renderDropdown(query) {
             const q = (query || '').toLowerCase().trim();
-            const existingIds = new Set((promo.products || []).map(p => p.product?._id || p.product));
-            
-            let matches = allProducts.filter(p => !existingIds.has(p._id));
-            
-            if (q.length > 0) {
-                matches = matches.filter(p => 
-                    p.name.toLowerCase().includes(q) || 
-                    (p.nameAr && p.nameAr.includes(q)) || 
-                    (p.sku && p.sku.toLowerCase().includes(q))
-                );
+            if (q.length === 0) {
+                resultsDiv.style.display = 'none';
+                return;
             }
 
+            const existingMap = {};
+            (promo.products || []).forEach(pp => {
+                const pid = pp.product?._id || pp.product;
+                existingMap[pid] = pp;
+            });
+
+            // Search ALL products (assigned + unassigned)
+            let matches = allProducts.filter(p =>
+                p.name.toLowerCase().includes(q) ||
+                (p.nameAr && p.nameAr.includes(q)) ||
+                (p.sku && p.sku.toLowerCase().includes(q))
+            );
+
             if (matches.length === 0) {
-                resultsDiv.innerHTML = `<div style="padding:16px;color:var(--admin-text-muted);text-align:center;font-size:13px;">${q ? 'No matching products' : 'All products already assigned'}</div>`;
+                resultsDiv.innerHTML = `<div style="padding:16px;color:var(--admin-text-muted);text-align:center;font-size:13px;">No matching products</div>`;
                 resultsDiv.style.display = 'block';
                 return;
             }
 
-            // Show up to 20 products
-            const shown = matches.slice(0, 20);
+            // Show up to 25 products
+            const shown = matches.slice(0, 25);
             const remaining = matches.length - shown.length;
 
             resultsDiv.innerHTML = shown.map(p => {
                 const img = p.images?.[0]?.url || '';
                 const imgHtml = img ? `<img src="${img}" style="width:36px;height:36px;object-fit:cover;border-radius:6px;flex-shrink:0;" alt="" onerror="this.style.display='none'">` : '<div style="width:36px;height:36px;border-radius:6px;background:var(--admin-surface-3);flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:14px;">📦</div>';
-                return `<div style="display:flex;align-items:center;gap:12px;padding:10px 14px;cursor:pointer;border-bottom:1px solid var(--admin-border);transition:background 0.15s;" 
-                    onmouseover="this.style.background='var(--admin-surface-2)'" onmouseout="this.style.background='transparent'"
-                    onclick="addProductToPromo('${promo._id}', '${p._id}', '${p.name.replace(/'/g, "\\'")}', ${p.price})">
-                    ${imgHtml}
-                    <div style="flex:1;min-width:0;">
-                        <div style="font-weight:500;font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${p.name}</div>
-                        <div style="font-size:11px;color:var(--admin-text-muted);">${p.price.toFixed(3)} KWD${p.sku ? ' · ' + p.sku : ''}</div>
-                    </div>
-                    <span style="color:var(--admin-gold,#D4AF37);font-weight:600;font-size:12px;white-space:nowrap;background:var(--admin-gold-glow);padding:4px 10px;border-radius:6px;">+ Add</span>
-                </div>`;
+                const isAssigned = !!existingMap[p._id];
+                const pp = existingMap[p._id];
+
+                if (isAssigned) {
+                    // Already assigned — show current discount info + hint to edit in table
+                    const discLabel = pp.discountType === 'percentage' ? `${pp.discountValue}%` : `${pp.discountValue} KWD`;
+                    return `<div style="display:flex;align-items:center;gap:12px;padding:10px 14px;cursor:pointer;border-bottom:1px solid var(--admin-border);transition:background 0.15s;background:rgba(5,150,105,0.05);" 
+                        onmouseover="this.style.background='rgba(5,150,105,0.1)'" onmouseout="this.style.background='rgba(5,150,105,0.05)'"
+                        onclick="document.getElementById('promoProductsTableBody').scrollIntoView({behavior:'smooth',block:'center'});document.getElementById('promoProductSearchResults').style.display='none';">
+                        ${imgHtml}
+                        <div style="flex:1;min-width:0;">
+                            <div style="font-weight:500;font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${p.name}</div>
+                            <div style="font-size:11px;color:#059669;font-weight:600;">✅ Assigned · ${discLabel} off · Max Qty: ${pp.maxDiscountedQuantity || '∞'}</div>
+                        </div>
+                        <span style="color:#059669;font-weight:600;font-size:11px;white-space:nowrap;background:rgba(5,150,105,0.1);padding:4px 10px;border-radius:6px;">✏️ Edit below</span>
+                    </div>`;
+                } else {
+                    // Not assigned — show + Add button
+                    return `<div style="display:flex;align-items:center;gap:12px;padding:10px 14px;cursor:pointer;border-bottom:1px solid var(--admin-border);transition:background 0.15s;" 
+                        onmouseover="this.style.background='var(--admin-surface-2)'" onmouseout="this.style.background='transparent'"
+                        onclick="addProductToPromo('${promo._id}', '${p._id}', '${p.name.replace(/'/g, "\\'")}', ${p.price})">
+                        ${imgHtml}
+                        <div style="flex:1;min-width:0;">
+                            <div style="font-weight:500;font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${p.name}</div>
+                            <div style="font-size:11px;color:var(--admin-text-muted);">${p.price.toFixed(3)} KWD${p.sku ? ' · ' + p.sku : ''}</div>
+                        </div>
+                        <span style="color:var(--admin-gold,#D4AF37);font-weight:600;font-size:12px;white-space:nowrap;background:var(--admin-gold-glow);padding:4px 10px;border-radius:6px;">+ Add</span>
+                    </div>`;
+                }
             }).join('') + (remaining > 0 ? `<div style="padding:10px;text-align:center;font-size:11px;color:var(--admin-text-muted);">+${remaining} more products — type to filter</div>` : '');
             resultsDiv.style.display = 'block';
         }
 
-        // Show dropdown on focus/click
-        newInput.addEventListener('focus', () => renderDropdown(newInput.value));
-        newInput.addEventListener('click', () => renderDropdown(newInput.value));
+        // Only show dropdown when typing (not on empty focus)
+        newInput.addEventListener('focus', () => { if (newInput.value.trim()) renderDropdown(newInput.value); });
 
         // Filter on input
         let debounce;
@@ -581,6 +619,104 @@
             }
         });
     }
+
+    // ═══════════════════════════════════════════════════
+    // CATEGORY TABS FOR BROWSING PRODUCTS
+    // ═══════════════════════════════════════════════════
+
+    function setupCategoryTabs(promo) {
+        const tabsContainer = document.getElementById('promoCategoryTabs');
+        const productsContainer = document.getElementById('promoCategoryProducts');
+        if (!tabsContainer || !productsContainer) return;
+
+        // Build category tabs
+        const activeCategories = allCategoriesForPromo.filter(c => c.isActive !== false);
+
+        tabsContainer.innerHTML = activeCategories.map(cat => {
+            const count = allProducts.filter(p => {
+                const catId = p.category?._id || p.category;
+                return catId === cat._id;
+            }).length;
+            return `<button class="admin-btn promo-cat-tab" data-cat-id="${cat._id}" 
+                style="padding:5px 14px;font-size:12px;border-radius:8px;border:1px solid var(--admin-border);background:var(--admin-surface);color:var(--admin-text);cursor:pointer;transition:all 0.15s;white-space:nowrap;"
+                onclick="selectPromoCategoryTab('${cat._id}', '${promo._id}')">
+                ${cat.name} <span style="font-size:10px;opacity:0.6;">(${count})</span>
+            </button>`;
+        }).join('');
+
+        productsContainer.style.display = 'none';
+    }
+
+    window.selectPromoCategoryTab = function (categoryId, promoId) {
+        const promo = allPromoCodes.find(p => p._id === promoId);
+        if (!promo) return;
+
+        // Highlight active tab
+        document.querySelectorAll('.promo-cat-tab').forEach(btn => {
+            if (btn.dataset.catId === categoryId) {
+                btn.style.background = 'var(--admin-gold, #D4AF37)';
+                btn.style.color = '#1a1a2e';
+                btn.style.borderColor = 'var(--admin-gold, #D4AF37)';
+                btn.style.fontWeight = '700';
+            } else {
+                btn.style.background = 'var(--admin-surface)';
+                btn.style.color = 'var(--admin-text)';
+                btn.style.borderColor = 'var(--admin-border)';
+                btn.style.fontWeight = '400';
+            }
+        });
+
+        // Filter products by category
+        const categoryProducts = allProducts.filter(p => {
+            const catId = p.category?._id || p.category;
+            return catId === categoryId;
+        });
+
+        const existingMap = {};
+        (promo.products || []).forEach(pp => {
+            const pid = pp.product?._id || pp.product;
+            existingMap[pid] = pp;
+        });
+
+        const productsContainer = document.getElementById('promoCategoryProducts');
+
+        if (categoryProducts.length === 0) {
+            productsContainer.innerHTML = `<div style="padding:24px;text-align:center;color:var(--admin-text-muted);font-size:13px;">No products in this category</div>`;
+            productsContainer.style.display = 'block';
+            return;
+        }
+
+        productsContainer.innerHTML = categoryProducts.map(p => {
+            const img = p.images?.[0]?.url || '';
+            const imgHtml = img ? `<img src="${img}" style="width:40px;height:40px;object-fit:cover;border-radius:6px;flex-shrink:0;" alt="" onerror="this.style.display='none'">` : '<div style="width:40px;height:40px;border-radius:6px;background:var(--admin-surface-3);flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:16px;">📦</div>';
+            const isAssigned = !!existingMap[p._id];
+            const pp = existingMap[p._id];
+
+            if (isAssigned) {
+                const discLabel = pp.discountType === 'percentage' ? `${pp.discountValue}%` : `${pp.discountValue} KWD`;
+                return `<div style="display:flex;align-items:center;gap:12px;padding:10px 14px;border-bottom:1px solid var(--admin-border);background:rgba(5,150,105,0.04);">
+                    ${imgHtml}
+                    <div style="flex:1;min-width:0;">
+                        <div style="font-weight:500;font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${p.name}</div>
+                        <div style="font-size:11px;color:#059669;font-weight:600;">✅ Assigned · ${discLabel} off · Max Qty: ${pp.maxDiscountedQuantity || '∞'}</div>
+                    </div>
+                    <button class="admin-btn" style="padding:4px 10px;font-size:11px;color:#ef4444;white-space:nowrap;" onclick="removePromoProduct('${promo._id}', '${p._id}')">✕ Remove</button>
+                </div>`;
+            } else {
+                return `<div style="display:flex;align-items:center;gap:12px;padding:10px 14px;border-bottom:1px solid var(--admin-border);cursor:pointer;transition:background 0.15s;"
+                    onmouseover="this.style.background='var(--admin-surface-2)'" onmouseout="this.style.background='transparent'"
+                    onclick="addProductToPromo('${promo._id}', '${p._id}', '${p.name.replace(/'/g, "\\'")}', ${p.price})">
+                    ${imgHtml}
+                    <div style="flex:1;min-width:0;">
+                        <div style="font-weight:500;font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${p.name}</div>
+                        <div style="font-size:11px;color:var(--admin-text-muted);">${p.price.toFixed(3)} KWD${p.sku ? ' · ' + p.sku : ''}</div>
+                    </div>
+                    <span style="color:var(--admin-gold,#D4AF37);font-weight:600;font-size:12px;white-space:nowrap;background:var(--admin-gold-glow);padding:4px 10px;border-radius:6px;">+ Add</span>
+                </div>`;
+            }
+        }).join('');
+        productsContainer.style.display = 'block';
+    };
 
     window.addProductToPromo = async function (promoId, productId, productName, price) {
         // Read global discount settings from the UI
@@ -605,6 +741,10 @@
             if (updatedPromo) {
                 renderPromoProducts(updatedPromo);
                 setupProductSearch(updatedPromo);
+                setupCategoryTabs(updatedPromo);
+                // Re-select active category tab if one was selected
+                const activeTab = document.querySelector('.promo-cat-tab[style*="font-weight: 700"], .promo-cat-tab[style*="font-weight:700"]');
+                if (activeTab) selectPromoCategoryTab(activeTab.dataset.catId, promoId);
             }
             document.getElementById('promoProductSearch').value = '';
             document.getElementById('promoProductSearchResults').style.display = 'none';
@@ -658,6 +798,10 @@
             if (updatedPromo) {
                 renderPromoProducts(updatedPromo);
                 setupProductSearch(updatedPromo);
+                setupCategoryTabs(updatedPromo);
+                // Re-select active category tab if one was selected
+                const activeTab = document.querySelector('.promo-cat-tab[style*="font-weight: 700"], .promo-cat-tab[style*="font-weight:700"]');
+                if (activeTab) selectPromoCategoryTab(activeTab.dataset.catId, promoId);
             }
             showToast('Product removed from promo', 'success');
         } catch (err) {
