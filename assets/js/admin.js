@@ -877,6 +877,7 @@ window.editProduct = async (id) => {
     try {
         const response = await ProductsAPI.getById(id);
         if (response.success) {
+            productForm.reset(); // Clear any previous inputs, especially file inputs
             const p = response.data;
             document.getElementById('productId').value = p._id;
             document.getElementById('modalTitle').textContent = 'Edit Product';
