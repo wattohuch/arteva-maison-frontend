@@ -116,10 +116,17 @@ function renderTrackingUI(order, isPublic) {
     // Show content
     document.getElementById('trackingContent').style.display = 'grid';
 
-    // Initialize Map
-    const deliveryCoords = isPublic
-        ? (order.deliveryArea?.coordinates || { lat: 29.3759, lng: 47.9774 })
-        : (order.shippingAddress?.coordinates || { lat: 29.3759, lng: 47.9774 });
+    // Initialize Map — use proper null checks to avoid || treating 0 as falsy
+    function getSafeCoords(coordsObj) {
+        if (coordsObj && coordsObj.lat != null && coordsObj.lng != null && !(coordsObj.lat === 0 && coordsObj.lng === 0)) {
+            return { lat: coordsObj.lat, lng: coordsObj.lng };
+        }
+        return { lat: 29.3759, lng: 47.9774 }; // Kuwait City default
+    }
+    const rawCoords = isPublic
+        ? order.deliveryArea?.coordinates
+        : order.shippingAddress?.coordinates;
+    const deliveryCoords = getSafeCoords(rawCoords);
 
     initMap(order, deliveryCoords);
 
@@ -138,8 +145,8 @@ function renderTrackingUI(order, isPublic) {
 }
 
 function initMap(order, coords) {
-    const deliveryLat = coords.lat || 29.3759;
-    const deliveryLng = coords.lng || 47.9774;
+    const deliveryLat = (coords.lat != null && coords.lat !== 0) ? coords.lat : 29.3759;
+    const deliveryLng = (coords.lng != null && coords.lng !== 0) ? coords.lng : 47.9774;
 
     map = L.map('map', {
         zoomControl: true,

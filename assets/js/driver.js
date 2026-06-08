@@ -146,19 +146,20 @@ window.openOrderMap = (orderId) => {
     const modal = document.getElementById('mapView');
     modal.classList.remove('hidden');
 
+    // Helper: safely extract coordinates, only fall back if truly missing
+    function getOrderCoords(ord) {
+        const c = ord.shippingAddress?.coordinates;
+        if (c && c.lat != null && c.lng != null && !(c.lat === 0 && c.lng === 0)) {
+            return { lat: c.lat, lng: c.lng };
+        }
+        return { lat: DEFAULT_LAT, lng: DEFAULT_LNG };
+    }
+
     // Setup Map
     setTimeout(() => {
         map.invalidateSize();
 
-        let lat = order.shippingAddress?.coordinates?.lat || DEFAULT_LAT;
-        let lng = order.shippingAddress?.coordinates?.lng || DEFAULT_LNG;
-
-        // If no coords, approximate (in real app, use geocoding)
-        if (!order.shippingAddress?.coordinates?.lat) {
-            // Visualize "somewhere" for demo if no coords
-            lat = DEFAULT_LAT + 0.01;
-            lng = DEFAULT_LNG + 0.01;
-        }
+        const { lat, lng } = getOrderCoords(order);
 
         map.setView([lat, lng], 15);
 
@@ -181,13 +182,21 @@ function renderControls(order) {
     const isCompleted = order.orderStatus === 'delivered';
     const isStarted = order.orderStatus === 'out_for_delivery';
 
+    // Safe coordinate access for Navigate button
+    const navLat = order.shippingAddress?.coordinates?.lat;
+    const navLng = order.shippingAddress?.coordinates?.lng;
+    const hasCoords = navLat != null && navLng != null && !(navLat === 0 && navLng === 0);
+    const navUrl = hasCoords
+        ? `https://maps.google.com/?q=${navLat},${navLng}`
+        : `https://maps.google.com/?q=${encodeURIComponent(order.shippingAddress.street + ', ' + order.shippingAddress.city)}`;
+
     let buttons = `
         <div class="action-grid">
             <button class="btn-action" onclick="window.open('tel:${order.shippingAddress.phone || order.user?.phone}')">
                 <span style="font-size:24px">📞</span>
                 Call
             </button>
-            <button class="btn-action" onclick="window.open('https://maps.google.com/?q=${order.shippingAddress.coordinates?.lat},${order.shippingAddress.coordinates?.lng}')">
+            <button class="btn-action" onclick="window.open('${navUrl}')">
                 <span style="font-size:24px">🗺️</span>
                 Navigate
             </button>
