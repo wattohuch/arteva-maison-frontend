@@ -213,6 +213,7 @@ function fillAddressForm(addr) {
                 const newLatLng = new L.LatLng(lat, lng);
                 window.marker.setLatLng(newLatLng);
                 window.map.setView(newLatLng, 15);
+                window._mapPinned = true;
                 updateCoordinates(lat, lng);
 
                 // Force map to refresh its container size
@@ -230,6 +231,7 @@ function fillAddressForm(addr) {
                         const newLatLng = new L.LatLng(lat, lng);
                         window.marker.setLatLng(newLatLng);
                         window.map.setView(newLatLng, 15);
+                        window._mapPinned = true;
                         updateCoordinates(lat, lng);
                         window.map.invalidateSize();
                         // console.log('Map updated to (retry):', lat, lng);
@@ -249,6 +251,7 @@ function fillAddressForm(addr) {
 // ============================================
 window.map = null;
 window.marker = null;
+window._mapPinned = false; // Track if user actually placed a pin
 
 function initMap() {
     // Fix for Leaflet marker icons not loading due to browser restrictions
@@ -281,6 +284,7 @@ function initMap() {
     window.marker.on('dragend', function (e) {
         const position = window.marker.getLatLng();
         updateCoordinates(position.lat, position.lng);
+        window._mapPinned = true;
     });
 
     // Click map to place pin (manual pinning)
@@ -288,6 +292,7 @@ function initMap() {
         const { lat, lng } = e.latlng;
         window.marker.setLatLng([lat, lng]);
         updateCoordinates(lat, lng);
+        window._mapPinned = true;
     });
 
     // Handle "Use Current Location"
@@ -303,6 +308,7 @@ function initMap() {
                         const { latitude, longitude } = position.coords;
                         window.map.setView([latitude, longitude], 15);
                         window.marker.setLatLng([latitude, longitude]);
+                        window._mapPinned = true;
                         updateCoordinates(latitude, longitude);
 
                         locateBtn.innerHTML = '<span style="margin-right: 4px;">📍</span> Found!';
@@ -333,8 +339,8 @@ function initMap() {
         });
     }
 
-    // Initial value
-    updateCoordinates(defaultLat, defaultLng);
+    // Don't pre-fill coordinates — only set them when user actually pins a location
+    // updateCoordinates(defaultLat, defaultLng);
 
     // Fix map rendering issues in tabs/hidden containers (if any)
     setTimeout(() => {
@@ -548,10 +554,10 @@ function collectShippingAddress() {
         zipCode: document.getElementById('zipCode')?.value,
         phone: normalizedPhone,
         label: document.getElementById('addressType')?.value || 'Home',
-        coordinates: {
+        coordinates: window._mapPinned ? {
             lat: parseFloat(document.getElementById('lat')?.value || 0),
             lng: parseFloat(document.getElementById('lng')?.value || 0)
-        }
+        } : undefined
     };
 
     if (!shippingAddress.street || !shippingAddress.city) {
