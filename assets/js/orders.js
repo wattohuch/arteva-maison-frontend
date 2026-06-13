@@ -173,6 +173,7 @@ function renderOrderDetails(order) {
                     '<h3 style="margin-bottom: var(--space-4); border-bottom: 1px solid var(--border-light); padding-bottom: var(--space-2);">Items</h3>' +
                     '<div class="order-items-list" style="display: flex; flex-direction: column; gap: var(--space-4);">' +
                         order.items.map(function(item) {
+                            var originalUnit = parseFloat(item.price).toFixed(3);
                             var originalTotal = parseFloat(item.price * item.quantity).toFixed(3);
                             var itemDiscount = null;
                             if (order.promoCode && order.promoCode.discounts) {
@@ -183,12 +184,26 @@ function renderOrderDetails(order) {
                                 });
                             }
                             var priceHtml;
+                            var promoLabelHtml = '';
                             if (itemDiscount) {
+                                var discountedUnit = ((item.price * item.quantity - itemDiscount.discountAmount) / item.quantity).toFixed(3);
                                 var discountedTotal = (item.price * item.quantity - itemDiscount.discountAmount).toFixed(3);
-                                priceHtml = '<span style="text-decoration: line-through; color: var(--text-muted); font-size: var(--fs-sm);">' + originalTotal + ' ' + currency + '</span>' +
-                                    '<br><span style="color: #059669; font-weight: 600;">' + discountedTotal + ' ' + currency + '</span>';
+                                promoLabelHtml = '<div style="color: #059669; font-size: 11px; font-weight: 600; margin-top: 4px;">🏷️ Promo: ' + order.promoCode.code + ' (-' + parseFloat(itemDiscount.discountAmount).toFixed(3) + ' KWD)</div>';
+                                priceHtml = '<div style="font-size: var(--fs-sm); color: var(--text-muted);">' +
+                                                'Unit: <span style="text-decoration: line-through;">' + originalUnit + ' ' + currency + '</span> ' +
+                                                '<span style="color: #059669; font-weight: 600;">' + discountedUnit + ' ' + currency + '</span>' +
+                                            '</div>' +
+                                            '<div style="font-weight: 500; margin-top: 4px;">' +
+                                                'Total: <span style="text-decoration: line-through; color: var(--text-muted); font-size: var(--fs-sm);">' + originalTotal + ' ' + currency + '</span> ' +
+                                                '<span style="color: #059669; font-weight: 600;">' + discountedTotal + ' ' + currency + '</span>' +
+                                            '</div>';
                             } else {
-                                priceHtml = originalTotal + ' ' + currency;
+                                priceHtml = '<div style="font-size: var(--fs-sm); color: var(--text-muted);">' +
+                                                'Unit: ' + originalUnit + ' ' + currency +
+                                            '</div>' +
+                                            '<div style="font-weight: 500; margin-top: 4px;">' +
+                                                'Total: ' + originalTotal + ' ' + currency +
+                                            '</div>';
                             }
                             return '<div class="order-item" style="display: flex; gap: var(--space-4); align-items: center;">' +
                                 '<div class="item-img" style="width: 60px; height: 60px; border: 1px solid var(--border-light); border-radius: var(--radius-sm); overflow: hidden;">' +
@@ -197,8 +212,9 @@ function renderOrderDetails(order) {
                                 '<div class="item-info" style="flex: 1;">' +
                                     '<div style="font-weight: 500;">' + item.name + '</div>' +
                                     '<div style="color: var(--text-muted); font-size: var(--fs-sm);">' + 'Qty: ' + item.quantity + '</div>' +
+                                    promoLabelHtml +
                                 '</div>' +
-                                '<div class="item-price" style="font-weight: 500; text-align: right;">' +
+                                '<div class="item-price" style="text-align: right;">' +
                                     priceHtml +
                                 '</div>' +
                             '</div>';
