@@ -117,9 +117,10 @@ function renderOrderDetails(order) {
 
     const shipping = order.shippingAddress;
 
-    // Calculate totals
-    const subtotal = order.items.reduce((sum, item) => sum + (item.price * item.quantity), 0);
-    const shippingCost = order.total - subtotal; // Approximate if not stored separately
+    // Calculate totals - use server values when available
+    const subtotal = order.subtotal || order.items.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+    const shippingCost = order.shippingCost != null ? order.shippingCost : 2.0;
+    const promoDiscount = (order.promoCode && order.promoCode.totalDiscount) ? order.promoCode.totalDiscount : (order.discount || 0);
 
     // WhatsApp cancel/return for detail view
     let actionBtnHtml = '';
@@ -172,16 +173,33 @@ function renderOrderDetails(order) {
                     '<h3 style="margin-bottom: var(--space-4); border-bottom: 1px solid var(--border-light); padding-bottom: var(--space-2);">Items</h3>' +
                     '<div class="order-items-list" style="display: flex; flex-direction: column; gap: var(--space-4);">' +
                         order.items.map(function(item) {
+                            var originalTotal = parseFloat(item.price * item.quantity).toFixed(3);
+                            var itemDiscount = null;
+                            if (order.promoCode && order.promoCode.discounts) {
+                                itemDiscount = order.promoCode.discounts.find(function(d) {
+                                    var dProd = (d.product && d.product._id) ? d.product._id : (d.product || '');
+                                    var iProd = (item.product && item.product._id) ? item.product._id : (item.product || item._id || '');
+                                    return String(dProd) === String(iProd);
+                                });
+                            }
+                            var priceHtml;
+                            if (itemDiscount) {
+                                var discountedTotal = (item.price * item.quantity - itemDiscount.discountAmount).toFixed(3);
+                                priceHtml = '<span style="text-decoration: line-through; color: var(--text-muted); font-size: var(--fs-sm);">' + originalTotal + ' ' + currency + '</span>' +
+                                    '<br><span style="color: #059669; font-weight: 600;">' + discountedTotal + ' ' + currency + '</span>';
+                            } else {
+                                priceHtml = originalTotal + ' ' + currency;
+                            }
                             return '<div class="order-item" style="display: flex; gap: var(--space-4); align-items: center;">' +
                                 '<div class="item-img" style="width: 60px; height: 60px; border: 1px solid var(--border-light); border-radius: var(--radius-sm); overflow: hidden;">' +
                                     '<img src="' + (item.image || 'assets/images/logo.png') + '" style="width: 100%; height: 100%; object-fit: cover;">' +
                                 '</div>' +
                                 '<div class="item-info" style="flex: 1;">' +
                                     '<div style="font-weight: 500;">' + item.name + '</div>' +
-                                    '<div style="color: var(--text-muted); font-size: var(--fs-sm);">Qty: ' + item.quantity + '</div>' +
+                                    '<div style="color: var(--text-muted); font-size: var(--fs-sm);">' + 'Qty: ' + item.quantity + '</div>' +
                                 '</div>' +
-                                '<div class="item-price" style="font-weight: 500;">' +
-                                    parseFloat(item.price * item.quantity).toFixed(3) + ' ' + currency +
+                                '<div class="item-price" style="font-weight: 500; text-align: right;">' +
+                                    priceHtml +
                                 '</div>' +
                             '</div>';
                         }).join('') +
@@ -203,10 +221,16 @@ function renderOrderDetails(order) {
                             '<span>Subtotal</span>' +
                             '<span>' + subtotal.toFixed(3) + ' ' + currency + '</span>' +
                         '</div>' +
-                        '<div style="display: flex; justify-content: space-between; margin-bottom: var(--space-2); padding-bottom: var(--space-2); border-bottom: 1px solid var(--border-light);">' +
+                        '<div style="display: flex; justify-content: space-between; margin-bottom: var(--space-2);">' +
                             '<span>Shipping</span>' +
                             '<span>' + (shippingCost > 0 ? shippingCost.toFixed(3) + ' ' + currency : 'Free') + '</span>' +
                         '</div>' +
+                        (order.promoCode && order.promoCode.code ?
+                            '<div style="display: flex; justify-content: space-between; margin-bottom: var(--space-2); color: #059669; font-style: italic;">' +
+                                '<span>Promo Code: ' + order.promoCode.code + '</span>' +
+                                '<span>-' + parseFloat(promoDiscount).toFixed(3) + ' ' + currency + '</span>' +
+                            '</div>' : '') +
+                        '<div style="padding-top: var(--space-2); border-top: 1px solid var(--border-light); margin-bottom: var(--space-2);"></div>' +
                         '<div style="display: flex; justify-content: space-between; font-weight: bold; font-size: var(--fs-lg);">' +
                             '<span>Total</span>' +
                             '<span>' + parseFloat(order.total).toFixed(3) + ' ' + currency + '</span>' +

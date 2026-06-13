@@ -1136,20 +1136,53 @@ window.viewOrder = (orderId) => {
         document.getElementById('modalShippingAddress').textContent = 'No shipping address';
     }
 
-    document.getElementById('modalOrderItems').innerHTML = order.items.map(item => `
+    const promoDiscounts = order.promoCode?.discounts || [];
+    document.getElementById('modalOrderItems').innerHTML = order.items.map(item => {
+        const itemDiscount = promoDiscounts.find(d => {
+            const dProd = (d.product?._id || d.product || '').toString();
+            const iProd = (item.product?._id || item.product || item._id || '').toString();
+            return dProd && iProd && dProd === iProd;
+        });
+        const originalTotal = (item.price * item.quantity).toFixed(3);
+        let priceCell, totalCell;
+        if (itemDiscount) {
+            const discountedPrice = ((item.price * item.quantity - itemDiscount.discountAmount) / item.quantity).toFixed(3);
+            const discountedTotal = (item.price * item.quantity - itemDiscount.discountAmount).toFixed(3);
+            priceCell = `<span style="text-decoration:line-through;color:#999">${item.price.toFixed(3)}</span><br><span style="color:#059669;font-weight:600">${discountedPrice}</span>`;
+            totalCell = `<span style="text-decoration:line-through;color:#999">${originalTotal}</span><br><span style="color:#059669;font-weight:600">${discountedTotal}</span>`;
+        } else {
+            priceCell = item.price.toFixed(3);
+            totalCell = originalTotal;
+        }
+        return `
         <tr>
             <td style="display: flex; align-items: center; gap: 10px;">
                 <img src="${resolveImageUrl(item.image)}" class="product-thumb" style="width: 36px; height: 36px;" onerror="this.src='assets/images/products/placeholder.png';">
                 <span>${item.name}</span>
             </td>
-            <td style="text-align: center;">${item.price.toFixed(3)}</td>
+            <td style="text-align: center;">${priceCell}</td>
             <td style="text-align: center;">${item.quantity}</td>
-            <td style="text-align: right;">${(item.price * item.quantity).toFixed(3)}</td>
-        </tr>
-    `).join('');
+            <td style="text-align: right;">${totalCell}</td>
+        </tr>`;
+    }).join('');
 
-    document.getElementById('modalSubtotal').textContent = order.total.toFixed(3);
+    document.getElementById('modalSubtotal').textContent = (order.subtotal || order.total).toFixed(3);
     document.getElementById('modalTotal').textContent = order.total.toFixed(3);
+
+    // Add promo code info to modal
+    const existingPromoRow = document.getElementById('modalPromoRow');
+    if (existingPromoRow) existingPromoRow.remove();
+    if (order.promoCode && order.promoCode.code) {
+        const totalEl = document.getElementById('modalTotal');
+        const totalRow = totalEl ? totalEl.closest('tr') || totalEl.parentElement : null;
+        if (totalRow && totalRow.parentElement) {
+            const promoRow = document.createElement('div');
+            promoRow.id = 'modalPromoRow';
+            promoRow.style.cssText = 'display:flex;justify-content:space-between;padding:6px 0;color:#059669;font-style:italic;font-size:13px;';
+            promoRow.innerHTML = '<span>🏷️ Promo: ' + order.promoCode.code + '</span><span>-' + (order.promoCode.totalDiscount || order.discount || 0).toFixed(3) + ' KWD</span>';
+            totalRow.parentElement.insertBefore(promoRow, totalRow);
+        }
+    }
 
     // Add Action Buttons
     const footer = document.querySelector('#orderModal .admin-modal-footer');
