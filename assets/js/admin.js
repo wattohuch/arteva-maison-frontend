@@ -1174,13 +1174,18 @@ window.viewOrder = (orderId) => {
     if (existingPromoRow) existingPromoRow.remove();
     if (order.promoCode && order.promoCode.code) {
         const totalEl = document.getElementById('modalTotal');
-        const totalRow = totalEl ? totalEl.closest('tr') || totalEl.parentElement : null;
-        if (totalRow && totalRow.parentElement) {
-            const promoRow = document.createElement('div');
+        const totalSection = totalEl ? totalEl.closest('.order-total-section') : null;
+        if (totalSection) {
+            const promoRow = document.createElement('p');
             promoRow.id = 'modalPromoRow';
-            promoRow.style.cssText = 'display:flex;justify-content:space-between;padding:6px 0;color:#059669;font-style:italic;font-size:13px;';
-            promoRow.innerHTML = '<span>🏷️ Promo: ' + order.promoCode.code + '</span><span>-' + (order.promoCode.totalDiscount || order.discount || 0).toFixed(3) + ' KWD</span>';
-            totalRow.parentElement.insertBefore(promoRow, totalRow);
+            promoRow.style.cssText = 'margin: 4px 0; font-size: 14px; color: #059669; font-style: italic;';
+            promoRow.innerHTML = '🏷️ Promo: ' + order.promoCode.code + ' <span>-' + (order.promoCode.totalDiscount || order.discount || 0).toFixed(3) + ' KWD</span>';
+            const grandTotalP = totalSection.querySelector('.grand-total');
+            if (grandTotalP) {
+                totalSection.insertBefore(promoRow, grandTotalP);
+            } else {
+                totalSection.appendChild(promoRow);
+            }
         }
     }
 
