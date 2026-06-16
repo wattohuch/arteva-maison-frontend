@@ -104,6 +104,9 @@
             renderPromoUI();
             recalculateTotals();
 
+            // Refresh checkout item display to show per-item discounts
+            if (typeof window.updateOrderSummary === 'function') window.updateOrderSummary();
+
             const lang = localStorage.getItem('site_lang') || 'en';
             const msg = lang === 'ar'
                 ? `تم تطبيق كود "${appliedPromo.code}" — خصم ${appliedPromo.totalDiscount.toFixed(3)} د.ك`
@@ -127,6 +130,9 @@
         savePromoState();
         renderPromoUI();
         recalculateTotals();
+
+        // Refresh checkout item display to remove per-item discount indicators
+        if (typeof window.updateOrderSummary === 'function') window.updateOrderSummary();
     }
 
     // ═══════════════════════════════════════════════════

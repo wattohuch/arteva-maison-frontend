@@ -458,6 +458,10 @@ function getPaymentMethodId(type) {
         method = availablePaymentMethods.find(
             m => (m.name || '').toLowerCase().includes('apple') || (m.code || '').toLowerCase().includes('ap')
         );
+    } else if (type === 'deema') {
+        method = availablePaymentMethods.find(
+            m => (m.name || '').toLowerCase().includes('deema') || (m.code || '').toLowerCase().includes('dm')
+        );
     } else if (type === 'cod') {
         // Cash on Delivery - no payment gateway needed
         return null;
@@ -606,6 +610,8 @@ function initCheckoutForm() {
                 await processCardPayment(shippingAddress, promoCode);
             } else if (paymentMethod === 'knet') {
                 await processKNETPayment(shippingAddress, promoCode);
+            } else if (paymentMethod === 'deema') {
+                await processDeemaPayment(shippingAddress, promoCode);
             } else if (paymentMethod === 'applepay') {
                 await processApplePayPayment(shippingAddress, promoCode);
             }
@@ -758,6 +764,34 @@ async function processApplePayPayment(shippingAddress, promoCode) {
     }
 }
 
+// ============================================
+// Process Deema BNPL Payment (MyFatoorah)
+// ============================================
+async function processDeemaPayment(shippingAddress, promoCode) {
+    if (!window.AuthAPI?.isLoggedIn()) {
+        showCheckoutNotification(window.getTranslation ? window.getTranslation('login_required') : 'Please login to checkout', 'error');
+        window.location.href = '/account.html?redirect=checkout';
+        return;
+    }
+
+    // Use dynamic Payment Method ID from InitiatePayment API
+    const methodId = getPaymentMethodId('deema');
+    console.log('Deema BNPL - using method ID:', methodId);
+    
+    if (!methodId) {
+        throw new Error('Deema payment is not available at the moment. Please select another payment method.');
+    }
+
+    const data = await window.PaymentsAPI.executePayment(methodId, shippingAddress, promoCode);
+
+    // Redirect to MyFatoorah Deema page
+    if (data.success && data.data.paymentUrl) {
+        window.location.href = data.data.paymentUrl;
+    } else {
+        throw new Error('Failed to initiate Deema payment');
+    }
+}
+
 
 // ============================================
 // Process KNET Payment (MyFatoorah) - Deprecated, use processKNETPayment above
@@ -814,9 +848,34 @@ function updateOrderSummary() {
     const discount = appliedPromo ? appliedPromo.totalDiscount : 0;
     let total = subtotal + shipping - discount;
 
-    // Render items
+    // Build a lookup of discounted products for per-item display
+    const discountLookup = {};
+    if (appliedPromo && appliedPromo.discounts) {
+        appliedPromo.discounts.forEach(d => {
+            discountLookup[d.product] = d;
+        });
+    }
+
+    // Render items with discount indicators
     const lang = localStorage.getItem('site_lang') || 'en';
-    summaryItems.innerHTML = cart.map(item => `
+    summaryItems.innerHTML = cart.map(item => {
+        const itemId = item.id || item._id;
+        const itemDiscount = discountLookup[itemId];
+        const originalTotal = item.price * item.quantity;
+        let priceHTML;
+
+        if (itemDiscount && itemDiscount.discountAmount > 0) {
+            const discountedTotal = originalTotal - itemDiscount.discountAmount;
+            priceHTML = `
+                <span class="checkout-item-price" style="display: flex; flex-direction: column; align-items: flex-end; gap: 2px;">
+                    <span style="text-decoration: line-through; color: var(--text-muted); font-size: 12px;">${formatPrice(originalTotal)}</span>
+                    <span style="color: #059669; font-weight: 600;">${formatPrice(discountedTotal)}</span>
+                </span>`;
+        } else {
+            priceHTML = `<span class="checkout-item-price">${formatPrice(originalTotal)}</span>`;
+        }
+
+        return `
     <div class="checkout-item">
       <div class="checkout-item-image">
         <img src="${item.image}" alt="${(lang === 'ar' && item.nameAr) ? item.nameAr : item.name}">
@@ -824,15 +883,33 @@ function updateOrderSummary() {
       </div>
       <div class="checkout-item-info">
         <span class="checkout-item-name">${(lang === 'ar' && item.nameAr) ? item.nameAr : item.name}</span>
-        <span class="checkout-item-price">${formatPrice(item.price * item.quantity)}</span>
+        ${priceHTML}
       </div>
-    </div>
-  `).join('');
+    </div>`;
+    }).join('');
 
     // Update totals
     if (subtotalEl) subtotalEl.innerHTML = formatPrice(subtotal);
     if (shippingEl) shippingEl.innerHTML = formatPrice(shipping); // Always show 2 KD
     if (totalEl) totalEl.innerHTML = formatPrice(total);
+
+    // Show/hide the discount summary row
+    const discountRow = document.querySelector('.promo-discount-row');
+    if (discountRow) {
+        if (discount > 0) {
+            discountRow.style.display = 'flex';
+            const discountAmountEl = discountRow.querySelector('.promo-discount-amount');
+            const currency = lang === 'ar' ? 'د.ك' : 'KWD';
+            if (discountAmountEl) {
+                discountAmountEl.innerHTML = `<span class="price-display" data-base-price="${discount.toFixed(3)}">-${discount.toFixed(3)} <span class="price-currency">${currency}</span></span>`;
+            }
+        } else {
+            discountRow.style.display = 'none';
+        }
+    }
+
+    // Sync promo UI state (applied badge / input row)
+    if (window.PromoModule) window.PromoModule.renderUI();
 
     // Trigger currency update
     if (window.CurrencyAPI) window.CurrencyAPI.updatePagePrices();
@@ -866,5 +943,6 @@ function showCheckoutNotification(message, type = 'info') {
 window.processCardPayment = processCardPayment;
 window.processKNETPayment = processKNETPayment;
 window.processApplePayPayment = processApplePayPayment;
+window.processDeemaPayment = processDeemaPayment;
 window.updateOrderSummary = updateOrderSummary;
 window.syncCartToServer = syncCartToServer;

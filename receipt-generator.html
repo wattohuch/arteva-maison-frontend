@@ -1,0 +1,782 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="robots" content="noindex, nofollow">
+    <title>Receipt Generator | ARTÉVA Maison Admin</title>
+
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600;700&family=Montserrat:wght@300;400;500;600&display=swap"
+        rel="stylesheet">
+
+    <link rel="icon" type="image/png" href="assets/images/favicon.png">
+
+    <style>
+        :root {
+            --gold: #D4AF37;
+            --gold-dark: #B8941F;
+            --dark: #2c241b;
+            --mid: #666666;
+            --light: #999999;
+            --border: #e6e1d6;
+            --bg: #fafaf8;
+            --radius: 12px;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Montserrat', sans-serif;
+            background: #f5f3ef;
+            color: var(--dark);
+            min-height: 100vh;
+        }
+
+        /* Header */
+        .gen-header {
+            background: var(--dark);
+            padding: 16px 32px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .gen-header h1 {
+            font-family: 'Cormorant Garamond', serif;
+            color: var(--gold);
+            font-size: 20px;
+            font-weight: 600;
+        }
+
+        .gen-header .back-link {
+            color: #fff;
+            text-decoration: none;
+            font-size: 13px;
+            opacity: 0.7;
+            transition: opacity 0.2s;
+        }
+
+        .gen-header .back-link:hover {
+            opacity: 1;
+        }
+
+        /* Layout */
+        .gen-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 24px;
+            display: grid;
+            grid-template-columns: 360px 1fr;
+            gap: 24px;
+            min-height: calc(100vh - 56px);
+        }
+
+        @media (max-width: 900px) {
+            .gen-container {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* Controls Panel */
+        .controls-panel {
+            background: #fff;
+            border-radius: var(--radius);
+            padding: 24px;
+            border: 1px solid var(--border);
+            height: fit-content;
+            position: sticky;
+            top: 80px;
+        }
+
+        .controls-panel h2 {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 18px;
+            margin-bottom: 20px;
+            padding-bottom: 12px;
+            border-bottom: 2px solid var(--gold);
+            color: var(--dark);
+        }
+
+        .form-group {
+            margin-bottom: 16px;
+        }
+
+        .form-group label {
+            display: block;
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--mid);
+            margin-bottom: 6px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .form-group input,
+        .form-group select {
+            width: 100%;
+            padding: 10px 14px;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            font-family: 'Montserrat', sans-serif;
+            font-size: 14px;
+            transition: border-color 0.2s;
+        }
+
+        .form-group input:focus,
+        .form-group select:focus {
+            outline: none;
+            border-color: var(--gold);
+        }
+
+        .search-row {
+            display: flex;
+            gap: 8px;
+        }
+
+        .search-row input {
+            flex: 1;
+        }
+
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 8px;
+            font-family: 'Montserrat', sans-serif;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .btn-gold {
+            background: var(--gold);
+            color: #fff;
+        }
+
+        .btn-gold:hover {
+            background: var(--gold-dark);
+        }
+
+        .btn-dark {
+            background: var(--dark);
+            color: #fff;
+        }
+
+        .btn-dark:hover {
+            background: #1a170f;
+        }
+
+        .btn-outline {
+            background: transparent;
+            color: var(--dark);
+            border: 1px solid var(--border);
+        }
+
+        .btn-outline:hover {
+            border-color: var(--gold);
+            color: var(--gold);
+        }
+
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .actions-row {
+            display: flex;
+            gap: 8px;
+            margin-top: 20px;
+            flex-wrap: wrap;
+        }
+
+        .actions-row .btn {
+            flex: 1;
+            justify-content: center;
+        }
+
+        /* Status */
+        .status-bar {
+            padding: 10px 14px;
+            border-radius: 8px;
+            font-size: 13px;
+            margin-bottom: 16px;
+            display: none;
+        }
+
+        .status-bar.info {
+            background: rgba(212, 175, 55, 0.1);
+            color: #92400e;
+            border: 1px solid rgba(212, 175, 55, 0.2);
+            display: block;
+        }
+
+        .status-bar.error {
+            background: #fee2e2;
+            color: #991b1b;
+            border: 1px solid #fecaca;
+            display: block;
+        }
+
+        .status-bar.success {
+            background: #d1fae5;
+            color: #065f46;
+            border: 1px solid #a7f3d0;
+            display: block;
+        }
+
+        /* Order Info Card */
+        .order-info {
+            display: none;
+            background: var(--bg);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 14px;
+            margin-bottom: 16px;
+        }
+
+        .order-info.visible {
+            display: block;
+        }
+
+        .order-info h3 {
+            font-size: 14px;
+            margin-bottom: 8px;
+            color: var(--dark);
+        }
+
+        .order-meta {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 6px;
+            font-size: 12px;
+            color: var(--mid);
+        }
+
+        .order-meta strong {
+            color: var(--dark);
+        }
+
+        /* Canvas Preview */
+        .preview-panel {
+            background: #fff;
+            border-radius: var(--radius);
+            padding: 24px;
+            border: 1px solid var(--border);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .preview-panel h2 {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 18px;
+            margin-bottom: 20px;
+            align-self: flex-start;
+            color: var(--dark);
+        }
+
+        .canvas-wrapper {
+            background: #e8e5df;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: inset 0 2px 8px rgba(0, 0, 0, 0.08);
+            display: flex;
+            justify-content: center;
+            width: 100%;
+            overflow: auto;
+        }
+
+        #receiptCanvas {
+            background: #fff;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+            max-width: 100%;
+            height: auto;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 80px 20px;
+            color: var(--light);
+        }
+
+        .empty-state .icon {
+            font-size: 48px;
+            margin-bottom: 16px;
+        }
+
+        .empty-state p {
+            font-size: 14px;
+            max-width: 300px;
+            margin: 0 auto;
+            line-height: 1.6;
+        }
+    </style>
+</head>
+
+<body>
+    <!-- Header -->
+    <header class="gen-header">
+        <h1>🧾 ARTÉVA Receipt Generator</h1>
+        <a href="admin.html" class="back-link">← Back to Dashboard</a>
+    </header>
+
+    <!-- Main Layout -->
+    <div class="gen-container">
+        <!-- Left: Controls -->
+        <div class="controls-panel">
+            <h2>Generate Receipt</h2>
+
+            <div id="statusBar" class="status-bar"></div>
+
+            <div class="form-group">
+                <label>Order Number</label>
+                <div class="search-row">
+                    <input type="text" id="orderNumberInput" placeholder="e.g. AB3K7QWX"
+                        style="text-transform: uppercase; letter-spacing: 1px;">
+                    <button class="btn btn-gold" id="fetchBtn" onclick="fetchAndRender()">Generate</button>
+                </div>
+            </div>
+
+            <!-- Order info card (shown after fetch) -->
+            <div class="order-info" id="orderInfo">
+                <h3 id="orderTitle">Order Details</h3>
+                <div class="order-meta">
+                    <div>Customer: <strong id="infoCustomer">—</strong></div>
+                    <div>Date: <strong id="infoDate">—</strong></div>
+                    <div>Payment: <strong id="infoPayment">—</strong></div>
+                    <div>Status: <strong id="infoStatus">—</strong></div>
+                    <div>Items: <strong id="infoItems">—</strong></div>
+                    <div>Total: <strong id="infoTotal">—</strong></div>
+                </div>
+            </div>
+
+            <!-- Actions (shown after render) -->
+            <div class="actions-row" id="actionsRow" style="display: none;">
+                <button class="btn btn-dark" onclick="downloadJPEG()">📥 Download JPEG</button>
+                <button class="btn btn-outline" onclick="printReceipt()">🖨️ Print</button>
+            </div>
+        </div>
+
+        <!-- Right: Preview -->
+        <div class="preview-panel">
+            <h2>Receipt Preview</h2>
+            <div class="canvas-wrapper" id="canvasWrapper">
+                <div class="empty-state" id="emptyState">
+                    <div class="icon">🧾</div>
+                    <p>Enter an order number and click <strong>Generate</strong> to preview the receipt.</p>
+                </div>
+                <canvas id="receiptCanvas" width="827" height="1169" style="display:none;"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <!-- QR Code Library -->
+    <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js"></script>
+
+    <!-- Config & Auth -->
+    <script src="assets/js/config.js"></script>
+    <script src="assets/js/api.js"></script>
+
+    <script>
+        // ═══════════════════════════════════════════════════
+        // CONSTANTS (match printService.js @ 300 DPI)
+        // ═══════════════════════════════════════════════════
+        const DPI = 300;
+        const PW = Math.round(8.27 * DPI);   // A4 width
+        const PH = Math.round(11.69 * DPI);  // A4 height
+        const SC = DPI / 72;
+        const f = pt => Math.round(pt * SC);
+
+        const GOLD = '#D4AF37', DARK = '#2c241b', MID = '#666666', LIGHT = '#999999';
+        const BORDER = '#e6e1d6', BG = '#fafaf8';
+
+        // ── Helpers (match printService.js) ──
+        function rr(c, x, y, w, h, r) { c.beginPath(); c.moveTo(x + r, y); c.lineTo(x + w - r, y); c.quadraticCurveTo(x + w, y, x + w, y + r); c.lineTo(x + w, y + h - r); c.quadraticCurveTo(x + w, y + h, x + w - r, y + h); c.lineTo(x + r, y + h); c.quadraticCurveTo(x, y + h, x, y + h - r); c.lineTo(x, y + r); c.quadraticCurveTo(x, y, x + r, y); c.closePath(); }
+        function trunc(c, t, mw) { if (c.measureText(t).width <= mw) return t; let s = t; while (c.measureText(s + '…').width > mw && s.length > 0) s = s.slice(0, -1); return s + '…'; }
+
+        let currentOrder = null;
+
+        // ═══════════════════════════════════════════════════
+        // FETCH ORDER
+        // ═══════════════════════════════════════════════════
+        async function fetchAndRender() {
+            const input = document.getElementById('orderNumberInput');
+            const orderNumber = input.value.trim().toUpperCase();
+            if (!orderNumber) { showStatus('Please enter an order number', 'error'); return; }
+
+            const token = localStorage.getItem('arteva_token');
+            if (!token) { showStatus('Please login to admin first', 'error'); return; }
+
+            showStatus('Fetching order...', 'info');
+            document.getElementById('fetchBtn').disabled = true;
+
+            try {
+                const API = window.API_BASE_URL || 'https://arteva-maison-backend-gy1x.onrender.com/api';
+                let foundOrder = null;
+
+                // Try 1: Authenticated order-by-number endpoint
+                try {
+                    const res = await fetch(`${API}/orders/by-number/${orderNumber}`, {
+                        headers: { 'Authorization': `Bearer ${token}` }
+                    });
+                    if (res.ok) {
+                        const data = await res.json();
+                        if (data.success && data.data) foundOrder = data.data;
+                    }
+                } catch (e) { /* try next */ }
+
+                // Try 2: Admin orders list (fallback)
+                if (!foundOrder) {
+                    const ordersRes = await fetch(`${API}/admin/orders`, {
+                        headers: { 'Authorization': `Bearer ${token}` }
+                    });
+                    if (ordersRes.ok) {
+                        const ordersData = await ordersRes.json();
+                        if (ordersData.success && ordersData.data) {
+                            foundOrder = ordersData.data.find(o => o.orderNumber === orderNumber);
+                        }
+                    }
+                }
+
+                if (!foundOrder) throw new Error('Order not found. Check the order number and try again.');
+
+                currentOrder = foundOrder;
+                showOrderInfo(currentOrder);
+                await renderReceipt(currentOrder);
+                showStatus('Receipt generated!', 'success');
+                document.getElementById('actionsRow').style.display = 'flex';
+            } catch (err) {
+                showStatus(err.message || 'Failed to fetch order', 'error');
+                document.getElementById('actionsRow').style.display = 'none';
+            }
+
+            document.getElementById('fetchBtn').disabled = false;
+        }
+
+        // Enter key support
+        document.getElementById('orderNumberInput').addEventListener('keypress', e => {
+            if (e.key === 'Enter') fetchAndRender();
+        });
+
+        // ═══════════════════════════════════════════════════
+        // SHOW ORDER INFO
+        // ═══════════════════════════════════════════════════
+        function showOrderInfo(order) {
+            const info = document.getElementById('orderInfo');
+            info.classList.add('visible');
+            document.getElementById('orderTitle').textContent = `Order ${order.orderNumber}`;
+            document.getElementById('infoCustomer').textContent = order.user?.name || order.shippingAddress?.fullName || 'Guest';
+            document.getElementById('infoDate').textContent = new Date(order.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+            const payNames = { cod: 'COD', knet: 'KNET', card: 'Card', applepay: 'Apple Pay', myfatoorah: 'Online', deema: 'Deema' };
+            document.getElementById('infoPayment').textContent = payNames[order.paymentMethod] || order.paymentMethod || 'N/A';
+            document.getElementById('infoStatus').textContent = (order.orderStatus || 'pending').replace(/_/g, ' ');
+            document.getElementById('infoItems').textContent = (order.items || []).length;
+            document.getElementById('infoTotal').textContent = (order.total || 0).toFixed(3) + ' KWD';
+        }
+
+        // ═══════════════════════════════════════════════════
+        // RENDER RECEIPT ON CANVAS
+        // Pixel-perfect match of printService.js
+        // ═══════════════════════════════════════════════════
+        async function renderReceipt(order) {
+            const canvas = document.getElementById('receiptCanvas');
+            canvas.width = PW;
+            canvas.height = PH;
+            canvas.style.display = 'block';
+            document.getElementById('emptyState').style.display = 'none';
+
+            const c = canvas.getContext('2d');
+            c.fillStyle = '#fff';
+            c.fillRect(0, 0, PW, PH);
+
+            const customer = order.user || {};
+            let y = f(18);
+            const LM = f(18), RM = PW - f(18), CW = RM - LM;
+            c.textBaseline = 'top';
+
+            // ═══ HEADER ═══
+            c.fillStyle = DARK; c.font = `bold ${f(24)}px Georgia`; c.textAlign = 'center';
+            c.fillText('ARTÉVA MAISON', PW / 2, y); y += f(28);
+            c.font = `${f(9)}px Arial`; c.fillStyle = MID;
+            c.fillText('Order Receipt', PW / 2, y); y += f(12);
+            c.font = `${f(9)}px Arial`; c.fillText('إيصال الطلب', PW / 2, y); y += f(14);
+            c.strokeStyle = GOLD; c.lineWidth = f(1.2); c.beginPath(); c.moveTo(LM, y); c.lineTo(RM, y); c.stroke(); y += f(12);
+
+            // ═══ ORDER META ═══
+            const orderDate = new Date(order.createdAt || Date.now()).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
+            const status = (order.orderStatus || 'pending').replace(/_/g, ' ');
+            const statusColor = ['confirmed', 'delivered'].includes(order.orderStatus) ? '#065f46' : ['cancelled'].includes(order.orderStatus) ? '#991b1b' : '#92400e';
+            const statusBg = ['confirmed', 'delivered'].includes(order.orderStatus) ? '#d1fae5' : ['cancelled'].includes(order.orderStatus) ? '#fee2e2' : '#fef3c7';
+
+            const metas = [
+                { en: 'Order Number', ar: 'رقم الطلب', val: order.orderNumber || 'N/A' },
+                { en: 'Date', ar: 'التاريخ', val: orderDate },
+                { en: 'Order Status', ar: 'حالة الطلب', val: status, badge: true }
+            ];
+            const mw = CW / 3;
+            c.textAlign = 'left';
+            metas.forEach((m, i) => {
+                const x = LM + i * mw;
+                c.fillStyle = MID; c.font = `${f(8)}px Arial`; c.fillText(m.en, x, y);
+                c.fillStyle = LIGHT; c.font = `${f(7)}px Arial`; c.fillText(m.ar, x, y + f(10));
+                if (m.badge) {
+                    c.fillStyle = statusBg; const bw = c.measureText(m.val).width + f(8);
+                    rr(c, x, y + f(16), bw + f(4), f(12), f(5)); c.fill();
+                    c.fillStyle = statusColor; c.font = `600 ${f(9)}px Arial`; c.fillText(m.val, x + f(4), y + f(18));
+                } else {
+                    c.fillStyle = DARK; c.font = `500 ${f(11)}px Arial`; c.fillText(m.val, x, y + f(18));
+                }
+            });
+            y += f(36);
+
+            // ═══ CUSTOMER & SHIPPING GRID ═══
+            const gH = f(58), gW = (CW - f(10)) / 2, gR = f(4), gP = f(8);
+            c.fillStyle = BG; rr(c, LM, y, CW, gH, gR); c.fill();
+            c.strokeStyle = BORDER; c.lineWidth = f(0.5); rr(c, LM, y, CW, gH, gR); c.stroke();
+            c.beginPath(); c.moveTo(LM + gW + f(5), y + gP); c.lineTo(LM + gW + f(5), y + gH - gP); c.stroke();
+
+            const custName = customer.name || order.shippingAddress?.fullName || 'Guest';
+            const custEmail = customer.email || '';
+            const custPhone = customer.phone || order.shippingAddress?.phone || '';
+
+            c.fillStyle = MID; c.font = `${f(8)}px Arial`; c.fillText('Customer Details', LM + gP, y + gP);
+            c.fillStyle = LIGHT; c.font = `${f(6.5)}px Arial`; c.fillText('بيانات العميل', LM + gP + c.measureText('Customer Details ').width, y + gP + f(1));
+            c.fillStyle = DARK; c.font = `600 ${f(10)}px Arial`; c.fillText(custName, LM + gP, y + f(20));
+            c.fillStyle = MID; c.font = `${f(8.5)}px Arial`; c.fillText(custEmail, LM + gP, y + f(31));
+            c.fillText(custPhone, LM + gP, y + f(41));
+
+            const sx = LM + gW + f(15);
+            const addr = order.shippingAddress || {};
+            c.fillStyle = MID; c.font = `${f(8)}px Arial`; c.fillText('Shipping Address', sx, y + gP);
+            c.fillStyle = LIGHT; c.font = `${f(6.5)}px Arial`; c.fillText('عنوان الشحن', sx + c.measureText('Shipping Address ').width, y + gP + f(1));
+            c.fillStyle = MID; c.font = `${f(8.5)}px Arial`;
+            const addrLines = [addr.street, [addr.city, addr.state, addr.zipCode].filter(Boolean).join(', '), addr.country].filter(Boolean);
+            let ay = y + f(20);
+            addrLines.forEach(l => { c.fillText(l, sx, ay); ay += f(11); });
+            y += gH + f(10);
+
+            // ═══ PAYMENT GRID ═══
+            const payH = f(38);
+            c.fillStyle = BG; rr(c, LM, y, CW, payH, gR); c.fill();
+            c.strokeStyle = BORDER; c.lineWidth = f(0.5); rr(c, LM, y, CW, payH, gR); c.stroke();
+            c.beginPath(); c.moveTo(LM + gW + f(5), y + gP); c.lineTo(LM + gW + f(5), y + payH - gP); c.stroke();
+
+            const payNames = { 'cod': 'Cash on Delivery', 'knet': 'KNET', 'card': 'Credit/Debit Card', 'applepay': 'Apple Pay', 'myfatoorah': 'Online Payment', 'deema': 'Deema (BNPL)' };
+            c.fillStyle = MID; c.font = `${f(8)}px Arial`; c.fillText('Payment Method', LM + gP, y + gP);
+            c.fillStyle = LIGHT; c.font = `${f(6.5)}px Arial`; c.fillText('طريقة الدفع', LM + gP + c.measureText('Payment Method ').width, y + gP + f(1));
+            c.fillStyle = DARK; c.font = `500 ${f(10)}px Arial`; c.fillText((payNames[order.paymentMethod] || order.paymentMethod || 'N/A').toUpperCase(), LM + gP, y + f(22));
+
+            c.fillStyle = MID; c.font = `${f(8)}px Arial`; c.fillText('Payment Status', sx, y + gP);
+            c.fillStyle = LIGHT; c.font = `${f(6.5)}px Arial`; c.fillText('حالة الدفع', sx + c.measureText('Payment Status ').width, y + gP + f(1));
+            const ps = (order.paymentStatus || 'pending').replace(/_/g, ' ');
+            const psBg = order.paymentStatus === 'paid' ? '#d1fae5' : order.paymentStatus === 'failed' ? '#fee2e2' : '#fef3c7';
+            const psColor = order.paymentStatus === 'paid' ? '#065f46' : order.paymentStatus === 'failed' ? '#991b1b' : '#92400e';
+            c.font = `600 ${f(9)}px Arial`; const psW = c.measureText(ps).width;
+            c.fillStyle = psBg; rr(c, sx, y + f(19), psW + f(8), f(12), f(5)); c.fill();
+            c.fillStyle = psColor; c.fillText(ps, sx + f(4), y + f(21));
+            y += payH + f(10);
+
+            // ═══ ITEMS TABLE ═══
+            const items = order.items || [];
+            const colHeaders = [
+                { en: 'SKU', ar: 'رقم' }, { en: 'Item', ar: 'المنتج' }, { en: 'Unit Price', ar: 'السعر' }, { en: 'Qty', ar: 'الكمية' }, { en: 'Total', ar: 'المجموع' }
+            ];
+            const cols = [{ w: f(50) }, { w: 0 }, { w: f(80) }, { w: f(45), a: 'center' }, { w: f(90), a: 'right' }];
+            cols[1].w = CW - cols[0].w - cols[2].w - cols[3].w - cols[4].w;
+            let cx = LM;
+            cols.forEach(col => { col.x = cx; cx += col.w; });
+
+            c.strokeStyle = BORDER; c.lineWidth = f(0.5);
+            c.beginPath(); c.moveTo(LM, y + f(15)); c.lineTo(RM, y + f(15)); c.stroke();
+            colHeaders.forEach((h, i) => {
+                const col = cols[i];
+                const tx = col.a === 'right' ? col.x + col.w : col.a === 'center' ? col.x + col.w / 2 : col.x;
+                c.textAlign = col.a || 'left';
+                c.fillStyle = DARK; c.font = `${f(9)}px Georgia`;
+                c.fillText(h.en, tx, y + f(1));
+                c.fillStyle = LIGHT; c.font = `${f(7)}px Arial`;
+                c.fillText(h.ar, tx, y + f(10));
+            });
+            y += f(20);
+
+            // Rows
+            const promoDiscounts = order.promoCode?.discounts || [];
+            items.forEach(item => {
+                const sku = item.sku || '—';
+                const itemDiscount = promoDiscounts.find(d => {
+                    const dProd = (d.product?._id || d.product || '').toString();
+                    const iProd = (item.product?._id || item.product || item._id || '').toString();
+                    return dProd && iProd && dProd === iProd;
+                });
+                c.textAlign = 'left';
+                c.fillStyle = MID; c.font = `${f(8.5)}px Courier New`; c.fillText(sku, cols[0].x, y);
+                c.fillStyle = DARK; c.font = `500 ${f(9.5)}px Arial`; c.fillText(trunc(c, item.name || 'Product', cols[1].w - f(4)), cols[1].x, y);
+                if (item.nameAr) { c.fillStyle = LIGHT; c.font = `${f(7.5)}px Arial`; c.fillText(item.nameAr, cols[1].x, y + f(11)); }
+
+                c.font = `${f(9)}px Arial`;
+                if (itemDiscount) {
+                    c.fillStyle = LIGHT; c.textAlign = 'left';
+                    const origPriceText = item.price.toFixed(3) + ' KWD';
+                    c.fillText(origPriceText, cols[2].x, y);
+                    const origPriceW = c.measureText(origPriceText).width;
+                    c.strokeStyle = LIGHT; c.lineWidth = f(0.5);
+                    c.beginPath(); c.moveTo(cols[2].x, y + f(4)); c.lineTo(cols[2].x + origPriceW, y + f(4)); c.stroke();
+                    const discountedPrice = ((item.price * item.quantity - (itemDiscount.discountAmount || 0)) / item.quantity).toFixed(3);
+                    c.fillStyle = GOLD; c.font = `600 ${f(8.5)}px Arial`;
+                    c.fillText(discountedPrice + ' KWD', cols[2].x, y + f(11));
+                    c.fillStyle = DARK; c.font = `${f(9)}px Arial`;
+                    c.textAlign = 'center'; c.fillText(String(item.quantity), cols[3].x + cols[3].w / 2, y);
+                    const discountedTotal = (item.price * item.quantity - (itemDiscount.discountAmount || 0)).toFixed(3);
+                    c.fillStyle = GOLD; c.font = `600 ${f(9)}px Arial`;
+                    c.textAlign = 'right'; c.fillText(discountedTotal + ' KWD', cols[4].x + cols[4].w, y);
+                } else {
+                    c.fillStyle = DARK;
+                    c.textAlign = 'left'; c.fillText(item.price.toFixed(3) + ' KWD', cols[2].x, y);
+                    c.textAlign = 'center'; c.fillText(String(item.quantity), cols[3].x + cols[3].w / 2, y);
+                    c.textAlign = 'right'; c.fillText((item.price * item.quantity).toFixed(3) + ' KWD', cols[4].x + cols[4].w, y);
+                }
+                y += item.nameAr ? f(26) : (itemDiscount ? f(24) : f(20));
+                c.strokeStyle = BORDER; c.lineWidth = f(0.3); c.beginPath(); c.moveTo(LM, y); c.lineTo(RM, y); c.stroke();
+                y += f(6);
+            });
+            y += f(8);
+
+            // ═══ TOTALS ═══
+            const tw = f(200), tx = RM - tw;
+            c.textAlign = 'left'; c.font = `${f(9.5)}px Arial`; c.fillStyle = DARK;
+            c.fillText('Subtotal', tx, y);
+            c.fillStyle = LIGHT; c.font = `${f(7.5)}px Arial`;
+            c.fillText('/ المجموع الفرعي', tx + f(52), y + f(1.5));
+            c.fillStyle = DARK; c.font = `${f(9.5)}px Arial`;
+            c.textAlign = 'right'; c.fillText((order.subtotal || 0).toFixed(3) + ' KWD', RM, y); y += f(14);
+
+            c.textAlign = 'left'; c.fillText('Delivery', tx, y);
+            c.fillStyle = LIGHT; c.font = `${f(7.5)}px Arial`;
+            c.fillText('/ التوصيل', tx + f(48), y + f(1.5));
+            c.fillStyle = DARK; c.font = `${f(9.5)}px Arial`;
+            c.textAlign = 'right'; c.fillText((order.shippingCost || 0).toFixed(3) + ' KWD', RM, y); y += f(12);
+
+            if (order.promoCode && order.promoCode.code) {
+                const promoAmount = order.promoCode.totalDiscount || order.discount || 0;
+                c.textAlign = 'left'; c.font = `${f(9.5)}px Arial`; c.fillStyle = '#059669';
+                c.fillText('Promo: ' + order.promoCode.code, tx, y);
+                c.textAlign = 'right';
+                c.fillText('-' + parseFloat(promoAmount).toFixed(3) + ' KWD', RM, y); y += f(12);
+            }
+
+            c.strokeStyle = BORDER; c.lineWidth = f(1); c.beginPath(); c.moveTo(tx, y); c.lineTo(RM, y); c.stroke(); y += f(14);
+            c.textAlign = 'left'; c.font = `bold ${f(13)}px Arial`; c.fillStyle = DARK;
+            c.fillText('Total Paid', tx, y);
+            c.fillStyle = LIGHT; c.font = `bold ${f(9)}px Arial`;
+            c.fillText('/ المبلغ المدفوع', tx + f(78), y + f(3));
+            c.fillStyle = DARK; c.font = `bold ${f(13)}px Arial`;
+            c.textAlign = 'right'; c.fillText((order.total || 0).toFixed(3) + ' KWD', RM, y); y += f(24);
+
+            // ═══ QR CODE ═══
+            const qrSz = f(60), qrH = qrSz + f(14);
+            c.fillStyle = BG; rr(c, LM, y, CW, qrH, f(5)); c.fill();
+            c.strokeStyle = BORDER; c.lineWidth = f(0.5); rr(c, LM, y, CW, qrH, f(5)); c.stroke();
+            try {
+                const qrUrl = 'https://www.artevamaisonkw.com/receipt.html?order=' + (order.orderNumber || '');
+                const qrDataUrl = await QRCode.toDataURL(qrUrl, { width: qrSz, margin: 1, color: { dark: '#2c241b', light: '#ffffff' }, errorCorrectionLevel: 'H' });
+                const qrImg = new Image();
+                await new Promise(resolve => { qrImg.onload = resolve; qrImg.src = qrDataUrl; });
+                const qrX = LM + f(10), qrY = y + (qrH - qrSz) / 2;
+                c.drawImage(qrImg, qrX, qrY, qrSz, qrSz);
+
+                const lx = qrX + qrSz + f(14);
+                c.textAlign = 'left'; c.fillStyle = DARK; c.font = `600 ${f(10)}px Arial`;
+                c.fillText('Scan for Digital Receipt', lx, y + f(20));
+                c.fillStyle = MID; c.font = `${f(8.5)}px Arial`;
+                c.fillText('امسح للإيصال الرقمي', lx, y + f(32));
+                c.fillStyle = LIGHT; c.font = `${f(8)}px Arial`;
+                c.fillText('www.artevamaisonkw.com', lx, y + f(46));
+            } catch (e) { console.error('QR error:', e); }
+            y += qrH + f(10);
+
+            // ═══ RETURN POLICY ═══
+            const rpH = f(78);
+            c.fillStyle = '#fffbeb'; rr(c, LM, y, CW, rpH, f(4)); c.fill();
+            c.strokeStyle = 'rgba(245,158,11,0.2)'; c.lineWidth = f(0.5); rr(c, LM, y, CW, rpH, f(4)); c.stroke();
+            c.fillStyle = GOLD; c.fillRect(LM, y, f(2), rpH);
+
+            const rpX = LM + f(10);
+            c.textAlign = 'left'; c.fillStyle = DARK;
+            c.font = `${f(11)}px Georgia`; c.fillText('Return & Exchange Policy', rpX, y + f(8));
+            c.textAlign = 'right'; c.font = `600 ${f(10)}px Arial`;
+            c.fillText('سياسة الإرجاع والاستبدال', RM - f(10), y + f(9));
+            c.textAlign = 'left'; c.fillStyle = MID; c.font = `${f(8)}px Arial`;
+            c.fillText('Products may be returned or exchanged within 14 days of delivery, provided they are', rpX, y + f(24));
+            c.fillText('unopened and in their original condition and packaging.', rpX, y + f(33));
+            c.textAlign = 'right';
+            c.fillText('يمكن إرجاع أو استبدال المنتجات خلال ١٤ يومًا من التسليم، بشرط أن تكون غير مفتوحة وفي حالتها وتغليفها الأصلي', RM - f(10), y + f(46));
+            c.textAlign = 'left';
+            c.fillText('Contact us via WhatsApp: +965 5068 3207', rpX, y + f(60));
+            c.textAlign = 'right';
+            c.fillText('تواصلوا معنا عبر واتساب: ٩٦٥٥٠٦٨٣٢٠٧+', RM - f(10), y + f(60));
+            y += rpH + f(10);
+
+            // ═══ FOOTER ═══
+            c.strokeStyle = BORDER; c.lineWidth = f(0.5); c.beginPath(); c.moveTo(LM, y); c.lineTo(RM, y); c.stroke(); y += f(10);
+            c.textAlign = 'center'; c.fillStyle = MID; c.font = `${f(9)}px Arial`;
+            c.fillText('Thank you for shopping with ARTÉVA Maison.', PW / 2, y); y += f(12);
+            c.fillText('شكراً لتسوقكم مع أرتيفا ميزون', PW / 2, y); y += f(12);
+            c.fillStyle = LIGHT; c.font = `${f(8)}px Arial`;
+            c.fillText('artevamaison@gmail.com • www.artevamaisonkw.com • +965 5068 3207', PW / 2, y);
+        }
+
+        // ═══════════════════════════════════════════════════
+        // DOWNLOAD & PRINT
+        // ═══════════════════════════════════════════════════
+        function downloadJPEG() {
+            const canvas = document.getElementById('receiptCanvas');
+            const link = document.createElement('a');
+            link.download = `receipt-${currentOrder?.orderNumber || 'unknown'}.jpg`;
+            link.href = canvas.toDataURL('image/jpeg', 0.95);
+            link.click();
+        }
+
+        function printReceipt() {
+            const canvas = document.getElementById('receiptCanvas');
+            const dataUrl = canvas.toDataURL('image/jpeg', 0.95);
+            const win = window.open('', '_blank');
+            win.document.write(`
+                <html>
+                <head><title>Receipt - ${currentOrder?.orderNumber || ''}</title>
+                <style>
+                    @page { size: A4; margin: 0; }
+                    body { margin: 0; display: flex; justify-content: center; }
+                    img { width: 100%; max-width: 210mm; height: auto; }
+                </style></head>
+                <body><img src="${dataUrl}" onload="window.print(); window.close();"></body>
+                </html>
+            `);
+        }
+
+        // ═══════════════════════════════════════════════════
+        // STATUS HELPER
+        // ═══════════════════════════════════════════════════
+        function showStatus(msg, type) {
+            const bar = document.getElementById('statusBar');
+            bar.textContent = msg;
+            bar.className = `status-bar ${type}`;
+        }
+    </script>
+</body>
+
+</html>
