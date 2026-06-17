@@ -195,11 +195,32 @@
 
         .payment-method-icons {
             display: flex;
-            gap: var(--space-2);
+            align-items: center;
+            gap: 6px;
+            flex-shrink: 0;
         }
 
         .payment-method-icons img {
-            height: 24px;
+            height: 28px;
+            object-fit: contain;
+        }
+
+        .payment-method-icons svg {
+            flex-shrink: 0;
+        }
+
+        .payment-logo {
+            height: 32px;
+            border-radius: 4px;
+            object-fit: contain;
+        }
+
+        .payment-logo-knet {
+            height: 30px;
+        }
+
+        .payment-logo-deema {
+            height: 22px;
         }
 
         /* Order Summary */
@@ -699,11 +720,25 @@
                                 <input type="radio" name="paymentMethod" value="card" checked>
                                 <div class="payment-method-info">
                                     <div class="payment-method-name" data-i18n="credit_card">Credit / Debit Card</div>
-                                    <div class="payment-method-desc" data-i18n="secure_payment">Secure online payment
-                                    </div>
+                                    <div class="payment-method-desc" data-i18n="secure_payment">Secure online payment</div>
                                 </div>
                                 <div class="payment-method-icons">
-                                    <span>💳</span>
+                                    <!-- Visa -->
+                                    <svg width="42" height="28" viewBox="0 0 750 471" xmlns="http://www.w3.org/2000/svg">
+                                        <rect width="750" height="471" rx="40" fill="#1A1F71"/>
+                                        <path d="M278.2 334.2h-60.6l37.9-233.9h60.6L278.2 334.2z" fill="#fff"/>
+                                        <path d="M524.3 105.1c-12-4.6-30.7-9.5-54.1-9.5-59.7 0-101.7 31.7-102 77.1-.4 33.6 30 52.3 52.8 63.5 23.5 11.4 31.4 18.7 31.3 28.9-.2 15.6-18.8 22.7-36.1 22.7-24.1 0-36.9-3.5-56.7-12.2l-7.8-3.7-8.5 52.3c14.1 6.5 40.1 12.1 67.1 12.4 63.5 0 104.7-31.3 105.2-79.8.2-26.6-15.9-46.8-50.8-63.5-21.1-10.8-34.1-18-33.9-29 0-9.7 10.9-20.1 34.6-20.1 19.7-.3 34 4.2 45.1 9l5.4 2.7 8.4-50.8z" fill="#fff"/>
+                                        <path d="M661.6 100.3h-46.7c-14.5 0-25.3 4.2-31.6 19.4l-89.7 214.5h63.5s10.4-28.8 12.7-35.1h77.5c1.8 8.2 7.4 35.1 7.4 35.1h56.1l-48.9-233.9h-.3zM573.7 258.7c5-13.5 24.2-65.6 24.2-65.6-.4.6 5-13.6 8-22.4l4.1 20.2s11.6 56.1 14.1 67.8h-50.4z" fill="#fff"/>
+                                        <path d="M232.8 100.3L173.5 261l-6.4-32.6c-11-37.5-45.5-78.2-84-98.5l54.1 204h64l95.1-233.6h-63.5z" fill="#fff"/>
+                                        <path d="M119.7 100.3H24.6L24 105c75.9 19.4 126.2 66.2 147 122.5L149 119.9c-3.6-14.8-14.2-19.2-29.3-19.6z" fill="#F9A533"/>
+                                    </svg>
+                                    <!-- Mastercard -->
+                                    <svg width="42" height="28" viewBox="0 0 750 471" xmlns="http://www.w3.org/2000/svg">
+                                        <rect width="750" height="471" rx="40" fill="#252525"/>
+                                        <circle cx="299" cy="235.5" r="130" fill="#EB001B"/>
+                                        <circle cx="451" cy="235.5" r="130" fill="#F79E1B"/>
+                                        <path d="M375 140.5c35 27.2 57.5 69.5 57.5 117s-22.5 89.8-57.5 117c-35-27.2-57.5-69.5-57.5-117s22.5-89.8 57.5-117z" fill="#FF5F00"/>
+                                    </svg>
                                 </div>
                             </label>
 
@@ -714,7 +749,14 @@
                                     <div class="payment-method-desc" data-i18n="knet_desc">Kuwait local payment</div>
                                 </div>
                                 <div class="payment-method-icons">
-                                    <span>🏦</span>
+                                    <!-- KNET Logo -->
+                                    <svg class="payment-logo-knet" width="60" height="30" viewBox="0 0 120 60" xmlns="http://www.w3.org/2000/svg">
+                                        <rect width="120" height="60" rx="6" fill="#004B93"/>
+                                        <!-- K shape -->
+                                        <polygon points="18,12 30,12 30,26 42,12 56,12 40,30 56,48 42,48 30,34 30,48 18,48" fill="#FFD500"/>
+                                        <!-- net text -->
+                                        <text x="62" y="38" font-family="Arial, sans-serif" font-size="18" font-weight="bold" fill="#FFFFFF" letter-spacing="2">net</text>
+                                    </svg>
                                 </div>
                             </label>
 
@@ -725,7 +767,14 @@
                                     <div class="payment-method-desc" data-i18n="deema_desc">Buy now, pay later — split into installments</div>
                                 </div>
                                 <div class="payment-method-icons">
-                                    <span style="font-size: 18px; font-weight: 700; color: #6C3CE1; letter-spacing: -0.5px;">Deema</span>
+                                    <!-- Deema Logo -->
+                                    <svg class="payment-logo-deema" width="80" height="22" viewBox="0 0 160 44" xmlns="http://www.w3.org/2000/svg">
+                                        <!-- Pink circles icon -->
+                                        <circle cx="16" cy="22" r="12" fill="#C27083" opacity="0.7"/>
+                                        <circle cx="26" cy="18" r="12" fill="#C27083" opacity="0.85"/>
+                                        <!-- deema text -->
+                                        <text x="48" y="31" font-family="'Helvetica Neue', Arial, sans-serif" font-size="24" font-weight="600" fill="#4A4A4A" letter-spacing="0.5">deema</text>
+                                    </svg>
                                 </div>
                             </label>
 
