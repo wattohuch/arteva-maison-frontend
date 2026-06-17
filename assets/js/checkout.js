@@ -460,7 +460,7 @@ function getPaymentMethodId(type) {
         );
     } else if (type === 'deema') {
         method = availablePaymentMethods.find(
-            m => (m.name || '').toLowerCase().includes('deema') || (m.code || '').toLowerCase().includes('dm')
+            m => m.isDeema || (m.name || '').toLowerCase().includes('deema') || (m.code || '').toLowerCase().includes('dm')
         );
     } else if (type === 'cod') {
         // Cash on Delivery - no payment gateway needed
