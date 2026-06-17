@@ -765,7 +765,7 @@ async function processApplePayPayment(shippingAddress, promoCode) {
 }
 
 // ============================================
-// Process Deema BNPL Payment (MyFatoorah)
+// Process Deema BNPL Payment (Direct Deema / Tap Payments)
 // ============================================
 async function processDeemaPayment(shippingAddress, promoCode) {
     if (!window.AuthAPI?.isLoggedIn()) {
@@ -774,21 +774,34 @@ async function processDeemaPayment(shippingAddress, promoCode) {
         return;
     }
 
-    // Use dynamic Payment Method ID from InitiatePayment API
-    const methodId = getPaymentMethodId('deema');
-    console.log('Deema BNPL - using method ID:', methodId);
-    
-    if (!methodId) {
-        throw new Error('Deema payment is not available at the moment. Please select another payment method.');
+    console.log('[DEEMA] Processing Deema BNPL payment...');
+
+    // Call the dedicated Deema checkout endpoint
+    const token = localStorage.getItem('arteva_token');
+    const response = await fetch(`${window.API_BASE_URL}/payments/deema/checkout`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({
+            shippingAddress: shippingAddress,
+            promoCode: promoCode || null
+        })
+    });
+
+    const data = await response.json();
+
+    if (!response.ok) {
+        throw new Error(data.message || 'Failed to initiate Deema payment');
     }
 
-    const data = await window.PaymentsAPI.executePayment(methodId, shippingAddress, promoCode);
-
-    // Redirect to MyFatoorah Deema page
+    // Redirect to Deema BNPL approval page
     if (data.success && data.data.paymentUrl) {
+        console.log('[DEEMA] Redirecting to Deema:', data.data.paymentUrl);
         window.location.href = data.data.paymentUrl;
     } else {
-        throw new Error('Failed to initiate Deema payment');
+        throw new Error('Deema payment URL not received. Please try another payment method.');
     }
 }
 
