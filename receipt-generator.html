@@ -13,7 +13,6 @@
     <link
         href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600;700&family=Montserrat:wght@300;400;500;600&display=swap"
         rel="stylesheet">
-
     <link rel="icon" type="image/png" href="assets/images/favicon.png">
 
     <style>
@@ -26,13 +25,11 @@
             --border: #e6e1d6;
             --bg: #fafaf8;
             --radius: 12px;
+            --danger: #ef4444;
+            --success: #059669;
         }
 
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
 
         body {
             font-family: 'Montserrat', sans-serif;
@@ -41,10 +38,10 @@
             min-height: 100vh;
         }
 
-        /* Header */
+        /* ─── Header ─── */
         .gen-header {
             background: var(--dark);
-            padding: 16px 32px;
+            padding: 14px 28px;
             display: flex;
             align-items: center;
             justify-content: space-between;
@@ -52,14 +49,12 @@
             top: 0;
             z-index: 100;
         }
-
         .gen-header h1 {
             font-family: 'Cormorant Garamond', serif;
             color: var(--gold);
             font-size: 20px;
             font-weight: 600;
         }
-
         .gen-header .back-link {
             color: #fff;
             text-decoration: none;
@@ -67,90 +62,194 @@
             opacity: 0.7;
             transition: opacity 0.2s;
         }
+        .gen-header .back-link:hover { opacity: 1; }
 
-        .gen-header .back-link:hover {
-            opacity: 1;
-        }
-
-        /* Layout */
+        /* ─── Layout ─── */
         .gen-container {
-            max-width: 1400px;
+            max-width: 1500px;
             margin: 0 auto;
-            padding: 24px;
+            padding: 20px;
             display: grid;
-            grid-template-columns: 360px 1fr;
-            gap: 24px;
-            min-height: calc(100vh - 56px);
+            grid-template-columns: 400px 1fr;
+            gap: 20px;
+            min-height: calc(100vh - 52px);
+        }
+        @media (max-width: 1000px) {
+            .gen-container { grid-template-columns: 1fr; }
         }
 
-        @media (max-width: 900px) {
-            .gen-container {
-                grid-template-columns: 1fr;
-            }
-        }
-
-        /* Controls Panel */
+        /* ─── Controls Panel ─── */
         .controls-panel {
             background: #fff;
             border-radius: var(--radius);
-            padding: 24px;
             border: 1px solid var(--border);
             height: fit-content;
             position: sticky;
-            top: 80px;
+            top: 72px;
+            max-height: calc(100vh - 90px);
+            overflow-y: auto;
         }
 
-        .controls-panel h2 {
+        /* ─── Tabs ─── */
+        .tab-bar {
+            display: flex;
+            border-bottom: 2px solid var(--border);
+        }
+        .tab-btn {
+            flex: 1;
+            padding: 14px;
+            background: none;
+            border: none;
+            font-family: 'Montserrat', sans-serif;
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--light);
+            cursor: pointer;
+            position: relative;
+            transition: color 0.2s;
+        }
+        .tab-btn.active {
+            color: var(--gold);
+        }
+        .tab-btn.active::after {
+            content: '';
+            position: absolute;
+            bottom: -2px;
+            left: 0;
+            right: 0;
+            height: 2px;
+            background: var(--gold);
+        }
+        .tab-btn:hover { color: var(--dark); }
+
+        .tab-content { display: none; padding: 20px; }
+        .tab-content.active { display: block; }
+
+        /* ─── Form Elements ─── */
+        .section-title {
             font-family: 'Cormorant Garamond', serif;
-            font-size: 18px;
-            margin-bottom: 20px;
-            padding-bottom: 12px;
-            border-bottom: 2px solid var(--gold);
+            font-size: 15px;
+            font-weight: 600;
             color: var(--dark);
+            margin: 16px 0 10px;
+            padding-bottom: 6px;
+            border-bottom: 1px solid var(--border);
         }
+        .section-title:first-child { margin-top: 0; }
 
-        .form-group {
-            margin-bottom: 16px;
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-bottom: 10px;
         }
+        .form-row.full { grid-template-columns: 1fr; }
 
+        .form-group { margin-bottom: 10px; }
         .form-group label {
             display: block;
-            font-size: 12px;
+            font-size: 11px;
             font-weight: 600;
             color: var(--mid);
-            margin-bottom: 6px;
+            margin-bottom: 4px;
             text-transform: uppercase;
-            letter-spacing: 0.5px;
+            letter-spacing: 0.3px;
         }
-
-        .form-group input,
-        .form-group select {
+        .form-group input, .form-group select, .form-group textarea {
             width: 100%;
-            padding: 10px 14px;
+            padding: 8px 10px;
             border: 1px solid var(--border);
-            border-radius: 8px;
+            border-radius: 6px;
             font-family: 'Montserrat', sans-serif;
-            font-size: 14px;
+            font-size: 13px;
             transition: border-color 0.2s;
         }
-
-        .form-group input:focus,
-        .form-group select:focus {
+        .form-group textarea { resize: vertical; min-height: 50px; }
+        .form-group input:focus, .form-group select:focus, .form-group textarea:focus {
             outline: none;
             border-color: var(--gold);
         }
 
-        .search-row {
+        /* ─── Item Editor ─── */
+        .item-row {
+            display: grid;
+            grid-template-columns: 1fr 70px 80px 36px;
+            gap: 6px;
+            align-items: end;
+            margin-bottom: 8px;
+            padding: 8px;
+            background: var(--bg);
+            border-radius: 6px;
+            border: 1px solid var(--border);
+        }
+        .item-row input {
+            padding: 6px 8px;
+            border: 1px solid var(--border);
+            border-radius: 4px;
+            font-family: 'Montserrat', sans-serif;
+            font-size: 12px;
+        }
+        .item-row input:focus { outline: none; border-color: var(--gold); }
+        .item-remove {
+            width: 32px;
+            height: 32px;
+            border: none;
+            background: #fee2e2;
+            color: var(--danger);
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
             display: flex;
-            gap: 8px;
+            align-items: center;
+            justify-content: center;
+            transition: background 0.2s;
         }
+        .item-remove:hover { background: #fecaca; }
 
-        .search-row input {
-            flex: 1;
+        .add-item-btn {
+            width: 100%;
+            padding: 8px;
+            border: 1px dashed var(--gold);
+            background: none;
+            color: var(--gold);
+            border-radius: 6px;
+            cursor: pointer;
+            font-family: 'Montserrat', sans-serif;
+            font-size: 12px;
+            font-weight: 600;
+            transition: all 0.2s;
+            margin-top: 6px;
         }
+        .add-item-btn:hover { background: rgba(212,175,55,0.08); }
 
+        /* ─── Computed Totals ─── */
+        .computed-totals {
+            background: var(--bg);
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            padding: 10px;
+            margin-top: 12px;
+        }
+        .total-line {
+            display: flex;
+            justify-content: space-between;
+            font-size: 12px;
+            padding: 4px 0;
+            color: var(--mid);
+        }
+        .total-line.grand {
+            border-top: 2px solid var(--border);
+            margin-top: 4px;
+            padding-top: 8px;
+            font-weight: 700;
+            font-size: 14px;
+            color: var(--dark);
+        }
+        .total-line .promo { color: var(--success); }
+
+        /* ─── Buttons ─── */
         .btn {
-            padding: 10px 20px;
+            padding: 10px 16px;
             border: none;
             border-radius: 8px;
             font-family: 'Montserrat', sans-serif;
@@ -160,225 +259,246 @@
             transition: all 0.2s;
             display: inline-flex;
             align-items: center;
+            justify-content: center;
             gap: 6px;
         }
-
-        .btn-gold {
-            background: var(--gold);
-            color: #fff;
-        }
-
-        .btn-gold:hover {
-            background: var(--gold-dark);
-        }
-
-        .btn-dark {
-            background: var(--dark);
-            color: #fff;
-        }
-
-        .btn-dark:hover {
-            background: #1a170f;
-        }
-
-        .btn-outline {
-            background: transparent;
-            color: var(--dark);
-            border: 1px solid var(--border);
-        }
-
-        .btn-outline:hover {
-            border-color: var(--gold);
-            color: var(--gold);
-        }
-
-        .btn:disabled {
-            opacity: 0.5;
-            cursor: not-allowed;
-        }
+        .btn-gold { background: var(--gold); color: #fff; }
+        .btn-gold:hover { background: var(--gold-dark); }
+        .btn-dark { background: var(--dark); color: #fff; }
+        .btn-dark:hover { background: #1a170f; }
+        .btn-outline { background: transparent; color: var(--dark); border: 1px solid var(--border); }
+        .btn-outline:hover { border-color: var(--gold); color: var(--gold); }
+        .btn:disabled { opacity: 0.5; cursor: not-allowed; }
+        .btn-success { background: var(--success); color: #fff; }
+        .btn-success:hover { background: #047857; }
 
         .actions-row {
             display: flex;
             gap: 8px;
-            margin-top: 20px;
+            margin-top: 16px;
             flex-wrap: wrap;
         }
+        .actions-row .btn { flex: 1; }
 
-        .actions-row .btn {
-            flex: 1;
-            justify-content: center;
-        }
+        .search-row { display: flex; gap: 8px; }
+        .search-row input { flex: 1; }
 
-        /* Status */
+        /* ─── Status ─── */
         .status-bar {
-            padding: 10px 14px;
-            border-radius: 8px;
-            font-size: 13px;
-            margin-bottom: 16px;
-            display: none;
-        }
-
-        .status-bar.info {
-            background: rgba(212, 175, 55, 0.1);
-            color: #92400e;
-            border: 1px solid rgba(212, 175, 55, 0.2);
-            display: block;
-        }
-
-        .status-bar.error {
-            background: #fee2e2;
-            color: #991b1b;
-            border: 1px solid #fecaca;
-            display: block;
-        }
-
-        .status-bar.success {
-            background: #d1fae5;
-            color: #065f46;
-            border: 1px solid #a7f3d0;
-            display: block;
-        }
-
-        /* Order Info Card */
-        .order-info {
-            display: none;
-            background: var(--bg);
-            border: 1px solid var(--border);
-            border-radius: 8px;
-            padding: 14px;
-            margin-bottom: 16px;
-        }
-
-        .order-info.visible {
-            display: block;
-        }
-
-        .order-info h3 {
-            font-size: 14px;
-            margin-bottom: 8px;
-            color: var(--dark);
-        }
-
-        .order-meta {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 6px;
+            padding: 8px 12px;
+            border-radius: 6px;
             font-size: 12px;
-            color: var(--mid);
+            margin-bottom: 12px;
+            display: none;
         }
+        .status-bar.info { background: rgba(212,175,55,0.1); color: #92400e; border: 1px solid rgba(212,175,55,0.2); display: block; }
+        .status-bar.error { background: #fee2e2; color: #991b1b; border: 1px solid #fecaca; display: block; }
+        .status-bar.success { background: #d1fae5; color: #065f46; border: 1px solid #a7f3d0; display: block; }
 
-        .order-meta strong {
-            color: var(--dark);
-        }
-
-        /* Canvas Preview */
+        /* ─── Preview Panel ─── */
         .preview-panel {
             background: #fff;
             border-radius: var(--radius);
-            padding: 24px;
+            padding: 20px;
             border: 1px solid var(--border);
             display: flex;
             flex-direction: column;
             align-items: center;
         }
-
         .preview-panel h2 {
             font-family: 'Cormorant Garamond', serif;
             font-size: 18px;
-            margin-bottom: 20px;
+            margin-bottom: 16px;
             align-self: flex-start;
             color: var(--dark);
         }
-
         .canvas-wrapper {
             background: #e8e5df;
-            padding: 20px;
+            padding: 16px;
             border-radius: 8px;
-            box-shadow: inset 0 2px 8px rgba(0, 0, 0, 0.08);
+            box-shadow: inset 0 2px 8px rgba(0,0,0,0.08);
             display: flex;
             justify-content: center;
             width: 100%;
             overflow: auto;
         }
-
         #receiptCanvas {
             background: #fff;
-            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+            box-shadow: 0 4px 20px rgba(0,0,0,0.15);
             max-width: 100%;
             height: auto;
         }
-
         .empty-state {
             text-align: center;
-            padding: 80px 20px;
+            padding: 60px 20px;
             color: var(--light);
         }
-
-        .empty-state .icon {
-            font-size: 48px;
-            margin-bottom: 16px;
-        }
-
-        .empty-state p {
-            font-size: 14px;
-            max-width: 300px;
-            margin: 0 auto;
-            line-height: 1.6;
-        }
+        .empty-state .icon { font-size: 48px; margin-bottom: 12px; }
+        .empty-state p { font-size: 13px; max-width: 280px; margin: 0 auto; line-height: 1.5; }
     </style>
 </head>
 
 <body>
-    <!-- Header -->
     <header class="gen-header">
         <h1>🧾 ARTÉVA Receipt Generator</h1>
         <a href="admin.html" class="back-link">← Back to Dashboard</a>
     </header>
 
-    <!-- Main Layout -->
     <div class="gen-container">
-        <!-- Left: Controls -->
+        <!-- Left Panel: Controls -->
         <div class="controls-panel">
-            <h2>Generate Receipt</h2>
-
-            <div id="statusBar" class="status-bar"></div>
-
-            <div class="form-group">
-                <label>Order Number</label>
-                <div class="search-row">
-                    <input type="text" id="orderNumberInput" placeholder="e.g. AB3K7QWX"
-                        style="text-transform: uppercase; letter-spacing: 1px;">
-                    <button class="btn btn-gold" id="fetchBtn" onclick="fetchAndRender()">Generate</button>
-                </div>
+            <div class="tab-bar">
+                <button class="tab-btn active" onclick="switchTab('order')">📦 From Order</button>
+                <button class="tab-btn" onclick="switchTab('manual')">✏️ Create New</button>
             </div>
 
-            <!-- Order info card (shown after fetch) -->
-            <div class="order-info" id="orderInfo">
-                <h3 id="orderTitle">Order Details</h3>
-                <div class="order-meta">
-                    <div>Customer: <strong id="infoCustomer">—</strong></div>
-                    <div>Date: <strong id="infoDate">—</strong></div>
-                    <div>Payment: <strong id="infoPayment">—</strong></div>
-                    <div>Status: <strong id="infoStatus">—</strong></div>
-                    <div>Items: <strong id="infoItems">—</strong></div>
-                    <div>Total: <strong id="infoTotal">—</strong></div>
+            <!-- TAB 1: From Order -->
+            <div class="tab-content active" id="tab-order">
+                <div id="statusBar" class="status-bar"></div>
+                <div class="form-group">
+                    <label>Order Number</label>
+                    <div class="search-row">
+                        <input type="text" id="orderNumberInput" placeholder="e.g. AB3K7QWX"
+                            style="text-transform: uppercase; letter-spacing: 1px;">
+                        <button class="btn btn-gold" id="fetchBtn" onclick="fetchAndRender()">Load</button>
+                    </div>
                 </div>
+                <p style="font-size:11px;color:var(--light);margin-bottom:12px;">Load an order, then edit any field below before printing.</p>
             </div>
 
-            <!-- Actions (shown after render) -->
-            <div class="actions-row" id="actionsRow" style="display: none;">
-                <button class="btn btn-dark" onclick="downloadJPEG()">📥 Download JPEG</button>
-                <button class="btn btn-outline" onclick="printReceipt()">🖨️ Print</button>
+            <!-- TAB 2: Create New -->
+            <div class="tab-content" id="tab-manual">
+                <div id="statusBarManual" class="status-bar"></div>
+                <p style="font-size:11px;color:var(--light);margin-bottom:12px;">Create a receipt from scratch. Fill in the details below.</p>
+            </div>
+
+            <!-- SHARED EDIT FORM (visible in both tabs after load/creation) -->
+            <div id="editFormWrapper" style="display:none; padding: 0 20px 20px;">
+                <div class="section-title">Receipt Info</div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Receipt / Order #</label>
+                        <input type="text" id="ed_orderNumber" style="text-transform:uppercase;letter-spacing:0.5px;">
+                    </div>
+                    <div class="form-group">
+                        <label>Date</label>
+                        <input type="date" id="ed_date">
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Order Status</label>
+                        <select id="ed_orderStatus">
+                            <option value="confirmed">Confirmed</option>
+                            <option value="pending">Pending</option>
+                            <option value="delivered">Delivered</option>
+                            <option value="cancelled">Cancelled</option>
+                            <option value="processing">Processing</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Payment Status</label>
+                        <select id="ed_paymentStatus">
+                            <option value="paid">Paid</option>
+                            <option value="pending">Pending</option>
+                            <option value="failed">Failed</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>Payment Method</label>
+                    <select id="ed_paymentMethod">
+                        <option value="knet">KNET</option>
+                        <option value="card">Credit/Debit Card</option>
+                        <option value="applepay">Apple Pay</option>
+                        <option value="deema">Deema (BNPL)</option>
+                        <option value="cod">Cash on Delivery</option>
+                        <option value="myfatoorah">Online Payment</option>
+                    </select>
+                </div>
+
+                <div class="section-title">Customer Details</div>
+                <div class="form-group">
+                    <label>Customer Name</label>
+                    <input type="text" id="ed_custName" placeholder="Full name">
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Email</label>
+                        <input type="email" id="ed_custEmail" placeholder="email@example.com">
+                    </div>
+                    <div class="form-group">
+                        <label>Phone</label>
+                        <input type="tel" id="ed_custPhone" placeholder="+965 XXXX XXXX">
+                    </div>
+                </div>
+
+                <div class="section-title">Shipping Address</div>
+                <div class="form-group">
+                    <label>Street / Address</label>
+                    <input type="text" id="ed_street" placeholder="Street address">
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>City</label>
+                        <input type="text" id="ed_city" placeholder="City">
+                    </div>
+                    <div class="form-group">
+                        <label>Country</label>
+                        <input type="text" id="ed_country" placeholder="Kuwait" value="Kuwait">
+                    </div>
+                </div>
+
+                <div class="section-title">Line Items</div>
+                <div id="itemsContainer"></div>
+                <button class="add-item-btn" onclick="addItem()">+ Add Item</button>
+
+                <div class="section-title">Pricing</div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Shipping Cost (KWD)</label>
+                        <input type="number" id="ed_shipping" step="0.001" value="2.000" min="0">
+                    </div>
+                    <div class="form-group">
+                        <label>Discount (KWD)</label>
+                        <input type="number" id="ed_discount" step="0.001" value="0" min="0">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>Promo Code (optional)</label>
+                    <input type="text" id="ed_promoCode" placeholder="e.g. SUMMER20" style="text-transform:uppercase;">
+                </div>
+                <div class="form-group">
+                    <label>Notes (optional)</label>
+                    <textarea id="ed_notes" placeholder="Internal notes — not shown on receipt"></textarea>
+                </div>
+
+                <!-- Computed Totals -->
+                <div class="computed-totals" id="computedTotals">
+                    <div class="total-line"><span>Subtotal</span><span id="ct_subtotal">0.000 KWD</span></div>
+                    <div class="total-line"><span>Shipping</span><span id="ct_shipping">2.000 KWD</span></div>
+                    <div class="total-line" id="ct_discountRow" style="display:none"><span class="promo">Discount</span><span class="promo" id="ct_discount">-0.000 KWD</span></div>
+                    <div class="total-line grand"><span>Grand Total</span><span id="ct_total">2.000 KWD</span></div>
+                </div>
+
+                <!-- Actions -->
+                <div class="actions-row">
+                    <button class="btn btn-success" onclick="reRender()">🔄 Update Preview</button>
+                </div>
+                <div class="actions-row" id="actionsRow">
+                    <button class="btn btn-dark" onclick="downloadJPEG()">📥 Download JPEG</button>
+                    <button class="btn btn-outline" onclick="printReceipt()">🖨️ Print</button>
+                </div>
             </div>
         </div>
 
-        <!-- Right: Preview -->
+        <!-- Right Panel: WYSIWYG Preview -->
         <div class="preview-panel">
-            <h2>Receipt Preview</h2>
+            <h2>Receipt Preview (WYSIWYG)</h2>
             <div class="canvas-wrapper" id="canvasWrapper">
                 <div class="empty-state" id="emptyState">
                     <div class="icon">🧾</div>
-                    <p>Enter an order number and click <strong>Generate</strong> to preview the receipt.</p>
+                    <p>Load an order or <strong>Create New</strong> to start building your receipt.</p>
                 </div>
                 <canvas id="receiptCanvas" width="827" height="1169" style="display:none;"></canvas>
             </div>
@@ -387,8 +507,6 @@
 
     <!-- QR Code Library -->
     <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js"></script>
-
-    <!-- Config & Auth -->
     <script src="assets/js/config.js"></script>
     <script src="assets/js/api.js"></script>
 
@@ -397,22 +515,201 @@
         // CONSTANTS (match printService.js @ 300 DPI)
         // ═══════════════════════════════════════════════════
         const DPI = 300;
-        const PW = Math.round(8.27 * DPI);   // A4 width
-        const PH = Math.round(11.69 * DPI);  // A4 height
+        const PW = Math.round(8.27 * DPI);
+        const PH = Math.round(11.69 * DPI);
         const SC = DPI / 72;
         const f = pt => Math.round(pt * SC);
 
         const GOLD = '#D4AF37', DARK = '#2c241b', MID = '#666666', LIGHT = '#999999';
         const BORDER = '#e6e1d6', BG = '#fafaf8';
 
-        // ── Helpers (match printService.js) ──
         function rr(c, x, y, w, h, r) { c.beginPath(); c.moveTo(x + r, y); c.lineTo(x + w - r, y); c.quadraticCurveTo(x + w, y, x + w, y + r); c.lineTo(x + w, y + h - r); c.quadraticCurveTo(x + w, y + h, x + w - r, y + h); c.lineTo(x + r, y + h); c.quadraticCurveTo(x, y + h, x, y + h - r); c.lineTo(x, y + r); c.quadraticCurveTo(x, y, x + r, y); c.closePath(); }
         function trunc(c, t, mw) { if (c.measureText(t).width <= mw) return t; let s = t; while (c.measureText(s + '…').width > mw && s.length > 0) s = s.slice(0, -1); return s + '…'; }
 
         let currentOrder = null;
+        let currentMode = 'order'; // 'order' or 'manual'
+        let itemIdCounter = 0;
 
         // ═══════════════════════════════════════════════════
-        // FETCH ORDER
+        // TAB SWITCHING
+        // ═══════════════════════════════════════════════════
+        function switchTab(mode) {
+            currentMode = mode;
+            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+            document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+            if (mode === 'order') {
+                document.querySelectorAll('.tab-btn')[0].classList.add('active');
+                document.getElementById('tab-order').classList.add('active');
+            } else {
+                document.querySelectorAll('.tab-btn')[1].classList.add('active');
+                document.getElementById('tab-manual').classList.add('active');
+                // Show edit form immediately for manual mode
+                showEditForm();
+                if (document.querySelectorAll('.item-row').length === 0) addItem();
+                recomputeTotals();
+            }
+        }
+
+        // ═══════════════════════════════════════════════════
+        // SHOW EDIT FORM
+        // ═══════════════════════════════════════════════════
+        function showEditForm() {
+            document.getElementById('editFormWrapper').style.display = 'block';
+        }
+
+        // ═══════════════════════════════════════════════════
+        // ITEM MANAGEMENT
+        // ═══════════════════════════════════════════════════
+        function addItem(name = '', nameAr = '', qty = 1, price = 0, sku = '') {
+            const id = ++itemIdCounter;
+            const container = document.getElementById('itemsContainer');
+            const row = document.createElement('div');
+            row.className = 'item-row';
+            row.id = `item-${id}`;
+            row.innerHTML = `
+                <div>
+                    <label style="font-size:10px;font-weight:600;color:var(--mid);margin-bottom:2px;display:block;">Item Name</label>
+                    <input type="text" class="item-name" value="${escapeAttr(name)}" placeholder="Product name" oninput="recomputeTotals()">
+                </div>
+                <div>
+                    <label style="font-size:10px;font-weight:600;color:var(--mid);margin-bottom:2px;display:block;">Qty</label>
+                    <input type="number" class="item-qty" value="${qty}" min="1" step="1" oninput="recomputeTotals()">
+                </div>
+                <div>
+                    <label style="font-size:10px;font-weight:600;color:var(--mid);margin-bottom:2px;display:block;">Price (KWD)</label>
+                    <input type="number" class="item-price" value="${price}" min="0" step="0.001" oninput="recomputeTotals()">
+                </div>
+                <button class="item-remove" onclick="removeItem('item-${id}')" title="Remove item">×</button>
+                <input type="hidden" class="item-sku" value="${escapeAttr(sku)}">
+                <input type="hidden" class="item-nameAr" value="${escapeAttr(nameAr)}">
+            `;
+            container.appendChild(row);
+            recomputeTotals();
+        }
+
+        function removeItem(id) {
+            const el = document.getElementById(id);
+            if (el) el.remove();
+            recomputeTotals();
+        }
+
+        function escapeAttr(s) { return (s || '').replace(/"/g, '&quot;').replace(/</g, '&lt;'); }
+
+        // ═══════════════════════════════════════════════════
+        // RECOMPUTE TOTALS
+        // ═══════════════════════════════════════════════════
+        function recomputeTotals() {
+            const items = getItems();
+            const subtotal = items.reduce((sum, i) => sum + (i.price * i.quantity), 0);
+            const shipping = parseFloat(document.getElementById('ed_shipping')?.value || 0);
+            const discount = parseFloat(document.getElementById('ed_discount')?.value || 0);
+            const total = Math.max(0, subtotal + shipping - discount);
+
+            document.getElementById('ct_subtotal').textContent = subtotal.toFixed(3) + ' KWD';
+            document.getElementById('ct_shipping').textContent = shipping.toFixed(3) + ' KWD';
+
+            const discRow = document.getElementById('ct_discountRow');
+            if (discount > 0) {
+                discRow.style.display = 'flex';
+                document.getElementById('ct_discount').textContent = '-' + discount.toFixed(3) + ' KWD';
+            } else {
+                discRow.style.display = 'none';
+            }
+            document.getElementById('ct_total').textContent = total.toFixed(3) + ' KWD';
+        }
+
+        function getItems() {
+            const rows = document.querySelectorAll('.item-row');
+            return Array.from(rows).map(row => ({
+                name: row.querySelector('.item-name')?.value || 'Product',
+                nameAr: row.querySelector('.item-nameAr')?.value || '',
+                quantity: parseInt(row.querySelector('.item-qty')?.value) || 1,
+                price: parseFloat(row.querySelector('.item-price')?.value) || 0,
+                sku: row.querySelector('.item-sku')?.value || '—'
+            }));
+        }
+
+        // ═══════════════════════════════════════════════════
+        // BUILD ORDER OBJECT FROM FORM
+        // ═══════════════════════════════════════════════════
+        function buildOrderFromForm() {
+            const items = getItems();
+            const shipping = parseFloat(document.getElementById('ed_shipping').value || 0);
+            const discount = parseFloat(document.getElementById('ed_discount').value || 0);
+            const subtotal = items.reduce((sum, i) => sum + (i.price * i.quantity), 0);
+            const total = Math.max(0, subtotal + shipping - discount);
+            const promoCode = document.getElementById('ed_promoCode').value.trim();
+            const dateVal = document.getElementById('ed_date').value;
+
+            return {
+                orderNumber: document.getElementById('ed_orderNumber').value.trim().toUpperCase() || generateReceiptNumber(),
+                createdAt: dateVal ? new Date(dateVal).toISOString() : new Date().toISOString(),
+                orderStatus: document.getElementById('ed_orderStatus').value,
+                paymentStatus: document.getElementById('ed_paymentStatus').value,
+                paymentMethod: document.getElementById('ed_paymentMethod').value,
+                user: {
+                    name: document.getElementById('ed_custName').value || 'Guest',
+                    email: document.getElementById('ed_custEmail').value || '',
+                    phone: document.getElementById('ed_custPhone').value || ''
+                },
+                shippingAddress: {
+                    street: document.getElementById('ed_street').value || '',
+                    city: document.getElementById('ed_city').value || '',
+                    country: document.getElementById('ed_country').value || 'Kuwait'
+                },
+                items: items,
+                subtotal: subtotal,
+                shippingCost: shipping,
+                discount: discount,
+                total: total,
+                promoCode: promoCode ? { code: promoCode, totalDiscount: discount } : null
+            };
+        }
+
+        function generateReceiptNumber() {
+            const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+            let result = 'R-';
+            for (let i = 0; i < 6; i++) result += chars[Math.floor(Math.random() * chars.length)];
+            return result;
+        }
+
+        // ═══════════════════════════════════════════════════
+        // POPULATE FORM FROM ORDER
+        // ═══════════════════════════════════════════════════
+        function populateFormFromOrder(order) {
+            document.getElementById('ed_orderNumber').value = order.orderNumber || '';
+            const d = new Date(order.createdAt || Date.now());
+            document.getElementById('ed_date').value = d.toISOString().split('T')[0];
+            document.getElementById('ed_orderStatus').value = order.orderStatus || 'confirmed';
+            document.getElementById('ed_paymentStatus').value = order.paymentStatus || 'paid';
+            document.getElementById('ed_paymentMethod').value = order.paymentMethod || 'knet';
+
+            const customer = order.user || {};
+            document.getElementById('ed_custName').value = customer.name || order.shippingAddress?.fullName || '';
+            document.getElementById('ed_custEmail').value = customer.email || '';
+            document.getElementById('ed_custPhone').value = customer.phone || order.shippingAddress?.phone || '';
+
+            const addr = order.shippingAddress || {};
+            document.getElementById('ed_street').value = addr.street || addr.address || '';
+            document.getElementById('ed_city').value = addr.city || '';
+            document.getElementById('ed_country').value = addr.country || 'Kuwait';
+
+            document.getElementById('ed_shipping').value = (order.shippingCost || 2).toFixed(3);
+            const promoDiscount = order.promoCode?.totalDiscount || order.discount || 0;
+            document.getElementById('ed_discount').value = promoDiscount;
+            document.getElementById('ed_promoCode').value = order.promoCode?.code || '';
+
+            // Clear and repopulate items
+            document.getElementById('itemsContainer').innerHTML = '';
+            (order.items || []).forEach(item => {
+                addItem(item.name || 'Product', item.nameAr || '', item.quantity || 1, item.price || 0, item.sku || '—');
+            });
+
+            recomputeTotals();
+        }
+
+        // ═══════════════════════════════════════════════════
+        // FETCH ORDER (Tab 1)
         // ═══════════════════════════════════════════════════
         async function fetchAndRender() {
             const input = document.getElementById('orderNumberInput');
@@ -429,7 +726,6 @@
                 const API = window.API_BASE_URL || 'https://arteva-maison-backend-gy1x.onrender.com/api';
                 let foundOrder = null;
 
-                // Try 1: Authenticated order-by-number endpoint
                 try {
                     const res = await fetch(`${API}/orders/by-number/${orderNumber}`, {
                         headers: { 'Authorization': `Bearer ${token}` }
@@ -440,7 +736,6 @@
                     }
                 } catch (e) { /* try next */ }
 
-                // Try 2: Admin orders list (fallback)
                 if (!foundOrder) {
                     const ordersRes = await fetch(`${API}/admin/orders`, {
                         headers: { 'Authorization': `Bearer ${token}` }
@@ -453,40 +748,31 @@
                     }
                 }
 
-                if (!foundOrder) throw new Error('Order not found. Check the order number and try again.');
+                if (!foundOrder) throw new Error('Order not found. Check the order number.');
 
                 currentOrder = foundOrder;
-                showOrderInfo(currentOrder);
-                await renderReceipt(currentOrder);
-                showStatus('Receipt generated!', 'success');
-                document.getElementById('actionsRow').style.display = 'flex';
+                populateFormFromOrder(currentOrder);
+                showEditForm();
+                await renderReceipt(buildOrderFromForm());
+                showStatus('Order loaded! Edit any field, then click Update Preview.', 'success');
             } catch (err) {
                 showStatus(err.message || 'Failed to fetch order', 'error');
-                document.getElementById('actionsRow').style.display = 'none';
             }
-
             document.getElementById('fetchBtn').disabled = false;
         }
 
-        // Enter key support
         document.getElementById('orderNumberInput').addEventListener('keypress', e => {
             if (e.key === 'Enter') fetchAndRender();
         });
 
         // ═══════════════════════════════════════════════════
-        // SHOW ORDER INFO
+        // RE-RENDER (Update Preview button)
         // ═══════════════════════════════════════════════════
-        function showOrderInfo(order) {
-            const info = document.getElementById('orderInfo');
-            info.classList.add('visible');
-            document.getElementById('orderTitle').textContent = `Order ${order.orderNumber}`;
-            document.getElementById('infoCustomer').textContent = order.user?.name || order.shippingAddress?.fullName || 'Guest';
-            document.getElementById('infoDate').textContent = new Date(order.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
-            const payNames = { cod: 'COD', knet: 'KNET', card: 'Card', applepay: 'Apple Pay', myfatoorah: 'Online', deema: 'Deema' };
-            document.getElementById('infoPayment').textContent = payNames[order.paymentMethod] || order.paymentMethod || 'N/A';
-            document.getElementById('infoStatus').textContent = (order.orderStatus || 'pending').replace(/_/g, ' ');
-            document.getElementById('infoItems').textContent = (order.items || []).length;
-            document.getElementById('infoTotal').textContent = (order.total || 0).toFixed(3) + ' KWD';
+        async function reRender() {
+            recomputeTotals();
+            const order = buildOrderFromForm();
+            currentOrder = order;
+            await renderReceipt(order);
         }
 
         // ═══════════════════════════════════════════════════
@@ -544,7 +830,7 @@
             });
             y += f(36);
 
-            // ═══ CUSTOMER & SHIPPING GRID ═══
+            // ═══ CUSTOMER & SHIPPING ═══
             const gH = f(58), gW = (CW - f(10)) / 2, gR = f(4), gP = f(8);
             c.fillStyle = BG; rr(c, LM, y, CW, gH, gR); c.fill();
             c.strokeStyle = BORDER; c.lineWidth = f(0.5); rr(c, LM, y, CW, gH, gR); c.stroke();
@@ -570,7 +856,7 @@
             addrLines.forEach(l => { c.fillText(l, sx, ay); ay += f(11); });
             y += gH + f(10);
 
-            // ═══ PAYMENT GRID ═══
+            // ═══ PAYMENT ═══
             const payH = f(38);
             c.fillStyle = BG; rr(c, LM, y, CW, payH, gR); c.fill();
             c.strokeStyle = BORDER; c.lineWidth = f(0.5); rr(c, LM, y, CW, payH, gR); c.stroke();
@@ -657,48 +943,52 @@
             y += f(8);
 
             // ═══ TOTALS ═══
-            const tw = f(200), tx = RM - tw;
+            const tw = f(200), ttx = RM - tw;
             c.textAlign = 'left'; c.font = `${f(9.5)}px Arial`; c.fillStyle = DARK;
-            c.fillText('Subtotal', tx, y);
+            c.fillText('Subtotal', ttx, y);
             c.fillStyle = LIGHT; c.font = `${f(7.5)}px Arial`;
-            c.fillText('/ المجموع الفرعي', tx + f(52), y + f(1.5));
+            c.fillText('/ المجموع الفرعي', ttx + f(52), y + f(1.5));
             c.fillStyle = DARK; c.font = `${f(9.5)}px Arial`;
             c.textAlign = 'right'; c.fillText((order.subtotal || 0).toFixed(3) + ' KWD', RM, y); y += f(14);
 
-            c.textAlign = 'left'; c.fillText('Delivery', tx, y);
+            c.textAlign = 'left'; c.fillText('Delivery', ttx, y);
             c.fillStyle = LIGHT; c.font = `${f(7.5)}px Arial`;
-            c.fillText('/ التوصيل', tx + f(48), y + f(1.5));
+            c.fillText('/ التوصيل', ttx + f(48), y + f(1.5));
             c.fillStyle = DARK; c.font = `${f(9.5)}px Arial`;
             c.textAlign = 'right'; c.fillText((order.shippingCost || 0).toFixed(3) + ' KWD', RM, y); y += f(12);
 
             if (order.promoCode && order.promoCode.code) {
                 const promoAmount = order.promoCode.totalDiscount || order.discount || 0;
                 c.textAlign = 'left'; c.font = `${f(9.5)}px Arial`; c.fillStyle = '#059669';
-                c.fillText('Promo: ' + order.promoCode.code, tx, y);
+                c.fillText('Promo: ' + order.promoCode.code, ttx, y);
                 c.textAlign = 'right';
                 c.fillText('-' + parseFloat(promoAmount).toFixed(3) + ' KWD', RM, y); y += f(12);
+            } else if (order.discount && order.discount > 0) {
+                c.textAlign = 'left'; c.font = `${f(9.5)}px Arial`; c.fillStyle = '#059669';
+                c.fillText('Discount', ttx, y);
+                c.textAlign = 'right';
+                c.fillText('-' + parseFloat(order.discount).toFixed(3) + ' KWD', RM, y); y += f(12);
             }
 
-            c.strokeStyle = BORDER; c.lineWidth = f(1); c.beginPath(); c.moveTo(tx, y); c.lineTo(RM, y); c.stroke(); y += f(14);
+            c.strokeStyle = BORDER; c.lineWidth = f(1); c.beginPath(); c.moveTo(ttx, y); c.lineTo(RM, y); c.stroke(); y += f(14);
             c.textAlign = 'left'; c.font = `bold ${f(13)}px Arial`; c.fillStyle = DARK;
-            c.fillText('Total Paid', tx, y);
+            c.fillText('Total Paid', ttx, y);
             c.fillStyle = LIGHT; c.font = `bold ${f(9)}px Arial`;
-            c.fillText('/ المبلغ المدفوع', tx + f(78), y + f(3));
+            c.fillText('/ المبلغ المدفوع', ttx + f(78), y + f(3));
             c.fillStyle = DARK; c.font = `bold ${f(13)}px Arial`;
             c.textAlign = 'right'; c.fillText((order.total || 0).toFixed(3) + ' KWD', RM, y); y += f(24);
 
             // ═══ QR CODE ═══
-            const qrSz = f(60), qrH = qrSz + f(14);
-            c.fillStyle = BG; rr(c, LM, y, CW, qrH, f(5)); c.fill();
-            c.strokeStyle = BORDER; c.lineWidth = f(0.5); rr(c, LM, y, CW, qrH, f(5)); c.stroke();
+            const qrSz = f(60), qrHt = qrSz + f(14);
+            c.fillStyle = BG; rr(c, LM, y, CW, qrHt, f(5)); c.fill();
+            c.strokeStyle = BORDER; c.lineWidth = f(0.5); rr(c, LM, y, CW, qrHt, f(5)); c.stroke();
             try {
                 const qrUrl = 'https://www.artevamaisonkw.com/receipt.html?order=' + (order.orderNumber || '');
                 const qrDataUrl = await QRCode.toDataURL(qrUrl, { width: qrSz, margin: 1, color: { dark: '#2c241b', light: '#ffffff' }, errorCorrectionLevel: 'H' });
                 const qrImg = new Image();
                 await new Promise(resolve => { qrImg.onload = resolve; qrImg.src = qrDataUrl; });
-                const qrX = LM + f(10), qrY = y + (qrH - qrSz) / 2;
+                const qrX = LM + f(10), qrY = y + (qrHt - qrSz) / 2;
                 c.drawImage(qrImg, qrX, qrY, qrSz, qrSz);
-
                 const lx = qrX + qrSz + f(14);
                 c.textAlign = 'left'; c.fillStyle = DARK; c.font = `600 ${f(10)}px Arial`;
                 c.fillText('Scan for Digital Receipt', lx, y + f(20));
@@ -707,14 +997,13 @@
                 c.fillStyle = LIGHT; c.font = `${f(8)}px Arial`;
                 c.fillText('www.artevamaisonkw.com', lx, y + f(46));
             } catch (e) { console.error('QR error:', e); }
-            y += qrH + f(10);
+            y += qrHt + f(10);
 
             // ═══ RETURN POLICY ═══
             const rpH = f(78);
             c.fillStyle = '#fffbeb'; rr(c, LM, y, CW, rpH, f(4)); c.fill();
             c.strokeStyle = 'rgba(245,158,11,0.2)'; c.lineWidth = f(0.5); rr(c, LM, y, CW, rpH, f(4)); c.stroke();
             c.fillStyle = GOLD; c.fillRect(LM, y, f(2), rpH);
-
             const rpX = LM + f(10);
             c.textAlign = 'left'; c.fillStyle = DARK;
             c.font = `${f(11)}px Georgia`; c.fillText('Return & Exchange Policy', rpX, y + f(8));
@@ -745,19 +1034,21 @@
         // ═══════════════════════════════════════════════════
         function downloadJPEG() {
             const canvas = document.getElementById('receiptCanvas');
+            const orderNum = document.getElementById('ed_orderNumber')?.value || 'receipt';
             const link = document.createElement('a');
-            link.download = `receipt-${currentOrder?.orderNumber || 'unknown'}.jpg`;
+            link.download = `receipt-${orderNum}.jpg`;
             link.href = canvas.toDataURL('image/jpeg', 0.95);
             link.click();
         }
 
         function printReceipt() {
             const canvas = document.getElementById('receiptCanvas');
+            const orderNum = document.getElementById('ed_orderNumber')?.value || '';
             const dataUrl = canvas.toDataURL('image/jpeg', 0.95);
             const win = window.open('', '_blank');
             win.document.write(`
                 <html>
-                <head><title>Receipt - ${currentOrder?.orderNumber || ''}</title>
+                <head><title>Receipt - ${orderNum}</title>
                 <style>
                     @page { size: A4; margin: 0; }
                     body { margin: 0; display: flex; justify-content: center; }
@@ -772,10 +1063,18 @@
         // STATUS HELPER
         // ═══════════════════════════════════════════════════
         function showStatus(msg, type) {
-            const bar = document.getElementById('statusBar');
-            bar.textContent = msg;
-            bar.className = `status-bar ${type}`;
+            const barId = currentMode === 'manual' ? 'statusBarManual' : 'statusBar';
+            const bar = document.getElementById(barId);
+            if (bar) { bar.textContent = msg; bar.className = `status-bar ${type}`; }
         }
+
+        // ─── Auto-attach change listeners for live total updates ───
+        document.addEventListener('DOMContentLoaded', () => {
+            ['ed_shipping', 'ed_discount'].forEach(id => {
+                const el = document.getElementById(id);
+                if (el) el.addEventListener('input', recomputeTotals);
+            });
+        });
     </script>
 </body>
 
