@@ -171,6 +171,8 @@
                 errorMessage.textContent = 'Your payment was declined. Please check your payment details and try again.';
             } else if (status === 'expired') {
                 errorMessage.textContent = 'Your payment session has expired. Please start a new checkout.';
+            } else if (error === 'payment_failed') {
+                errorMessage.textContent = 'Your payment was not completed. This may happen if the payment was cancelled or declined. Your cart has been preserved — please try again.';
             } else if (error === 'amount_mismatch') {
                 errorMessage.textContent = 'Payment amount verification failed. Please contact support.';
                 errorDetails.style.display = 'block';
@@ -179,7 +181,7 @@
                 errorMessage.textContent = 'Order not found. Please contact support if you were charged.';
             } else if (error === 'verification_failed') {
                 errorMessage.textContent = 'Payment verification failed. Please contact support.';
-            } else if (error === 'missing_payment_id') {
+            } else if (error === 'missing_payment_id' || error === 'missing_charge_id') {
                 errorMessage.textContent = 'Payment session was invalid. Please try checking out again.';
             }
 
