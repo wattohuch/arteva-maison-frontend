@@ -536,13 +536,15 @@ function collectShippingAddress() {
         phoneDigits = phoneDigits.substring(1);
     }
     // Remove country code if user typed it redundantly
-    if (phoneDigits.startsWith(codeDigits)) {
+    // BUT only if the resulting number would still be long enough (e.g. they typed 96596512345)
+    // Kuwait numbers are 8 digits, so if it's 8 digits and starts with 965, it's a local number.
+    if (phoneDigits.startsWith(codeDigits) && phoneDigits.length > 8) {
         phoneDigits = phoneDigits.substring(codeDigits.length);
     }
     // Remove 00 prefix if user typed it
     if (phoneDigits.startsWith('00')) {
         phoneDigits = phoneDigits.substring(2);
-        if (phoneDigits.startsWith(codeDigits)) {
+        if (phoneDigits.startsWith(codeDigits) && phoneDigits.length > 8) {
             phoneDigits = phoneDigits.substring(codeDigits.length);
         }
     }
