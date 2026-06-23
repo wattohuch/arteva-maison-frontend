@@ -339,7 +339,7 @@ function renderOrders(orders) {
                 '<div class="order-footer">' +
                     '<div class="order-total">' + totalText + ': ' + total + ' ' + currency + '</div>' +
                     '<div class="order-actions" style="display:flex;flex-wrap:wrap;gap:6px;margin-top:10px;">' +
-                        '<a href="receipt.html?id=' + order._id + '" target="_blank" class="btn-view-order" style="background:#fff;color:var(--text-secondary);border:1px solid var(--border-light);">Receipt</a>' +
+                        '<a href="receipt.html?order=' + encodeURIComponent(order.orderNumber) + '&token=' + encodeURIComponent(order.trackingToken || '') + '" target="_blank" class="btn-view-order" style="background:#fff;color:var(--text-secondary);border:1px solid var(--border-light);">Receipt</a>' +
                         trackBtn +
                         whatsappBtn +
                         '<a href="orders.html?id=' + order._id + '" class="btn-view-order">' + viewDetailsText + '</a>' +

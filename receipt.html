@@ -210,6 +210,11 @@
             return 'https://arteva-maison-backend-gy1x.onrender.com/api';
         })();
 
+        function getOrderId() {
+            const params = new URLSearchParams(window.location.search);
+            return params.get('id') || '';
+        }
+
         function getOrderNumber() {
             const params = new URLSearchParams(window.location.search);
             return params.get('order') || params.get('orderNumber') || '';
@@ -221,9 +226,11 @@
         }
 
         async function loadReceipt() {
+            const orderId = getOrderId();
             const orderNumber = getOrderNumber();
-            if (!orderNumber) {
-                showError('No order number provided', 'Please use the link from your receipt or WhatsApp message.', 'يرجى استخدام الرابط من الإيصال أو رسالة واتساب.');
+
+            if (!orderId && !orderNumber) {
+                showError('No order reference provided', 'Please use the link from your receipt or WhatsApp message.', 'يرجى استخدام الرابط من الإيصال أو رسالة واتساب.');
                 return;
             }
 
@@ -234,10 +241,23 @@
             document.getElementById('printBtn').style.display = 'none';
 
             try {
-                // Fetch the FULL server-rendered receipt HTML
-                const token = getToken();
-                const tokenParam = token ? `?token=${encodeURIComponent(token)}` : '';
-                const res = await fetch(`${API_BASE}/orders/receipt/${encodeURIComponent(orderNumber)}/html${tokenParam}`);
+                // Set optional Auth header from localStorage
+                const headers = {};
+                const authToken = localStorage.getItem('arteva_token');
+                if (authToken) {
+                    headers['Authorization'] = 'Bearer ' + authToken;
+                }
+
+                let res;
+                if (orderId) {
+                    // Load using protected admin endpoint
+                    res = await fetch(`${API_BASE}/admin/receipt/${encodeURIComponent(orderId)}`, { headers });
+                } else {
+                    // Load using public orders receipt endpoint (token-secured)
+                    const token = getToken();
+                    const tokenParam = token ? `?token=${encodeURIComponent(token)}` : '';
+                    res = await fetch(`${API_BASE}/orders/receipt/${encodeURIComponent(orderNumber)}/html${tokenParam}`, { headers });
+                }
 
                 if (!res.ok) {
                     if (res.status === 404) {

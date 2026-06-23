@@ -370,6 +370,7 @@
             <div class="tab-content" id="tab-manual">
                 <div id="statusBarManual" class="status-bar"></div>
                 <p style="font-size:11px;color:var(--light);margin-bottom:12px;">Create a receipt from scratch. Fill in the details below.</p>
+                <button class="btn btn-gold" style="width: 100%; margin-bottom: 10px;" onclick="initNewManualReceipt()">🆕 Initialize New Receipt</button>
             </div>
 
             <!-- SHARED EDIT FORM (visible in both tabs after load/creation) -->
@@ -450,8 +451,14 @@
                 </div>
 
                 <div class="section-title">Line Items</div>
+                <div class="form-group" style="margin-bottom: 12px;">
+                    <label>Quick Add Product</label>
+                    <select id="quickProductSelect" onchange="quickAddProduct()">
+                        <option value="">Select a product to add...</option>
+                    </select>
+                </div>
                 <div id="itemsContainer"></div>
-                <button class="add-item-btn" onclick="addItem()">+ Add Item</button>
+                <button class="add-item-btn" onclick="addItem()">+ Add Custom Item</button>
 
                 <div class="section-title">Pricing</div>
                 <div class="form-row">
@@ -466,7 +473,12 @@
                 </div>
                 <div class="form-group">
                     <label>Promo Code (optional)</label>
-                    <input type="text" id="ed_promoCode" placeholder="e.g. SUMMER20" style="text-transform:uppercase;">
+                    <div style="display: flex; gap: 8px;">
+                        <select id="ed_promoCodeSelect" onchange="promoCodeDropdownChanged()" style="flex: 1;">
+                            <option value="">Select promo code...</option>
+                        </select>
+                        <input type="text" id="ed_promoCode" placeholder="Or enter manual code..." style="text-transform:uppercase; flex: 1;">
+                    </div>
                 </div>
                 <div class="form-group">
                     <label>Notes (optional)</label>
@@ -529,6 +541,212 @@
         let currentOrder = null;
         let currentMode = 'order'; // 'order' or 'manual'
         let itemIdCounter = 0;
+        let allProductsList = [];
+        let allPromoCodesList = [];
+        let appliedPromoData = null;
+
+        // Fetch products and promo codes from database
+        async function loadProductsAndPromoCodes() {
+            const token = localStorage.getItem('arteva_token');
+            if (!token) return;
+
+            const API = window.API_BASE_URL || 'https://arteva-maison-backend-gy1x.onrender.com/api';
+
+            // 1. Fetch products
+            try {
+                const res = await fetch(`${API}/admin/products`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                if (res.ok) {
+                    const data = await res.json();
+                    if (data.success && data.data) {
+                        allProductsList = data.data;
+                        populateQuickProductSelect();
+                    }
+                }
+            } catch (err) {
+                console.error('Failed to load products:', err);
+            }
+
+            // 2. Fetch promo codes
+            try {
+                const res = await fetch(`${API}/promo-codes`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                if (res.ok) {
+                    const data = await res.json();
+                    if (data.success && data.data) {
+                        allPromoCodesList = data.data;
+                        populatePromoCodeSelect();
+                    }
+                }
+            } catch (err) {
+                console.error('Failed to load promo codes:', err);
+            }
+        }
+
+        function populateQuickProductSelect() {
+            const select = document.getElementById('quickProductSelect');
+            if (!select) return;
+
+            // Sort products by name alphabetically
+            const sortedProducts = [...allProductsList].sort((a, b) => a.name.localeCompare(b.name));
+            
+            let html = '<option value="">Select a product to add...</option>';
+            sortedProducts.forEach(p => {
+                const skuPart = p.sku ? ` (${p.sku})` : '';
+                html += `<option value="${p._id}">${escapeAttr(p.name)}${skuPart} - ${p.price.toFixed(3)} KWD</option>`;
+            });
+            select.innerHTML = html;
+        }
+
+        function populatePromoCodeSelect() {
+            const select = document.getElementById('ed_promoCodeSelect');
+            if (!select) return;
+
+            let html = '<option value="">Select promo code...</option>';
+            allPromoCodesList.forEach(promo => {
+                if (promo.isActive) {
+                    html += `<option value="${escapeAttr(promo.code)}">${escapeAttr(promo.code)} - ${escapeAttr(promo.name)}</option>`;
+                }
+            });
+            select.innerHTML = html;
+        }
+
+        function quickAddProduct() {
+            const select = document.getElementById('quickProductSelect');
+            const productId = select.value;
+            if (!productId) return;
+
+            const product = allProductsList.find(p => p._id === productId);
+            if (product) {
+                addItem(product.name, product.nameAr || '', 1, product.price, product.sku || '', product._id);
+            }
+            select.value = '';
+        }
+
+        function promoCodeDropdownChanged() {
+            const select = document.getElementById('ed_promoCodeSelect');
+            const input = document.getElementById('ed_promoCode');
+            if (select && input) {
+                input.value = select.value;
+                applyPromoCode();
+            }
+        }
+
+        async function applyPromoCode() {
+            const codeInput = document.getElementById('ed_promoCode');
+            const code = codeInput ? codeInput.value.trim().toUpperCase() : '';
+            
+            if (!code) {
+                appliedPromoData = null;
+                document.getElementById('ed_discount').value = 0;
+                recomputeTotals();
+                return;
+            }
+
+            const items = getItems();
+            const cartItems = items
+                .filter(item => item.product)
+                .map(item => ({
+                    product: item.product,
+                    quantity: item.quantity,
+                    price: item.price
+                }));
+
+            if (cartItems.length === 0) {
+                showStatus('No database products to apply promo code to', 'info');
+                document.getElementById('ed_discount').value = 0;
+                appliedPromoData = null;
+                recomputeTotals();
+                return;
+            }
+
+            try {
+                const token = localStorage.getItem('arteva_token');
+                const API = window.API_BASE_URL || 'https://arteva-maison-backend-gy1x.onrender.com/api';
+                const res = await fetch(`${API}/promo-codes/validate`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify({
+                        code: code,
+                        cartItems: cartItems
+                    })
+                });
+
+                if (!res.ok) {
+                    const errorData = await res.json();
+                    throw new Error(errorData.message || 'Invalid promo code');
+                }
+
+                const data = await res.json();
+                if (data.success && data.data) {
+                    appliedPromoData = data.data;
+                    document.getElementById('ed_discount').value = appliedPromoData.totalDiscount.toFixed(3);
+                    showStatus(`Promo code "${code}" applied successfully! Discount: ${appliedPromoData.totalDiscount.toFixed(3)} KWD`, 'success');
+                    recomputeTotals();
+                }
+            } catch (err) {
+                appliedPromoData = null;
+                document.getElementById('ed_discount').value = 0;
+                showStatus(err.message || 'Failed to apply promo code', 'error');
+                recomputeTotals();
+            }
+        }
+
+        // Generate a cryptographically secure order number (8 chars, A-Z0-9) - matches backend technology
+        function generateOrderNumber() {
+            const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+            let result = '';
+            const array = new Uint8Array(8);
+            window.crypto.getRandomValues(array);
+            for (let i = 0; i < 8; i++) {
+                result += chars[array[i] % chars.length];
+            }
+            return result;
+        }
+
+        function generateReceiptNumber() {
+            return generateOrderNumber();
+        }
+
+        function initNewManualReceipt() {
+            appliedPromoData = null;
+
+            const receiptNum = generateOrderNumber();
+            document.getElementById('ed_orderNumber').value = receiptNum;
+            document.getElementById('ed_date').value = new Date().toISOString().split('T')[0];
+
+            document.getElementById('ed_orderStatus').value = 'confirmed';
+            document.getElementById('ed_paymentStatus').value = 'paid';
+            document.getElementById('ed_paymentMethod').value = 'knet';
+
+            document.getElementById('ed_custName').value = '';
+            document.getElementById('ed_custEmail').value = '';
+            document.getElementById('ed_custPhone').value = '';
+
+            document.getElementById('ed_street').value = '';
+            document.getElementById('ed_city').value = '';
+            document.getElementById('ed_country').value = 'Kuwait';
+
+            document.getElementById('ed_shipping').value = '2.000';
+            document.getElementById('ed_discount').value = '0';
+            document.getElementById('ed_promoCode').value = '';
+            const pSelect = document.getElementById('ed_promoCodeSelect');
+            if (pSelect) pSelect.value = '';
+            
+            document.getElementById('ed_notes').value = '';
+
+            document.getElementById('itemsContainer').innerHTML = '';
+            addItem(); 
+
+            showEditForm();
+            recomputeTotals();
+            reRender();
+        }
 
         // ═══════════════════════════════════════════════════
         // TAB SWITCHING
@@ -543,10 +761,13 @@
             } else {
                 document.querySelectorAll('.tab-btn')[1].classList.add('active');
                 document.getElementById('tab-manual').classList.add('active');
-                // Show edit form immediately for manual mode
-                showEditForm();
-                if (document.querySelectorAll('.item-row').length === 0) addItem();
-                recomputeTotals();
+                
+                // Automatically initialize a new receipt on first manual switch if empty
+                if (document.getElementById('editFormWrapper').style.display === 'none' || !document.getElementById('ed_orderNumber').value) {
+                    initNewManualReceipt();
+                } else {
+                    showEditForm();
+                }
             }
         }
 
@@ -560,7 +781,7 @@
         // ═══════════════════════════════════════════════════
         // ITEM MANAGEMENT
         // ═══════════════════════════════════════════════════
-        function addItem(name = '', nameAr = '', qty = 1, price = 0, sku = '') {
+        function addItem(name = '', nameAr = '', qty = 1, price = 0, sku = '', productId = '') {
             const id = ++itemIdCounter;
             const container = document.getElementById('itemsContainer');
             const row = document.createElement('div');
@@ -582,6 +803,7 @@
                 <button class="item-remove" onclick="removeItem('item-${id}')" title="Remove item">×</button>
                 <input type="hidden" class="item-sku" value="${escapeAttr(sku)}">
                 <input type="hidden" class="item-nameAr" value="${escapeAttr(nameAr)}">
+                <input type="hidden" class="item-id" value="${escapeAttr(productId)}">
             `;
             container.appendChild(row);
             recomputeTotals();
@@ -625,7 +847,8 @@
                 nameAr: row.querySelector('.item-nameAr')?.value || '',
                 quantity: parseInt(row.querySelector('.item-qty')?.value) || 1,
                 price: parseFloat(row.querySelector('.item-price')?.value) || 0,
-                sku: row.querySelector('.item-sku')?.value || '—'
+                sku: row.querySelector('.item-sku')?.value || '—',
+                product: row.querySelector('.item-id')?.value || ''
             }));
         }
 
@@ -662,15 +885,12 @@
                 shippingCost: shipping,
                 discount: discount,
                 total: total,
-                promoCode: promoCode ? { code: promoCode, totalDiscount: discount } : null
+                promoCode: promoCode ? { 
+                    code: promoCode, 
+                    totalDiscount: discount,
+                    discounts: appliedPromoData ? appliedPromoData.discounts : []
+                } : null
             };
-        }
-
-        function generateReceiptNumber() {
-            const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
-            let result = 'R-';
-            for (let i = 0; i < 6; i++) result += chars[Math.floor(Math.random() * chars.length)];
-            return result;
         }
 
         // ═══════════════════════════════════════════════════
@@ -702,7 +922,8 @@
             // Clear and repopulate items
             document.getElementById('itemsContainer').innerHTML = '';
             (order.items || []).forEach(item => {
-                addItem(item.name || 'Product', item.nameAr || '', item.quantity || 1, item.price || 0, item.sku || '—');
+                const prodId = (item.product && typeof item.product === 'object') ? (item.product._id || '') : (item.product || '');
+                addItem(item.name || 'Product', item.nameAr || '', item.quantity || 1, item.price || 0, item.sku || '—', prodId);
             });
 
             recomputeTotals();
@@ -769,7 +990,13 @@
         // RE-RENDER (Update Preview button)
         // ═══════════════════════════════════════════════════
         async function reRender() {
-            recomputeTotals();
+            const promoInput = document.getElementById('ed_promoCode');
+            const code = promoInput ? promoInput.value.trim().toUpperCase() : '';
+            if (code) {
+                await applyPromoCode();
+            } else {
+                recomputeTotals();
+            }
             const order = buildOrderFromForm();
             currentOrder = order;
             await renderReceipt(order);
@@ -911,8 +1138,9 @@
                 });
                 c.textAlign = 'left';
                 c.fillStyle = MID; c.font = `${f(8.5)}px Courier New`; c.fillText(sku, cols[0].x, y);
+                const showNameAr = item.nameAr && item.nameAr.trim().toLowerCase() !== (item.name || '').trim().toLowerCase();
                 c.fillStyle = DARK; c.font = `500 ${f(9.5)}px Arial`; c.fillText(trunc(c, item.name || 'Product', cols[1].w - f(4)), cols[1].x, y);
-                if (item.nameAr) { c.fillStyle = LIGHT; c.font = `${f(7.5)}px Arial`; c.fillText(item.nameAr, cols[1].x, y + f(11)); }
+                if (showNameAr) { c.fillStyle = LIGHT; c.font = `${f(7.5)}px Arial`; c.fillText(item.nameAr, cols[1].x, y + f(11)); }
 
                 c.font = `${f(9)}px Arial`;
                 if (itemDiscount) {
@@ -936,7 +1164,7 @@
                     c.textAlign = 'center'; c.fillText(String(item.quantity), cols[3].x + cols[3].w / 2, y);
                     c.textAlign = 'right'; c.fillText((item.price * item.quantity).toFixed(3) + ' KWD', cols[4].x + cols[4].w, y);
                 }
-                y += item.nameAr ? f(26) : (itemDiscount ? f(24) : f(20));
+                y += showNameAr ? f(26) : (itemDiscount ? f(24) : f(20));
                 c.strokeStyle = BORDER; c.lineWidth = f(0.3); c.beginPath(); c.moveTo(LM, y); c.lineTo(RM, y); c.stroke();
                 y += f(6);
             });
@@ -1074,6 +1302,31 @@
                 const el = document.getElementById(id);
                 if (el) el.addEventListener('input', recomputeTotals);
             });
+
+            // Fetch products and promo codes
+            loadProductsAndPromoCodes();
+
+            // Set up promo code manual input event listeners
+            const promoInput = document.getElementById('ed_promoCode');
+            if (promoInput) {
+                promoInput.addEventListener('change', () => {
+                    const select = document.getElementById('ed_promoCodeSelect');
+                    if (select) {
+                        const match = Array.from(select.options).find(opt => opt.value === promoInput.value.trim().toUpperCase());
+                        if (match) {
+                            select.value = match.value;
+                        } else {
+                            select.value = '';
+                        }
+                    }
+                    applyPromoCode();
+                });
+                promoInput.addEventListener('keypress', (e) => {
+                    if (e.key === 'Enter') {
+                        applyPromoCode();
+                    }
+                });
+            }
         });
     </script>
 </body>

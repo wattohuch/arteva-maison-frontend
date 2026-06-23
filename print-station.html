@@ -495,13 +495,16 @@ function buildReceiptHtml(order) {
             </tr>
         </thead>
         <tbody>
-            ${items.map(item => `
-            <tr>
-                <td>${item.name}${item.nameAr ? '<br><small style="color:#999;">' + item.nameAr + '</small>' : ''}</td>
-                <td class="text-right">${(item.price || 0).toFixed(3)} KWD</td>
-                <td class="text-center">${item.quantity}</td>
-                <td class="text-right"><strong>${((item.price || 0) * (item.quantity || 1)).toFixed(3)} KWD</strong></td>
-            </tr>`).join('')}
+            ${items.map(item => {
+                const showNameAr = item.nameAr && item.nameAr.trim().toLowerCase() !== (item.name || '').trim().toLowerCase();
+                return `
+                <tr>
+                    <td>${item.name}${showNameAr ? '<br><small style="color:#999;">' + item.nameAr + '</small>' : ''}</td>
+                    <td class="text-right">${(item.price || 0).toFixed(3)} KWD</td>
+                    <td class="text-center">${item.quantity}</td>
+                    <td class="text-right"><strong>${((item.price || 0) * (item.quantity || 1)).toFixed(3)} KWD</strong></td>
+                </tr>`;
+            }).join('')}
         </tbody>
     </table>
 
