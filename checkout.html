@@ -49,14 +49,14 @@
                 gap: var(--space-6);
             }
 
-            .order-summary {
+            .sticky-sidebar {
                 position: static;
                 /* Remove sticky on mobile */
                 margin-top: var(--space-4);
             }
 
-            /* Order summary flows naturally below the form on mobile */
-            .order-summary-wrapper {
+            /* Sticky sidebar flows naturally below the form on mobile */
+            .sticky-sidebar-wrapper {
                 position: static;
             }
 
@@ -215,8 +215,8 @@
             object-fit: contain;
         }
 
-        /* Order Summary */
-        .order-summary {
+        /* Sticky Sidebar */
+        .sticky-sidebar {
             position: sticky;
             top: calc(var(--header-height) + var(--space-4));
         }
@@ -704,8 +704,58 @@
                         </div>
                     </div>
 
-                    <!-- Payment Method -->
+                    <!-- Order Summary -->
                     <div class="checkout-section">
+                        <h2 data-i18n="order_summary">Order Summary</h2>
+                        <div id="checkoutItems">
+                            <!-- Items will be populated by JavaScript -->
+                        </div>
+                        <div class="summary-totals" style="margin-top: var(--space-4);">
+                            <div class="summary-row">
+                                <span data-i18n="subtotal">Subtotal</span>
+                                <span id="checkoutSubtotal">0.000 KWD</span>
+                            </div>
+                            <div class="summary-row">
+                                <span data-i18n="shipping">Shipping</span>
+                                <span id="checkoutShipping">2.000 KWD</span>
+                            </div>
+
+                            <!-- Promo Code Section -->
+                            <div class="promo-code-section" style="padding: var(--space-2) 0; border-top: 1px solid var(--border-light); border-bottom: 1px solid var(--border-light); margin: var(--space-2) 0;">
+                                <div class="promo-input-row" style="display: flex; gap: 8px;">
+                                    <input type="text" class="promo-code-input" placeholder="Promo code" 
+                                        style="flex: 1; padding: 8px 12px; border: 1px solid var(--border-light); border-radius: var(--radius-sm); font-family: var(--font-body); font-size: 13px; text-transform: uppercase; letter-spacing: 0.5px;">
+                                    <button type="button" class="promo-apply-btn" 
+                                        style="padding: 8px 16px; background: var(--color-gold); color: white; border: none; border-radius: var(--radius-sm); font-family: var(--font-body); font-size: 13px; font-weight: 500; cursor: pointer; white-space: nowrap;"
+                                        data-i18n="apply">Apply</button>
+                                </div>
+                                <div class="promo-applied-row" style="display: none; align-items: center; justify-content: space-between; padding: 8px 0;">
+                                    <div style="display: flex; align-items: center; gap: 6px;">
+                                        <span style="color: #059669; font-size: 14px;">✓</span>
+                                        <code class="promo-applied-code" style="background: rgba(5,150,105,0.1); color: #059669; padding: 2px 8px; border-radius: 4px; font-size: 12px; font-weight: 600; letter-spacing: 0.5px;"></code>
+                                        <span class="promo-applied-saving" style="font-size: 12px; color: #059669; font-weight: 500;"></span>
+                                    </div>
+                                    <button type="button" class="promo-remove-btn" style="background: none; border: none; color: #ef4444; font-size: 12px; cursor: pointer; font-family: var(--font-body); text-decoration: underline;" data-i18n="remove">Remove</button>
+                                </div>
+                            </div>
+
+                            <!-- Discount Row -->
+                            <div class="promo-discount-row summary-row" style="display: none; color: #059669;">
+                                <span data-i18n="discount">Discount</span>
+                                <span class="promo-discount-amount">-0.000 KWD</span>
+                            </div>
+
+                            <div class="summary-row total">
+                                <span data-i18n="total">Total</span>
+                                <span id="checkoutTotal">0.000 KWD</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Right Column - Payment Method -->
+                <div class="sticky-sidebar-wrapper">
+                    <div class="checkout-section sticky-sidebar">
                         <h2 data-i18n="payment_method">Payment Method</h2>
                         <div class="payment-methods">
                             <label class="payment-method selected">
@@ -752,24 +802,6 @@
                                 </div>
                             </label>
 
-                            <label class="payment-method">
-                                <input type="radio" name="paymentMethod" value="deema">
-                                <div class="payment-method-info">
-                                    <div class="payment-method-name">Deema</div>
-                                    <div class="payment-method-desc" data-i18n="deema_desc">Buy now, pay later — split into installments</div>
-                                </div>
-                                <div class="payment-method-icons">
-                                    <!-- Deema Logo -->
-                                    <svg class="payment-logo-deema" width="102" height="28" viewBox="0 0 160 44" xmlns="http://www.w3.org/2000/svg">
-                                        <!-- Pink circles icon -->
-                                        <circle cx="16" cy="22" r="12" fill="#C27083" opacity="0.7"/>
-                                        <circle cx="26" cy="18" r="12" fill="#C27083" opacity="0.85"/>
-                                        <!-- deema text -->
-                                        <text x="48" y="31" font-family="'Helvetica Neue', Arial, sans-serif" font-size="24" font-weight="600" fill="#4A4A4A" letter-spacing="0.5">deema</text>
-                                    </svg>
-                                </div>
-                            </label>
-
                             <label class="payment-method" id="applePayMethod"
                                 style="display: none; padding: 0; border: none; background: #000; cursor: pointer; overflow: hidden; border-radius: 8px; height: 48px; align-items: center; justify-content: center; margin: 4px 0; transition: transform 0.2s ease, opacity 0.2s ease;">
                                 <input type="radio" name="paymentMethod" value="applepay" style="display: none;">
@@ -794,56 +826,24 @@
                                 </div>
                             </label>
 
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Right Column - Order Summary -->
-                <div class="order-summary-wrapper">
-                    <div class="checkout-section order-summary">
-                        <h2 data-i18n="order_summary">Order Summary</h2>
-                        <div id="checkoutItems">
-                            <!-- Items will be populated by JavaScript -->
-                        </div>
-                        <div class="summary-totals" style="margin-top: var(--space-4);">
-                            <div class="summary-row">
-                                <span data-i18n="subtotal">Subtotal</span>
-                                <span id="checkoutSubtotal">0.000 KWD</span>
-                            </div>
-                            <div class="summary-row">
-                                <span data-i18n="shipping">Shipping</span>
-                                <span id="checkoutShipping">2.000 KWD</span>
-                            </div>
-
-                            <!-- Promo Code Section -->
-                            <div class="promo-code-section" style="padding: var(--space-2) 0; border-top: 1px solid var(--border-light); border-bottom: 1px solid var(--border-light); margin: var(--space-2) 0;">
-                                <div class="promo-input-row" style="display: flex; gap: 8px;">
-                                    <input type="text" class="promo-code-input" placeholder="Promo code" 
-                                        style="flex: 1; padding: 8px 12px; border: 1px solid var(--border-light); border-radius: var(--radius-sm); font-family: var(--font-body); font-size: 13px; text-transform: uppercase; letter-spacing: 0.5px;">
-                                    <button type="button" class="promo-apply-btn" 
-                                        style="padding: 8px 16px; background: var(--color-gold); color: white; border: none; border-radius: var(--radius-sm); font-family: var(--font-body); font-size: 13px; font-weight: 500; cursor: pointer; white-space: nowrap;"
-                                        data-i18n="apply">Apply</button>
+                            <label class="payment-method">
+                                <input type="radio" name="paymentMethod" value="deema">
+                                <div class="payment-method-info">
+                                    <div class="payment-method-name">Deema</div>
+                                    <div class="payment-method-desc" data-i18n="deema_desc">Buy now, pay later — split into installments</div>
                                 </div>
-                                <div class="promo-applied-row" style="display: none; align-items: center; justify-content: space-between; padding: 8px 0;">
-                                    <div style="display: flex; align-items: center; gap: 6px;">
-                                        <span style="color: #059669; font-size: 14px;">✓</span>
-                                        <code class="promo-applied-code" style="background: rgba(5,150,105,0.1); color: #059669; padding: 2px 8px; border-radius: 4px; font-size: 12px; font-weight: 600; letter-spacing: 0.5px;"></code>
-                                        <span class="promo-applied-saving" style="font-size: 12px; color: #059669; font-weight: 500;"></span>
-                                    </div>
-                                    <button type="button" class="promo-remove-btn" style="background: none; border: none; color: #ef4444; font-size: 12px; cursor: pointer; font-family: var(--font-body); text-decoration: underline;" data-i18n="remove">Remove</button>
+                                <div class="payment-method-icons">
+                                    <!-- Deema Logo -->
+                                    <svg class="payment-logo-deema" width="102" height="28" viewBox="0 0 160 44" xmlns="http://www.w3.org/2000/svg">
+                                        <!-- Pink circles icon -->
+                                        <circle cx="16" cy="22" r="12" fill="#C27083" opacity="0.7"/>
+                                        <circle cx="26" cy="18" r="12" fill="#C27083" opacity="0.85"/>
+                                        <!-- deema text -->
+                                        <text x="48" y="31" font-family="'Helvetica Neue', Arial, sans-serif" font-size="24" font-weight="600" fill="#4A4A4A" letter-spacing="0.5">deema</text>
+                                    </svg>
                                 </div>
-                            </div>
+                            </label>
 
-                            <!-- Discount Row -->
-                            <div class="promo-discount-row summary-row" style="display: none; color: #059669;">
-                                <span data-i18n="discount">Discount</span>
-                                <span class="promo-discount-amount">-0.000 KWD</span>
-                            </div>
-
-                            <div class="summary-row total">
-                                <span data-i18n="total">Total</span>
-                                <span id="checkoutTotal">0.000 KWD</span>
-                            </div>
                         </div>
                         <button type="submit" class="checkout-btn" data-i18n="place_order">Place Order</button>
                         <div class="secure-badge">
