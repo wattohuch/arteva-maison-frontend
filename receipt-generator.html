@@ -537,7 +537,7 @@
                 </div>
                 <div class="form-group">
                     <label>Notes (optional)</label>
-                    <textarea id="ed_notes" placeholder="Internal notes — not shown on receipt"></textarea>
+                    <textarea id="ed_notes" placeholder="Notes (will be printed on receipt)"></textarea>
                 </div>
 
                 <!-- Computed Totals -->
@@ -1379,6 +1379,25 @@
             c.fillStyle = order.refundStatus === 'Full' ? '#ef4444' : DARK;
             c.font = `bold ${f(13)}px Arial`;
             c.textAlign = 'right'; c.fillText((order.total || 0).toFixed(3) + ' KWD', RM, y); y += f(24);
+
+            // ═══ NOTES ═══
+            if (order.notes && order.notes.trim()) {
+                const notesArr = order.notes.trim().split('\n');
+                const nH = Math.max(f(40), notesArr.length * f(14) + f(24));
+                c.fillStyle = BG; rr(c, LM, y, CW, nH, f(4)); c.fill();
+                c.strokeStyle = BORDER; c.lineWidth = f(0.5); rr(c, LM, y, CW, nH, f(4)); c.stroke();
+                c.textAlign = 'left'; c.fillStyle = MID; c.font = `600 ${f(8)}px Arial`;
+                c.fillText('NOTES', LM + f(10), y + f(14));
+                c.fillStyle = LIGHT; c.font = `${f(6.5)}px Arial`;
+                c.fillText('ملاحظات', LM + f(10) + c.measureText('NOTES ').width, y + f(15));
+                c.fillStyle = DARK; c.font = `${f(9.5)}px Arial`;
+                let ny = y + f(30);
+                notesArr.forEach(line => {
+                    c.fillText(line, LM + f(10), ny);
+                    ny += f(14);
+                });
+                y += nH + f(10);
+            }
 
             // ═══ QR CODE ═══
             const qrSz = f(60), qrHt = qrSz + f(14);
