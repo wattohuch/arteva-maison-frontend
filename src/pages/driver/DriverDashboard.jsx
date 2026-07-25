@@ -23,19 +23,59 @@ const latToY = (lat, z) => {
 };
 
 /**
- * OpenStreetMap mini-map component for driver location pinning.
- * Dynamic geocoding resolves addresses when explicit coordinates are missing,
- * avoiding fixed fallback pins.
+ * Robust coordinate extractor supporting:
+ * - { lat: 29.37, lng: 47.97 } or { lat: "29.37", lng: "47.97" } (numbers or strings)
+ * - { latitude: 29.37, longitude: 47.97 }
+ * - Array [lng, lat] or [lat, lng]
  */
-function MiniOrderMap({ lat, lng, street, city, state, country }) {
+const parseNum = (val) => {
+  if (val === null || val === undefined || val === '') return null;
+  const n = Number(val);
+  return !isNaN(n) && isFinite(n) && n !== 0 ? n : null;
+};
+
+const extractCoords = (addressObj) => {
+  if (!addressObj) return null;
+  const c = addressObj.coordinates || addressObj;
+
+  let lat = null;
+  let lng = null;
+
+  if (c && typeof c === 'object' && !Array.isArray(c)) {
+    lat = parseNum(c.lat ?? c.latitude ?? addressObj.lat ?? addressObj.latitude);
+    lng = parseNum(c.lng ?? c.longitude ?? addressObj.lng ?? addressObj.longitude);
+  } else if (Array.isArray(c) && c.length >= 2) {
+    const first = parseNum(c[0]);
+    const second = parseNum(c[1]);
+    if (first && second) {
+      if (first > 40 && second < 35) {
+        lng = first;
+        lat = second;
+      } else {
+        lat = first;
+        lng = second;
+      }
+    }
+  }
+
+  if (lat !== null && lng !== null) {
+    return { lat, lng };
+  }
+  return null;
+};
+
+/**
+ * OpenStreetMap mini-map component for driver location pinning.
+ */
+function MiniOrderMap({ rawCoords, street, city, state, country }) {
   const [coords, setCoords] = useState(null);
   const [loading, setLoading] = useState(false);
 
-  const hasExplicitCoords = Number.isFinite(lat) && Number.isFinite(lng) && lat !== 0 && lng !== 0;
+  const parsed = useMemo(() => extractCoords({ coordinates: rawCoords }), [rawCoords]);
 
   useEffect(() => {
-    if (hasExplicitCoords) {
-      setCoords({ lat, lng, isPinned: true });
+    if (parsed) {
+      setCoords({ lat: parsed.lat, lng: parsed.lng, isPinned: true });
       return;
     }
 
@@ -58,7 +98,7 @@ function MiniOrderMap({ lat, lng, street, city, state, country }) {
           if (data && data.length > 0 && isMounted) {
             const fetchedLat = parseFloat(data[0].lat);
             const fetchedLng = parseFloat(data[0].lon);
-            if (Number.isFinite(fetchedLat) && Number.isFinite(fetchedLng)) {
+            if (parseNum(fetchedLat) && parseNum(fetchedLng)) {
               setCoords({ lat: fetchedLat, lng: fetchedLng, isPinned: false });
             }
           }
@@ -74,7 +114,7 @@ function MiniOrderMap({ lat, lng, street, city, state, country }) {
       isMounted = false;
       clearTimeout(timer);
     };
-  }, [hasExplicitCoords, lat, lng, street, state, city, country]);
+  }, [parsed, street, state, city, country]);
 
   if (loading) {
     return (
@@ -288,9 +328,9 @@ export default function DriverDashboard() {
 
   // Google Maps navigation helper — exact pinned coordinates first, or full address search
   const getGoogleMapsUrl = (order) => {
-    const c = order.shippingAddress?.coordinates;
-    if (c && Number.isFinite(c.lat) && Number.isFinite(c.lng) && !(c.lat === 0 && c.lng === 0)) {
-      return `https://www.google.com/maps/search/?api=1&query=${c.lat},${c.lng}`;
+    const parsed = extractCoords(order?.shippingAddress);
+    if (parsed) {
+      return `https://www.google.com/maps/search/?api=1&query=${parsed.lat},${parsed.lng}`;
     }
     const addr = [
       order.shippingAddress?.street,
@@ -303,9 +343,9 @@ export default function DriverDashboard() {
 
   // Waze navigation helper
   const getWazeUrl = (order) => {
-    const c = order.shippingAddress?.coordinates;
-    if (c && Number.isFinite(c.lat) && Number.isFinite(c.lng) && !(c.lat === 0 && c.lng === 0)) {
-      return `https://waze.com/ul?ll=${c.lat},${c.lng}&navigate=yes`;
+    const parsed = extractCoords(order?.shippingAddress);
+    if (parsed) {
+      return `https://waze.com/ul?ll=${parsed.lat},${parsed.lng}&navigate=yes`;
     }
     return getGoogleMapsUrl(order);
   };
@@ -420,7 +460,7 @@ export default function DriverDashboard() {
           </div>
         ) : displayOrders.map(order => {
           const statusColor = getStatusColor(order.orderStatus);
-          const coords = order.shippingAddress?.coordinates;
+          const parsed = extractCoords(order.shippingAddress);
           const isCod = order.paymentMethod === 'cod' || order.paymentStatus !== 'paid';
 
           return (
@@ -452,11 +492,10 @@ export default function DriverDashboard() {
                 {order.shippingAddress?.state && <span style={{ color: '#64748b' }}> • Block {order.shippingAddress.state}</span>}
               </div>
 
-              {/* Dynamic Mini Map with Geocoding */}
+              {/* Dynamic Mini Map */}
               <div style={{ marginTop: 10 }}>
                 <MiniOrderMap
-                  lat={coords?.lat}
-                  lng={coords?.lng}
+                  rawCoords={order.shippingAddress?.coordinates}
                   street={order.shippingAddress?.street}
                   state={order.shippingAddress?.state}
                   city={order.shippingAddress?.city}
@@ -498,217 +537,219 @@ export default function DriverDashboard() {
       </div>
 
       {/* Order Detail Modal */}
-      {showModal && activeOrder && (
-        <>
-          <div className="driver-modal-overlay" onClick={() => setShowModal(false)} />
-          <div className="driver-modal glass-card-component">
-            <div className="driver-modal-header">
-              <div>
-                <h3 style={{ margin: 0 }}>Order #{activeOrder.orderNumber}</h3>
-                <span style={{ fontSize: '0.8rem', color: '#64748b' }}>
-                  {formatDate(activeOrder.createdAt)}
-                </span>
-              </div>
-              <button type="button" onClick={() => setShowModal(false)} className="driver-modal-close">✕</button>
-            </div>
-
-            <div className="driver-modal-body">
-              {/* Payment status alert */}
-              {(activeOrder.paymentMethod === 'cod' || activeOrder.paymentStatus !== 'paid') ? (
-                <div className="driver-alert cod">
-                  💵 <strong>CASH ON DELIVERY (COD)</strong>
-                  <div>Collect exact amount: <strong style={{ fontSize: '1.05rem', color: '#92400e' }}>{kwd(activeOrder.total)}</strong> from customer upon delivery.</div>
+      {showModal && activeOrder && (() => {
+        const modalCoords = extractCoords(activeOrder.shippingAddress);
+        return (
+          <>
+            <div className="driver-modal-overlay" onClick={() => setShowModal(false)} />
+            <div className="driver-modal glass-card-component">
+              <div className="driver-modal-header">
+                <div>
+                  <h3 style={{ margin: 0 }}>Order #{activeOrder.orderNumber}</h3>
+                  <span style={{ fontSize: '0.8rem', color: '#64748b' }}>
+                    {formatDate(activeOrder.createdAt)}
+                  </span>
                 </div>
-              ) : (
-                <div className="driver-alert paid">
-                  💳 <strong>PAID ONLINE ({activeOrder.paymentMethod.toUpperCase()})</strong>
-                  <div>Order is fully paid online. Do NOT collect money from customer.</div>
-                </div>
-              )}
-
-              {/* Customer Info */}
-              <div className="driver-modal-section">
-                <strong>Customer Information</strong>
-                <p style={{ margin: 0, fontWeight: 600, fontSize: '0.95rem' }}>
-                  {activeOrder.user?.name || activeOrder.shippingAddress?.fullName || 'Customer'}
-                </p>
-                <p style={{ margin: '2px 0 0', fontSize: '0.88rem', color: '#475569' }}>
-                  📞 Phone: {activeOrder.shippingAddress?.phone || activeOrder.user?.phone || 'N/A'}
-                </p>
-                {activeOrder.user?.email && (
-                  <p style={{ margin: '2px 0 0', fontSize: '0.82rem', color: '#64748b' }}>
-                    ✉️ Email: {activeOrder.user.email}
-                  </p>
-                )}
+                <button type="button" onClick={() => setShowModal(false)} className="driver-modal-close">✕</button>
               </div>
 
-              {/* Delivery Address & Pinned Map */}
-              <div className="driver-modal-section">
-                <strong>Delivery Address & Pinned Location</strong>
-                <p style={{ margin: '4px 0', fontSize: '0.9rem', color: '#0f172a', fontWeight: 500 }}>
-                  {activeOrder.shippingAddress?.street}, {activeOrder.shippingAddress?.city}, {activeOrder.shippingAddress?.country || 'Kuwait'}
-                </p>
-                {activeOrder.shippingAddress?.state && (
-                  <p style={{ margin: '2px 0', fontSize: '0.84rem', color: '#475569' }}>
-                    Block / Area: {activeOrder.shippingAddress.state}
-                  </p>
+              <div className="driver-modal-body">
+                {/* Payment status alert */}
+                {(activeOrder.paymentMethod === 'cod' || activeOrder.paymentStatus !== 'paid') ? (
+                  <div className="driver-alert cod">
+                    💵 <strong>CASH ON DELIVERY (COD)</strong>
+                    <div>Collect exact amount: <strong style={{ fontSize: '1.05rem', color: '#92400e' }}>{kwd(activeOrder.total)}</strong> from customer upon delivery.</div>
+                  </div>
+                ) : (
+                  <div className="driver-alert paid">
+                    💳 <strong>PAID ONLINE ({activeOrder.paymentMethod.toUpperCase()})</strong>
+                    <div>Order is fully paid online. Do NOT collect money from customer.</div>
+                  </div>
                 )}
 
-                {/* Map Coordinates & Copy button */}
-                {activeOrder.shippingAddress?.coordinates?.lat ? (
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 8, background: '#f1f5f9', padding: '6px 10px', borderRadius: 6 }}>
-                    <span style={{ fontSize: '0.82rem', color: '#334155', fontFamily: 'monospace' }}>
-                      📍 {activeOrder.shippingAddress.coordinates.lat.toFixed(5)}, {activeOrder.shippingAddress.coordinates.lng.toFixed(5)}
-                    </span>
+                {/* Customer Info */}
+                <div className="driver-modal-section">
+                  <strong>Customer Information</strong>
+                  <p style={{ margin: 0, fontWeight: 600, fontSize: '0.95rem' }}>
+                    {activeOrder.user?.name || activeOrder.shippingAddress?.fullName || 'Customer'}
+                  </p>
+                  <p style={{ margin: '2px 0 0', fontSize: '0.88rem', color: '#475569' }}>
+                    📞 Phone: {activeOrder.shippingAddress?.phone || activeOrder.user?.phone || 'N/A'}
+                  </p>
+                  {activeOrder.user?.email && (
+                    <p style={{ margin: '2px 0 0', fontSize: '0.82rem', color: '#64748b' }}>
+                      ✉️ Email: {activeOrder.user.email}
+                    </p>
+                  )}
+                </div>
+
+                {/* Delivery Address & Pinned Map */}
+                <div className="driver-modal-section">
+                  <strong>Delivery Address & Pinned Location</strong>
+                  <p style={{ margin: '4px 0', fontSize: '0.9rem', color: '#0f172a', fontWeight: 500 }}>
+                    {activeOrder.shippingAddress?.street}, {activeOrder.shippingAddress?.city}, {activeOrder.shippingAddress?.country || 'Kuwait'}
+                  </p>
+                  {activeOrder.shippingAddress?.state && (
+                    <p style={{ margin: '2px 0', fontSize: '0.84rem', color: '#475569' }}>
+                      Block / Area: {activeOrder.shippingAddress.state}
+                    </p>
+                  )}
+
+                  {/* Map Coordinates & Copy button */}
+                  {modalCoords ? (
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 8, background: '#f1f5f9', padding: '6px 10px', borderRadius: 6 }}>
+                      <span style={{ fontSize: '0.82rem', color: '#334155', fontFamily: 'monospace' }}>
+                        📌 {modalCoords.lat.toFixed(5)}, {modalCoords.lng.toFixed(5)}
+                      </span>
+                      <button
+                        type="button"
+                        className="btn btn-ghost btn-sm"
+                        style={{ padding: '2px 8px', fontSize: '0.75rem' }}
+                        onClick={() => copyCoordinates(modalCoords.lat, modalCoords.lng)}
+                      >
+                        📋 Copy
+                      </button>
+                    </div>
+                  ) : null}
+
+                  {/* Map Preview */}
+                  <div style={{ marginTop: 10 }}>
+                    <MiniOrderMap
+                      rawCoords={activeOrder.shippingAddress?.coordinates}
+                      street={activeOrder.shippingAddress?.street}
+                      state={activeOrder.shippingAddress?.state}
+                      city={activeOrder.shippingAddress?.city}
+                      country={activeOrder.shippingAddress?.country}
+                    />
+                  </div>
+                </div>
+
+                {/* Delivery Notes */}
+                {activeOrder.notes && (
+                  <div className="driver-modal-section" style={{ background: '#fffbeb', border: '1px solid #fef3c7', padding: 12, borderRadius: 8 }}>
+                    <strong style={{ color: '#b45309' }}>📝 Customer Delivery Notes</strong>
+                    <p style={{ margin: '4px 0 0', color: '#92400e', fontSize: '0.88rem' }}>
+                      {activeOrder.notes}
+                    </p>
+                  </div>
+                )}
+
+                {/* Navigation & Communication Grid */}
+                <div className="driver-modal-actions">
+                  <button
+                    type="button"
+                    className="driver-action-btn"
+                    style={{ background: '#ecfdf5', color: '#047857', borderColor: '#a7f3d0' }}
+                    onClick={() => window.open(getGoogleMapsUrl(activeOrder), '_blank')}
+                  >
+                    🗺️ Google Maps
+                  </button>
+                  <button
+                    type="button"
+                    className="driver-action-btn"
+                    style={{ background: '#f0f9ff', color: '#0369a1', borderColor: '#bae6fd' }}
+                    onClick={() => window.open(getWazeUrl(activeOrder), '_blank')}
+                  >
+                    🚗 Waze Navigation
+                  </button>
+                  <button
+                    type="button"
+                    className="driver-action-btn"
+                    onClick={() => window.open(`tel:${activeOrder.shippingAddress?.phone || activeOrder.user?.phone}`)}
+                  >
+                    📞 Call Customer
+                  </button>
+                  <button
+                    type="button"
+                    className="driver-action-btn"
+                    style={{ background: '#f0fdf4', color: '#15803d', borderColor: '#bbf7d0' }}
+                    onClick={() => window.open(getWhatsAppUrl(activeOrder), '_blank')}
+                  >
+                    💬 WhatsApp Direct
+                  </button>
+                </div>
+
+                {/* Package Items Checklist Accordion */}
+                <div style={{ marginBottom: 16, border: '1px solid #e2e8f0', borderRadius: 8, overflow: 'hidden' }}>
+                  <button
+                    type="button"
+                    style={{ width: '100%', padding: '10px 14px', background: '#f8fafc', border: 'none', textAlign: 'left', fontWeight: 600, fontSize: '0.88rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center', cursor: 'pointer' }}
+                    onClick={() => setShowItemsChecklist(!showItemsChecklist)}
+                  >
+                    <span>📦 Package Contents ({activeOrder.items?.length || 0} items)</span>
+                    <span>{showItemsChecklist ? '▲ Hide' : '▼ View Items'}</span>
+                  </button>
+                  {showItemsChecklist && (
+                    <div style={{ padding: 12, background: '#fff' }}>
+                      {(activeOrder.items || []).map((item, i) => (
+                        <div key={i} style={{ display: 'flex', gap: 10, alignItems: 'center', marginBottom: 8, paddingBottom: 8, borderBottom: i < activeOrder.items.length - 1 ? '1px dashed #e2e8f0' : 'none' }}>
+                          {resolveImageUrl(item.image || getProductImage(item)) && (
+                            <img
+                              src={resolveImageUrl(item.image || getProductImage(item))}
+                              alt=""
+                              style={{ width: 36, height: 36, objectFit: 'cover', borderRadius: 6, border: '1px solid #cbd5e1' }}
+                            />
+                          )}
+                          <div style={{ flex: 1, minWidth: 0 }}>
+                            <div style={{ fontWeight: 600, fontSize: '0.85rem' }}>{item.name}</div>
+                            {item.sku && <div style={{ fontSize: '0.75rem', color: '#64748b' }}>SKU: {item.sku}</div>}
+                          </div>
+                          <div style={{ fontWeight: 700, fontSize: '0.85rem', background: '#f1f5f9', padding: '2px 8px', borderRadius: 4 }}>
+                            x{item.quantity}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+
+                {/* Main Driver Status Actions */}
+                {activeOrder.orderStatus === 'delivered' ? (
+                  <div className="driver-completed-badge">
+                    Order Delivery Completed ✅
+                  </div>
+                ) : activeOrder.orderStatus === 'out_for_delivery' ? (
+                  <>
                     <button
                       type="button"
-                      className="btn btn-ghost btn-sm"
-                      style={{ padding: '2px 8px', fontSize: '0.75rem' }}
-                      onClick={() => copyCoordinates(activeOrder.shippingAddress.coordinates.lat, activeOrder.shippingAddress.coordinates.lng)}
+                      className="driver-main-btn finish"
+                      onClick={captureProof}
+                      disabled={updatingStatus}
                     >
-                      📋 Copy
+                      {updatingStatus ? 'Uploading Proof...' : '📷 Take Photo & Complete Delivery'}
                     </button>
-                  </div>
-                ) : null}
-
-                {/* Map Preview */}
-                <div style={{ marginTop: 10 }}>
-                  <MiniOrderMap
-                    lat={activeOrder.shippingAddress?.coordinates?.lat}
-                    lng={activeOrder.shippingAddress?.coordinates?.lng}
-                    street={activeOrder.shippingAddress?.street}
-                    state={activeOrder.shippingAddress?.state}
-                    city={activeOrder.shippingAddress?.city}
-                    country={activeOrder.shippingAddress?.country}
-                  />
-                </div>
-              </div>
-
-              {/* Delivery Notes */}
-              {activeOrder.notes && (
-                <div className="driver-modal-section" style={{ background: '#fffbeb', border: '1px solid #fef3c7', padding: 12, borderRadius: 8 }}>
-                  <strong style={{ color: '#b45309' }}>📝 Customer Delivery Notes</strong>
-                  <p style={{ margin: '4px 0 0', color: '#92400e', fontSize: '0.88rem' }}>
-                    {activeOrder.notes}
-                  </p>
-                </div>
-              )}
-
-              {/* Navigation & Communication Grid */}
-              <div className="driver-modal-actions">
-                <button
-                  type="button"
-                  className="driver-action-btn"
-                  style={{ background: '#ecfdf5', color: '#047857', borderColor: '#a7f3d0' }}
-                  onClick={() => window.open(getGoogleMapsUrl(activeOrder), '_blank')}
-                >
-                  🗺️ Google Maps
-                </button>
-                <button
-                  type="button"
-                  className="driver-action-btn"
-                  style={{ background: '#f0f9ff', color: '#0369a1', borderColor: '#bae6fd' }}
-                  onClick={() => window.open(getWazeUrl(activeOrder), '_blank')}
-                >
-                  🚗 Waze Navigation
-                </button>
-                <button
-                  type="button"
-                  className="driver-action-btn"
-                  onClick={() => window.open(`tel:${activeOrder.shippingAddress?.phone || activeOrder.user?.phone}`)}
-                >
-                  📞 Call Customer
-                </button>
-                <button
-                  type="button"
-                  className="driver-action-btn"
-                  style={{ background: '#f0fdf4', color: '#15803d', borderColor: '#bbf7d0' }}
-                  onClick={() => window.open(getWhatsAppUrl(activeOrder), '_blank')}
-                >
-                  💬 WhatsApp Direct
-                </button>
-              </div>
-
-              {/* Package Items Checklist Accordion */}
-              <div style={{ marginBottom: 16, border: '1px solid #e2e8f0', borderRadius: 8, overflow: 'hidden' }}>
-                <button
-                  type="button"
-                  style={{ width: '100%', padding: '10px 14px', background: '#f8fafc', border: 'none', textAlign: 'left', fontWeight: 600, fontSize: '0.88rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center', cursor: 'pointer' }}
-                  onClick={() => setShowItemsChecklist(!showItemsChecklist)}
-                >
-                  <span>📦 Package Contents ({activeOrder.items?.length || 0} items)</span>
-                  <span>{showItemsChecklist ? '▲ Hide' : '▼ View Items'}</span>
-                </button>
-                {showItemsChecklist && (
-                  <div style={{ padding: 12, background: '#fff' }}>
-                    {(activeOrder.items || []).map((item, i) => (
-                      <div key={i} style={{ display: 'flex', gap: 10, alignItems: 'center', marginBottom: 8, paddingBottom: 8, borderBottom: i < activeOrder.items.length - 1 ? '1px dashed #e2e8f0' : 'none' }}>
-                        {resolveImageUrl(item.image || getProductImage(item)) && (
-                          <img
-                            src={resolveImageUrl(item.image || getProductImage(item))}
-                            alt=""
-                            style={{ width: 36, height: 36, objectFit: 'cover', borderRadius: 6, border: '1px solid #cbd5e1' }}
-                          />
-                        )}
-                        <div style={{ flex: 1, minWidth: 0 }}>
-                          <div style={{ fontWeight: 600, fontSize: '0.85rem' }}>{item.name}</div>
-                          {item.sku && <div style={{ fontSize: '0.75rem', color: '#64748b' }}>SKU: {item.sku}</div>}
-                        </div>
-                        <div style={{ fontWeight: 700, fontSize: '0.85rem', background: '#f1f5f9', padding: '2px 8px', borderRadius: 4 }}>
-                          x{item.quantity}
-                        </div>
-                      </div>
-                    ))}
-                  </div>
+                    <button
+                      type="button"
+                      className="driver-main-btn secondary"
+                      onClick={() => markDelivered(activeOrder._id)}
+                      disabled={updatingStatus}
+                    >
+                      ✓ Mark Delivered (No Photo)
+                    </button>
+                    <input
+                      ref={fileInputRef}
+                      type="file"
+                      accept="image/*"
+                      capture="environment"
+                      style={{ display: 'none' }}
+                      onChange={uploadProof}
+                    />
+                  </>
+                ) : (
+                  <button
+                    type="button"
+                    className="driver-main-btn"
+                    onClick={() => startDelivery(activeOrder._id, activeOrder.orderNumber)}
+                    disabled={updatingStatus}
+                  >
+                    {updatingStatus ? 'Updating Status...' : '🚀 Start Delivery (Out For Delivery)'}
+                  </button>
                 )}
               </div>
-
-              {/* Main Driver Status Actions */}
-              {activeOrder.orderStatus === 'delivered' ? (
-                <div className="driver-completed-badge">
-                  Order Delivery Completed ✅
-                </div>
-              ) : activeOrder.orderStatus === 'out_for_delivery' ? (
-                <>
-                  <button
-                    type="button"
-                    className="driver-main-btn finish"
-                    onClick={captureProof}
-                    disabled={updatingStatus}
-                  >
-                    {updatingStatus ? 'Uploading Proof...' : '📷 Take Photo & Complete Delivery'}
-                  </button>
-                  <button
-                    type="button"
-                    className="driver-main-btn secondary"
-                    onClick={() => markDelivered(activeOrder._id)}
-                    disabled={updatingStatus}
-                  >
-                    ✓ Mark Delivered (No Photo)
-                  </button>
-                  <input
-                    ref={fileInputRef}
-                    type="file"
-                    accept="image/*"
-                    capture="environment"
-                    style={{ display: 'none' }}
-                    onChange={uploadProof}
-                  />
-                </>
-              ) : (
-                <button
-                  type="button"
-                  className="driver-main-btn"
-                  onClick={() => startDelivery(activeOrder._id, activeOrder.orderNumber)}
-                  disabled={updatingStatus}
-                >
-                  {updatingStatus ? 'Updating Status...' : '🚀 Start Delivery (Out For Delivery)'}
-                </button>
-              )}
             </div>
-          </div>
-        </>
-      )}
+          </>
+        );
+      })()}
 
       <Toast />
     </div>
