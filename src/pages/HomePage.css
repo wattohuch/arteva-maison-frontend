@@ -128,10 +128,12 @@
 }
 .collections-rail::-webkit-scrollbar { display: none; }
 
-.collections-rail .collection-card {
+.collections-rail .collection-card,
+.collections-rail .product-card {
   flex: 0 0 calc(
     (100% - (var(--rail-visible) - 1) * var(--rail-gap)) / var(--rail-visible)
   );
+  min-width: 0;
   scroll-snap-align: start;
 }
 
@@ -229,10 +231,9 @@
 }
 
 @media (max-width: 760px) {
-  /* ~2.3 cards visible so the rail reads as scrollable at a glance */
   .collections-rail {
-    --rail-visible: 2.3;
-    /* bleed to the screen edge so cards run off-canvas like a native app */
+    --rail-visible: 2.05;
+    --rail-gap: 12px;
     margin-inline: calc(-1 * var(--gutter));
     padding-inline: var(--gutter);
     scroll-padding-inline-start: var(--gutter);
