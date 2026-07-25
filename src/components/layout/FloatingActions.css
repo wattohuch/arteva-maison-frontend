@@ -23,12 +23,12 @@
   align-items: center;
   justify-content: center;
   border-radius: var(--radius-full);
-  background: var(--color-espresso);
-  color: var(--color-gold-soft);
+  background: #25D366;
+  color: #FFFFFF;
   box-shadow: var(--shadow-lg);
   transition: transform var(--transition-base), background var(--transition-fast);
 }
-.fa-trigger:hover { transform: translateY(-2px) scale(1.04); background: var(--color-charcoal); }
+.fa-trigger:hover { transform: translateY(-2px) scale(1.04); background: #1EBE5A; }
 .fa-trigger:active { transform: scale(0.95); }
 
 /* ── Menu ── */

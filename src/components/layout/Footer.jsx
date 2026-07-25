@@ -1,10 +1,22 @@
 import { Link } from 'react-router-dom';
 import { useI18n } from '../../contexts/I18nContext';
+import { useCategories } from '../../contexts/CategoriesContext';
 import { ArrowRightIcon } from '../ui/Icons';
 import './Footer.css';
 
+const WHATSAPP_NUMBER = '96550683207';
+const WHATSAPP_URL = `https://api.whatsapp.com/send?phone=${WHATSAPP_NUMBER}`;
+
 export default function Footer() {
-  const { t } = useI18n();
+  const fallbackCategories = [
+    { slug: 'living-room', name: lang === 'ar' ? 'غرفة المعيشة' : 'Living Room' },
+    { slug: 'bedroom', name: lang === 'ar' ? 'غرفة النوم' : 'Bedroom' },
+    { slug: 'kitchen', name: lang === 'ar' ? 'المطبخ' : 'Kitchen' },
+    { slug: 'bathroom', name: lang === 'ar' ? 'الحمام' : 'Bathroom' },
+    { slug: 'outdoor', name: lang === 'ar' ? 'الخارجية' : 'Outdoor' },
+  ];
+  const displayedCategories = categories.length > 0 ? categories : fallbackCategories;
+
 
   return (
     <footer className="footer">
@@ -28,12 +40,23 @@ export default function Footer() {
             <Link to="/account">{t('account')}</Link>
           </nav>
 
+          {/* Categories */}
+          {/* Categories */}
+          <nav className="footer-col" aria-label={lang === 'ar' ? 'الفئات' : 'Categories'}>
+            <h4>{lang === 'ar' ? 'الفئات' : 'Categories'}</h4>
+            {displayedCategories.slice(0, 8).map(cat => (
+              <Link key={cat._id || cat.id || cat.slug} to={`/collection/${cat.slug}`}>
+                {cat.name || getCategoryName ? getCategoryName(cat) : cat.name}
+              </Link>
+            ))}
+          </nav>
+
           {/* Contact */}
           <div className="footer-col">
             <h4>{t('contact_info')}</h4>
             <p>Kuwait City, Kuwait</p>
             <a href="mailto:info@artevamaisonkw.com">info@artevamaisonkw.com</a>
-            <a href="tel:+965">+965 XXXX XXXX</a>
+            <a href={WHATSAPP_URL} target="_blank" rel="noopener noreferrer">+965 5068 3207</a>
           </div>
 
           {/* Newsletter */}
