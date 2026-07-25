@@ -66,81 +66,29 @@ const extractCoords = (addressObj) => {
 
 /**
  * OpenStreetMap mini-map component for driver location pinning.
+ * Renders exact pinned location map when coordinates exist, or clean Address Location card.
  */
-function MiniOrderMap({ rawCoords, street, city, state, country }) {
-  const [coords, setCoords] = useState(null);
-  const [loading, setLoading] = useState(false);
-
+function MiniOrderMap({ rawCoords, street, city, state }) {
   const parsed = useMemo(() => extractCoords({ coordinates: rawCoords }), [rawCoords]);
 
-  useEffect(() => {
-    if (parsed) {
-      setCoords({ lat: parsed.lat, lng: parsed.lng, isPinned: true });
-      return;
-    }
-
-    // Attempt geocoding address text if no explicit pin
-    const addressQuery = [street, state, city, country || 'Kuwait'].filter(Boolean).join(', ');
-    if (!addressQuery || addressQuery.trim() === 'Kuwait') {
-      setCoords(null);
-      return;
-    }
-
-    let isMounted = true;
-    setLoading(true);
-
-    const timer = setTimeout(async () => {
-      try {
-        const url = `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(addressQuery)}&countrycodes=kw&limit=1`;
-        const res = await fetch(url, { headers: { 'Accept': 'application/json' } });
-        if (res.ok) {
-          const data = await res.json();
-          if (data && data.length > 0 && isMounted) {
-            const fetchedLat = parseFloat(data[0].lat);
-            const fetchedLng = parseFloat(data[0].lon);
-            if (parseNum(fetchedLat) && parseNum(fetchedLng)) {
-              setCoords({ lat: fetchedLat, lng: fetchedLng, isPinned: false });
-            }
-          }
-        }
-      } catch (err) {
-        console.warn('Geocoding error:', err.message);
-      } finally {
-        if (isMounted) setLoading(false);
-      }
-    }, 300);
-
-    return () => {
-      isMounted = false;
-      clearTimeout(timer);
-    };
-  }, [parsed, street, state, city, country]);
-
-  if (loading) {
-    return (
-      <div className="driver-mini-map-loading">
-        <span className="driver-spinner-sm" /> Resolving location pin...
-      </div>
-    );
-  }
-
-  if (!coords) {
+  if (!parsed) {
+    const addressStr = [street, state ? `Block ${state}` : '', city].filter(Boolean).join(', ');
     return (
       <div className="driver-no-pin-box">
         <span style={{ fontSize: '20px' }}>📍</span>
         <div>
-          <strong style={{ fontSize: '0.85rem', color: '#1e293b', display: 'block' }}>Delivery Location</strong>
+          <strong style={{ fontSize: '0.85rem', color: '#1e293b', display: 'block' }}>Delivery Address Location</strong>
           <span style={{ fontSize: '0.78rem', color: '#64748b' }}>
-            {[street, state, city].filter(Boolean).join(', ') || 'Address specified'}
+            {addressStr || 'Address specified by customer'}
           </span>
         </div>
       </div>
     );
   }
 
-  const zoom = coords.isPinned ? 16 : 14;
-  const cx = lngToX(coords.lng, zoom);
-  const cy = latToY(coords.lat, zoom);
+  const zoom = 16;
+  const cx = lngToX(parsed.lng, zoom);
+  const cy = latToY(parsed.lat, zoom);
   const width = 320;
   const height = 140;
 
@@ -188,7 +136,7 @@ function MiniOrderMap({ rawCoords, street, city, state, country }) {
         <span className="driver-pin-shadow" />
       </div>
       <div className="driver-mini-map-badge">
-        {coords.isPinned ? '📌 Customer Pinned Location' : '📍 ' + ([street, city].filter(Boolean).join(', ') || 'Address Area')}
+        📌 Customer Pinned Location
       </div>
     </div>
   );
@@ -460,7 +408,6 @@ export default function DriverDashboard() {
           </div>
         ) : displayOrders.map(order => {
           const statusColor = getStatusColor(order.orderStatus);
-          const parsed = extractCoords(order.shippingAddress);
           const isCod = order.paymentMethod === 'cod' || order.paymentStatus !== 'paid';
 
           return (
@@ -499,7 +446,6 @@ export default function DriverDashboard() {
                   street={order.shippingAddress?.street}
                   state={order.shippingAddress?.state}
                   city={order.shippingAddress?.city}
-                  country={order.shippingAddress?.country}
                 />
               </div>
 
@@ -619,7 +565,6 @@ export default function DriverDashboard() {
                       street={activeOrder.shippingAddress?.street}
                       state={activeOrder.shippingAddress?.state}
                       city={activeOrder.shippingAddress?.city}
-                      country={activeOrder.shippingAddress?.country}
                     />
                   </div>
                 </div>
