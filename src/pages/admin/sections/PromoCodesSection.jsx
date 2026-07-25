@@ -131,7 +131,7 @@ export default function PromoCodesSection() {
             key: 'discount', header: 'Discount',
             render: p => (
               <span>
-                {p.discountType === 'percentage' ? `${p.discountValue}%` : `${p.discountValue.toFixed(3)} KWD`}
+                {p.discountType === 'percentage' ? `${p.discountValue || 0}%` : `${(p.discountValue || 0).toFixed(3)} KWD`}
                 {p.minOrderAmount > 0 && <small style={{ display: 'block', color: 'var(--text-muted)' }}>Min order: {p.minOrderAmount} KWD</small>}
               </span>
             ),
