@@ -18,6 +18,7 @@ export default function AdminTable({
   loading = false,
   empty = 'No records found',
   caption,
+  onRowClick,
 }) {
   if (loading) {
     return <div className="admin-loading"><Loader /></div>;

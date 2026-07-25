@@ -151,7 +151,7 @@ export default function HomePage() {
 
             <div className="rail-wrap">
               <div className="collections-rail" ref={railRef}>
-                {categories.slice(0, 8).map(cat => (
+                {categories.map(cat => (
                   <CollectionCard key={cat._id || cat.id || cat.slug} category={cat} />
                 ))}
               </div>
@@ -163,6 +163,25 @@ export default function HomePage() {
               >
                 <ChevronRightIcon size={18} />
               </button>
+            </div>
+          </div>
+        </section>
+      )}
+
+      {/* ══ Categories Grid ══ */}
+      {categories.length > 0 && (
+        <section className="section section-categories" style={{ paddingTop: 0 }}>
+          <div className="container">
+            <div className="section-header">
+              <div className="section-header-text">
+                <h2>Categories</h2>
+                <p>Explore our complete catalog by category</p>
+              </div>
+            </div>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))', gap: 20 }}>
+              {categories.map(cat => (
+                <CollectionCard key={cat._id || cat.id || cat.slug} category={cat} />
+              ))}
             </div>
           </div>
         </section>
