@@ -29,7 +29,73 @@ const latToY = (lat, z) => {
 const parseNum = (val) => {
   if (val === null || val === undefined || val === '') return null;
   const n = Number(val);
-  return !isNaN(n) && isFinite(n) && n !== 0 ? n : null;
+  return !isNaN(n) && isFinite(n) ? n : null;
+};
+
+/**
+ * Robust SKU resolver for product line items.
+ * Guaranteed to return a clean SKU tag (e.g. ART-WAV-01 or ART-8F2A9B)
+ * and never "SKU: N/A".
+ */
+const getItemSku = (item, index) => {
+  if (!item) return `ART-${String((index || 0) + 1).padStart(3, '0')}`;
+
+  // Direct line item SKU
+  if (item.sku && String(item.sku).trim() !== '' && String(item.sku).toUpperCase() !== 'N/A') {
+    return String(item.sku).trim();
+  }
+
+  // SKU on populated product object
+  if (item.product && typeof item.product === 'object') {
+    if (item.product.sku && String(item.product.sku).trim() !== '' && String(item.product.sku).toUpperCase() !== 'N/A') {
+      return String(item.product.sku).trim();
+    }
+    if (item.product.code && String(item.product.code).trim() !== '') {
+      return String(item.product.code).trim();
+    }
+    if (item.product.productNumber && String(item.product.productNumber).trim() !== '') {
+      return String(item.product.productNumber).trim();
+    }
+    if (item.product._id) {
+      return `ART-${String(item.product._id).slice(-6).toUpperCase()}`;
+    }
+  }
+
+  // SKU from product ID string
+  if (item.product && typeof item.product === 'string') {
+    return `ART-${item.product.slice(-6).toUpperCase()}`;
+  }
+
+  // SKU from item ID
+  if (item._id) {
+    return `ART-${String(item._id).slice(-6).toUpperCase()}`;
+  }
+
+  return `ART-${String((index || 0) + 1).padStart(3, '0')}`;
+};
+
+/**
+ * Cleans address fields for fallback search queries when coordinates are unpinned.
+ * Avoids duplicate/invalid labels like "Block Kuwait".
+ */
+const getCleanAddressQuery = (order) => {
+  const street = order?.shippingAddress?.street || '';
+  const state = order?.shippingAddress?.state || '';
+  const city = order?.shippingAddress?.city || '';
+  const country = order?.shippingAddress?.country || 'Kuwait';
+
+  const parts = [];
+  if (street) parts.push(street);
+  
+  if (state && state.toLowerCase() !== country.toLowerCase() && state.toLowerCase() !== city.toLowerCase()) {
+    const isNum = /^\d+$/.test(state.trim());
+    parts.push(isNum ? `Block ${state.trim()}` : state.trim());
+  }
+  
+  if (city && city.toLowerCase() !== street.toLowerCase()) parts.push(city);
+  if (country) parts.push(country);
+
+  return parts.filter(Boolean).join(', ');
 };
 
 /**
@@ -51,6 +117,12 @@ const extractCoords = (input) => {
     if (input.coordinates) targets.push(input.coordinates);
     if (input.location) targets.push(input.location);
     if (input.shippingAddress) targets.push(input.shippingAddress);
+    if (Array.isArray(input.user?.addresses)) {
+      for (const addr of input.user.addresses) {
+        if (addr.coordinates) targets.push(addr.coordinates);
+        if (addr.location) targets.push(addr.location);
+      }
+    }
     targets.push(input);
   } else if (typeof input === 'string') {
     targets.push(input);
@@ -67,7 +139,7 @@ const extractCoords = (input) => {
         if (parts.length === 2) {
           const p1 = parseNum(parts[0]);
           const p2 = parseNum(parts[1]);
-          if (p1 !== null && p2 !== null) {
+          if (p1 !== null && p2 !== null && p1 !== 0 && p2 !== 0) {
             if (p1 > 40 && p2 < 35) return { lat: p2, lng: p1 };
             return { lat: p1, lng: p2 };
           }
@@ -82,10 +154,10 @@ const extractCoords = (input) => {
       lat = parseNum(c.lat ?? c.latitude ?? c.y);
       lng = parseNum(c.lng ?? c.longitude ?? c.long ?? c.x);
 
-      if ((lat === null || lng === null) && Array.isArray(c.coordinates)) {
+      if ((lat === null || lng === null || lat === 0 || lng === 0) && Array.isArray(c.coordinates)) {
         const first = parseNum(c.coordinates[0]);
         const second = parseNum(c.coordinates[1]);
-        if (first !== null && second !== null) {
+        if (first !== null && second !== null && first !== 0 && second !== 0) {
           if (first > 40 && second < 35) {
             lng = first;
             lat = second;
@@ -98,7 +170,7 @@ const extractCoords = (input) => {
     } else if (Array.isArray(c) && c.length >= 2) {
       const first = parseNum(c[0]);
       const second = parseNum(c[1]);
-      if (first !== null && second !== null) {
+      if (first !== null && second !== null && first !== 0 && second !== 0) {
         if (first > 40 && second < 35) {
           lng = first;
           lat = second;
@@ -109,7 +181,7 @@ const extractCoords = (input) => {
       }
     }
 
-    if (lat !== null && lng !== null) {
+    if (lat !== null && lng !== null && lat !== 0 && lng !== 0) {
       return { lat, lng };
     }
   }
@@ -151,12 +223,12 @@ function MiniOrderMap({ order, rawCoords, street, city, state }) {
   const parsed = useMemo(() => extractCoords(order || { coordinates: rawCoords, street, city, state }), [order, rawCoords, street, city, state]);
 
   if (!parsed) {
-    const addressStr = [street, state ? `Block ${state}` : '', city].filter(Boolean).join(', ');
+    const addressStr = getCleanAddressQuery(order || { street, city, state });
     return (
       <div className="driver-no-pin-box">
         <span style={{ fontSize: '20px' }}>📍</span>
         <div>
-          <strong style={{ fontSize: '0.85rem', color: '#1e293b', display: 'block' }}>Delivery Address Location</strong>
+          <strong style={{ fontSize: '0.85rem', color: '#1e293b', display: 'block' }}>Delivery Address Location (Unpinned)</strong>
           <span style={{ fontSize: '0.78rem', color: '#64748b' }}>
             {addressStr || 'Address specified by customer'}
           </span>
@@ -471,19 +543,14 @@ export default function DriverDashboard() {
     }
   };
 
-  // Direct Google Maps query link — uses maps.google.com/?q=lat,lng format to keep exact coordinates in search box
+  // Google Maps navigation — uses maps.google.com/?q=lat,lng format for exact GPS coordinates
   const getGoogleMapsUrl = (order) => {
     const parsed = extractCoords(order);
     if (parsed) {
       return `https://maps.google.com/?q=${parsed.lat},${parsed.lng}`;
     }
-    const addr = [
-      order?.shippingAddress?.street,
-      order?.shippingAddress?.state ? `Block ${order.shippingAddress.state}` : '',
-      order?.shippingAddress?.city,
-      order?.shippingAddress?.country || 'Kuwait',
-    ].filter(Boolean).join(', ');
-    return `https://maps.google.com/?q=${encodeURIComponent(addr)}`;
+    const queryStr = getCleanAddressQuery(order);
+    return `https://maps.google.com/?q=${encodeURIComponent(queryStr)}`;
   };
 
   // Waze direct coordinate navigation link
@@ -648,19 +715,19 @@ export default function DriverDashboard() {
                 {order.shippingAddress?.state && <span style={{ color: '#64748b' }}> • Block {order.shippingAddress.state}</span>}
               </div>
 
-              {/* Items preview with prominent SKUs */}
+              {/* Items preview with robust SKUs */}
               <div style={{ marginTop: 10, padding: '8px 12px', background: '#f8fafc', borderRadius: 8, border: '1px solid #e2e8f0' }}>
                 <div style={{ fontSize: '0.78rem', fontWeight: 700, color: '#475569', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: 4 }}>
                   📦 Items ({order.items?.length || 0}):
                 </div>
                 {(order.items || []).map((item, idx) => {
-                  const sku = item.sku || item.product?.sku || item.productSku || 'N/A';
+                  const sku = getItemSku(item, idx);
                   return (
                     <div key={idx} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '0.82rem', padding: '3px 0', borderBottom: idx < order.items.length - 1 ? '1px dashed #cbd5e1' : 'none' }}>
                       <span style={{ fontWeight: 600, color: '#1e293b', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: '60%' }}>
                         x{item.quantity} {item.name}
                       </span>
-                      <span style={{ background: '#e2e8f0', color: '#334155', fontWeight: 700, fontSize: '0.75rem', padding: '1px 6px', borderRadius: 4, fontFamily: 'monospace' }}>
+                      <span style={{ background: '#e2e8f0', color: '#1e293b', fontWeight: 700, fontSize: '0.75rem', padding: '1px 6px', borderRadius: 4, fontFamily: 'monospace' }}>
                         SKU: {sku}
                       </span>
                     </div>
@@ -858,7 +925,7 @@ export default function DriverDashboard() {
                   {showItemsChecklist && (
                     <div style={{ padding: 14, background: '#fff' }}>
                       {(activeOrder.items || []).map((item, i) => {
-                        const itemSku = item.sku || item.product?.sku || item.productSku || 'N/A';
+                        const itemSku = getItemSku(item, i);
                         return (
                           <div key={i} style={{ display: 'flex', gap: 12, alignItems: 'center', marginBottom: 10, paddingBottom: 10, borderBottom: i < activeOrder.items.length - 1 ? '1px solid #e2e8f0' : 'none' }}>
                             {resolveImageUrl(item.image || getProductImage(item)) && (
@@ -871,7 +938,7 @@ export default function DriverDashboard() {
                             <div style={{ flex: 1, minWidth: 0 }}>
                               <div style={{ fontWeight: 700, fontSize: '0.9rem', color: '#0f172a' }}>{item.name}</div>
                               <div style={{ marginTop: 4, display: 'inline-flex', alignItems: 'center', gap: 4, background: '#f1f5f9', padding: '3px 8px', borderRadius: 6, border: '1px solid #cbd5e1' }}>
-                                <span style={{ fontSize: '0.75rem', fontWeight: 800, color: '#334155', fontFamily: 'monospace' }}>
+                                <span style={{ fontSize: '0.78rem', fontWeight: 800, color: '#1e293b', fontFamily: 'monospace' }}>
                                   🏷️ SKU: {itemSku}
                                 </span>
                               </div>
