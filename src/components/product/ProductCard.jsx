@@ -63,22 +63,6 @@ const ProductCard = memo(function ProductCard({ product }) {
 
         {product.isNewArrival && <span className="product-badge">{t('badge_new')}</span>}
         {hasDiscount && <span className="product-badge product-badge-sale">-{discountPct}%</span>}
-
-        <button
-          type="button"
-          className={`product-wishlist ${saved ? 'is-saved' : ''}`}
-          onClick={handleWishlist}
-          aria-pressed={saved}
-          aria-label={saved ? t('removed_wishlist') : t('added_wishlist')}
-        >
-          <HeartIcon size={17} filled={saved} />
-        </button>
-
-        {/* Quick add — rises on hover, permanently visible on touch layouts */}
-        <button type="button" className="product-quick-add" onClick={handleAddToCart}>
-          <BagIcon size={16} />
-          <span>{t('add_to_cart')}</span>
-        </button>
       </div>
 
       <Link to={href} className="product-body">
