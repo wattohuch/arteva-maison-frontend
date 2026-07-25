@@ -24,7 +24,7 @@ const latToY = (lat, z) => {
 };
 
 /**
- * Robust coordinate extractor supporting strings, arrays, and property variants.
+ * Universal numerical coordinate parser
  */
 const parseNum = (val) => {
   if (val === null || val === undefined || val === '') return null;
@@ -32,33 +32,91 @@ const parseNum = (val) => {
   return !isNaN(n) && isFinite(n) && n !== 0 ? n : null;
 };
 
-const extractCoords = (addressObj) => {
-  if (!addressObj) return null;
-  const c = addressObj.coordinates || addressObj;
+/**
+ * Comprehensive coordinate extractor capable of reading:
+ * - order object root or shippingAddress object
+ * - { lat, lng } or { latitude, longitude } (numbers or string values)
+ * - GeoJSON format { type: "Point", coordinates: [lng, lat] }
+ * - Array format [lng, lat] or [lat, lng]
+ * - Stringified JSON strings e.g. "{\"lat\": 29.37, \"lng\": 47.97}"
+ * - Comma separated strings e.g. "29.3759, 47.9774"
+ */
+const extractCoords = (input) => {
+  if (!input) return null;
 
-  let lat = null;
-  let lng = null;
+  const targets = [];
+  if (typeof input === 'object') {
+    if (input.shippingAddress?.coordinates) targets.push(input.shippingAddress.coordinates);
+    if (input.shippingAddress?.location) targets.push(input.shippingAddress.location);
+    if (input.coordinates) targets.push(input.coordinates);
+    if (input.location) targets.push(input.location);
+    if (input.shippingAddress) targets.push(input.shippingAddress);
+    targets.push(input);
+  } else if (typeof input === 'string') {
+    targets.push(input);
+  }
 
-  if (c && typeof c === 'object' && !Array.isArray(c)) {
-    lat = parseNum(c.lat ?? c.latitude ?? addressObj.lat ?? addressObj.latitude);
-    lng = parseNum(c.lng ?? c.longitude ?? addressObj.lng ?? addressObj.longitude);
-  } else if (Array.isArray(c) && c.length >= 2) {
-    const first = parseNum(c[0]);
-    const second = parseNum(c[1]);
-    if (first && second) {
-      if (first > 40 && second < 35) {
-        lng = first;
-        lat = second;
-      } else {
-        lat = first;
-        lng = second;
+  for (let c of targets) {
+    if (!c) continue;
+
+    // Attempt JSON parsing if stringified
+    if (typeof c === 'string') {
+      try {
+        c = JSON.parse(c);
+      } catch (e) {
+        const parts = c.split(',').map(s => s.trim());
+        if (parts.length === 2) {
+          const p1 = parseNum(parts[0]);
+          const p2 = parseNum(parts[1]);
+          if (p1 !== null && p2 !== null) {
+            // Kuwait longitude ~ 47.9, latitude ~ 29.3
+            if (p1 > 40 && p2 < 35) return { lat: p2, lng: p1 };
+            return { lat: p1, lng: p2 };
+          }
+        }
       }
+    }
+
+    let lat = null;
+    let lng = null;
+
+    if (c && typeof c === 'object' && !Array.isArray(c)) {
+      lat = parseNum(c.lat ?? c.latitude ?? c.y);
+      lng = parseNum(c.lng ?? c.longitude ?? c.long ?? c.x);
+
+      // GeoJSON point array format
+      if ((lat === null || lng === null) && Array.isArray(c.coordinates)) {
+        const first = parseNum(c.coordinates[0]);
+        const second = parseNum(c.coordinates[1]);
+        if (first !== null && second !== null) {
+          if (first > 40 && second < 35) {
+            lng = first;
+            lat = second;
+          } else {
+            lat = first;
+            lng = second;
+          }
+        }
+      }
+    } else if (Array.isArray(c) && c.length >= 2) {
+      const first = parseNum(c[0]);
+      const second = parseNum(c[1]);
+      if (first !== null && second !== null) {
+        if (first > 40 && second < 35) {
+          lng = first;
+          lat = second;
+        } else {
+          lat = first;
+          lng = second;
+        }
+      }
+    }
+
+    if (lat !== null && lng !== null) {
+      return { lat, lng };
     }
   }
 
-  if (lat !== null && lng !== null) {
-    return { lat, lng };
-  }
   return null;
 };
 
@@ -92,8 +150,8 @@ const playOrderChime = () => {
 /**
  * OpenStreetMap mini-map component for driver location pinning.
  */
-function MiniOrderMap({ rawCoords, street, city, state }) {
-  const parsed = useMemo(() => extractCoords({ coordinates: rawCoords }), [rawCoords]);
+function MiniOrderMap({ order, rawCoords, street, city, state }) {
+  const parsed = useMemo(() => extractCoords(order || { coordinates: rawCoords, street, city, state }), [order, rawCoords, street, city, state]);
 
   if (!parsed) {
     const addressStr = [street, state ? `Block ${state}` : '', city].filter(Boolean).join(', ');
@@ -160,7 +218,7 @@ function MiniOrderMap({ rawCoords, street, city, state }) {
         <span className="driver-pin-shadow" />
       </div>
       <div className="driver-mini-map-badge">
-        📌 Customer Pinned Location
+        📌 Customer Pinned Location ({parsed.lat.toFixed(4)}, {parsed.lng.toFixed(4)})
       </div>
     </div>
   );
@@ -265,7 +323,6 @@ export default function DriverDashboard() {
       setSocketConnected(false);
     });
 
-    // Helper for broadcasting alert
     const triggerOrderAlert = (title, body) => {
       loadOrders();
       playOrderChime();
@@ -319,7 +376,6 @@ export default function DriverDashboard() {
     document.addEventListener('visibilitychange', handleVisibilityChange);
     window.addEventListener('focus', handleVisibilityChange);
 
-    // Interval heartbeat fallback every 12 seconds
     const interval = setInterval(loadOrders, 12000);
 
     return () => {
@@ -418,24 +474,25 @@ export default function DriverDashboard() {
     }
   };
 
-  // Google Maps navigation helper — exact pinned coordinates first, or full address search
+  // Google Maps navigation URL builder — prioritizing exact GPS coordinates
   const getGoogleMapsUrl = (order) => {
-    const parsed = extractCoords(order?.shippingAddress);
+    const parsed = extractCoords(order);
     if (parsed) {
+      // Use direct lat,lng search query so Google Maps drops pin directly on GPS coordinates
       return `https://www.google.com/maps/search/?api=1&query=${parsed.lat},${parsed.lng}`;
     }
     const addr = [
-      order.shippingAddress?.street,
-      order.shippingAddress?.state ? `Block ${order.shippingAddress.state}` : '',
-      order.shippingAddress?.city,
-      order.shippingAddress?.country || 'Kuwait',
+      order?.shippingAddress?.street,
+      order?.shippingAddress?.state ? `Block ${order.shippingAddress.state}` : '',
+      order?.shippingAddress?.city,
+      order?.shippingAddress?.country || 'Kuwait',
     ].filter(Boolean).join(', ');
     return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(addr)}`;
   };
 
-  // Waze navigation helper
+  // Waze navigation helper — prioritizing exact GPS coordinates
   const getWazeUrl = (order) => {
-    const parsed = extractCoords(order?.shippingAddress);
+    const parsed = extractCoords(order);
     if (parsed) {
       return `https://waze.com/ul?ll=${parsed.lat},${parsed.lng}&navigate=yes`;
     }
@@ -444,12 +501,12 @@ export default function DriverDashboard() {
 
   // WhatsApp link helper with prefilled message
   const getWhatsAppUrl = (order) => {
-    const phone = order.shippingAddress?.phone || order.user?.phone || '';
+    const phone = order?.shippingAddress?.phone || order?.user?.phone || '';
     const cleanPhone = phone.replace(/[^0-9]/g, '');
     const waPhone = cleanPhone.startsWith('965') ? cleanPhone : `965${cleanPhone}`;
-    const customerName = order.user?.name || order.shippingAddress?.fullName || 'Customer';
+    const customerName = order?.user?.name || order?.shippingAddress?.fullName || 'Customer';
     const text = encodeURIComponent(
-      `Hello ${customerName}! I am your ARTÉVA Maison delivery driver with order #${order.orderNumber}. I am on my way to deliver your items.`
+      `Hello ${customerName}! I am your ARTÉVA Maison delivery driver with order #${order?.orderNumber}. I am on my way to deliver your items.`
     );
     return `https://wa.me/${waPhone}?text=${text}`;
   };
@@ -598,6 +655,7 @@ export default function DriverDashboard() {
               {/* Dynamic Mini Map */}
               <div style={{ marginTop: 10 }}>
                 <MiniOrderMap
+                  order={order}
                   rawCoords={order.shippingAddress?.coordinates}
                   street={order.shippingAddress?.street}
                   state={order.shippingAddress?.state}
@@ -640,7 +698,7 @@ export default function DriverDashboard() {
 
       {/* Order Detail Modal */}
       {showModal && activeOrder && (() => {
-        const modalCoords = extractCoords(activeOrder.shippingAddress);
+        const modalCoords = extractCoords(activeOrder);
         return (
           <>
             <div className="driver-modal-overlay" onClick={() => setShowModal(false)} />
@@ -664,7 +722,7 @@ export default function DriverDashboard() {
                   </div>
                 ) : (
                   <div className="driver-alert paid">
-                    💳 <strong>PAID ONLINE ({activeOrder.paymentMethod.toUpperCase()})</strong>
+                    💳 <strong>PAID ONLINE ({activeOrder.paymentMethod?.toUpperCase()})</strong>
                     <div>Order is fully paid online. Do NOT collect money from customer.</div>
                   </div>
                 )}
@@ -717,6 +775,7 @@ export default function DriverDashboard() {
                   {/* Map Preview */}
                   <div style={{ marginTop: 10 }}>
                     <MiniOrderMap
+                      order={activeOrder}
                       rawCoords={activeOrder.shippingAddress?.coordinates}
                       street={activeOrder.shippingAddress?.street}
                       state={activeOrder.shippingAddress?.state}
