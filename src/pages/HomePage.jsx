@@ -22,6 +22,7 @@ export default function HomePage() {
   const { categories } = useCategories();
   const [heroSlides, setHeroSlides] = useState([]);
   const [featured, setFeatured] = useState([]);
+  const [collectionFeatured, setCollectionFeatured] = useState([]);
   const [loading, setLoading] = useState(true);
   const [currentSlide, setCurrentSlide] = useState(0);
   const railRef = useRef(null);
@@ -30,9 +31,10 @@ export default function HomePage() {
     let cancelled = false;
     async function load() {
       try {
-        const [heroRes, prodRes] = await Promise.allSettled([
+        const [heroRes, prodRes, collFeatRes] = await Promise.allSettled([
           HeroAPI.getSlides(),
           ProductsAPI.getFeatured(8),
+          ProductsAPI.getCollectionFeatured(12),
         ]);
         if (cancelled) return;
         if (heroRes.status === 'fulfilled' && heroRes.value.data) {
@@ -40,6 +42,9 @@ export default function HomePage() {
         }
         if (prodRes.status === 'fulfilled') {
           setFeatured(prodRes.value.data || prodRes.value || []);
+        }
+        if (collFeatRes.status === 'fulfilled') {
+          setCollectionFeatured(collFeatRes.value.data || collFeatRes.value || []);
         }
       } catch { /* fall back to static hero copy */ } finally {
         if (!cancelled) setLoading(false);
@@ -135,7 +140,7 @@ export default function HomePage() {
       </section>
 
       {/* ══ Featured collections ══ */}
-      {categories.length > 0 && (
+      {(collectionFeatured.length > 0 ? collectionFeatured : categories).length > 0 && (
         <section className="section">
           <div className="container">
             <div className="section-header">
@@ -143,7 +148,7 @@ export default function HomePage() {
                 <h2>{t('featured_collections_title')}</h2>
                 <p>{t('featured_collections_subtitle')}</p>
               </div>
-              <Link to="/collections" className="section-link">
+              <Link to="/products" className="section-link">
                 {t('view_all')}
                 <ArrowRightIcon size={15} />
               </Link>
@@ -151,9 +156,13 @@ export default function HomePage() {
 
             <div className="rail-wrap">
               <div className="collections-rail" ref={railRef}>
-                {categories.map(cat => (
-                  <CollectionCard key={cat._id || cat.id || cat.slug} category={cat} />
-                ))}
+                {collectionFeatured.length > 0
+                  ? collectionFeatured.map(prod => (
+                      <ProductCard key={prod._id || prod.id} product={prod} />
+                    ))
+                  : categories.map(cat => (
+                      <CollectionCard key={cat._id || cat.id || cat.slug} category={cat} />
+                    ))}
               </div>
 
               <button
@@ -174,11 +183,11 @@ export default function HomePage() {
           <div className="container">
             <div className="section-header">
               <div className="section-header-text">
-                <h2>Categories</h2>
-                <p>Explore our complete catalog by category</p>
+                <h2>{t('categories')}</h2>
+                <p>{t('browse_collections')}</p>
               </div>
             </div>
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))', gap: 20 }}>
+            <div className="home-categories-grid">
               {categories.map(cat => (
                 <CollectionCard key={cat._id || cat.id || cat.slug} category={cat} />
               ))}

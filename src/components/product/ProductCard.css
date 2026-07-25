@@ -186,6 +186,28 @@
   letter-spacing: 0.02em;
   color: var(--text-muted);
   font-variant-numeric: tabular-nums;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.price-current {
+  color: var(--color-gold-text, #a88a44);
+  font-weight: var(--fw-semibold, 600);
+}
+
+.price-old {
+  color: #a0978d;
+  text-decoration: line-through;
+  font-size: 0.85em;
+  font-weight: var(--fw-normal);
+}
+
+.product-badge-sale {
+  background: var(--color-gold-text, #a88a44) !important;
+  color: #ffffff !important;
+  border-color: rgba(255, 255, 255, 0.4) !important;
 }
 
 /* ── Touch: hover states never fire, so surface the controls ── */

@@ -284,8 +284,8 @@ export const translations = {
     wishlist_empty_desc: "Tap the heart on any piece to keep it here while you decide.",
 
     // Service promises
-    promise_delivery_title: "Worldwide Delivery",
-    promise_delivery_desc: "Secure & fast delivery",
+    promise_delivery_title: "1 DAY DELIVERY ACROSS KUWAIT",
+    promise_delivery_desc: "Express delivery across Kuwait",
     promise_exclusive_title: "Exclusive Collections",
     promise_exclusive_desc: "Timeless craftsmanship",
     promise_secure_title: "Secure Payments",
@@ -638,8 +638,8 @@ export const translations = {
     wishlist_empty_desc: "اضغط على القلب في أي قطعة لحفظها هنا ريثما تقرر.",
 
     // Service promises
-    promise_delivery_title: "شحن عالمي",
-    promise_delivery_desc: "توصيل آمن وسريع",
+    promise_delivery_title: "توصيل خلال يوم في الكويت",
+    promise_delivery_desc: "توصيل سريع لجميع مناطق الكويت",
     promise_exclusive_title: "مجموعات حصرية",
     promise_exclusive_desc: "حرفية خالدة",
     promise_secure_title: "دفع آمن",

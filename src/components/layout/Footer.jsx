@@ -53,6 +53,7 @@ export default function Footer() {
             aria-label="Instagram"
           >
             <InstagramMark />
+            <span className="footer-social-label">Instagram</span>
           </a>
           <a
             href={whatsappUrl()}

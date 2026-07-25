@@ -35,6 +35,12 @@ const ProductCard = memo(function ProductCard({ product }) {
     showToast(added ? t('added_wishlist') : t('removed_wishlist'), 'info');
   }, [toggle, product, t]);
 
+  const hasDiscount = (product.compareAtPrice && product.compareAtPrice > product.price) ||
+                      (product.originalPrice && product.originalPrice > product.price);
+  const oldPrice = product.compareAtPrice || product.originalPrice;
+  const discountPct = product.discountPercentage ||
+    (hasDiscount ? Math.round(((oldPrice - product.price) / oldPrice) * 100) : 0);
+
   return (
     <article className="product-card">
       <div className="product-media">
@@ -56,6 +62,7 @@ const ProductCard = memo(function ProductCard({ product }) {
         </Link>
 
         {product.isNewArrival && <span className="product-badge">{t('badge_new')}</span>}
+        {hasDiscount && <span className="product-badge product-badge-sale">-{discountPct}%</span>}
 
         <button
           type="button"
@@ -76,7 +83,10 @@ const ProductCard = memo(function ProductCard({ product }) {
 
       <Link to={href} className="product-body">
         <h3 className="product-name">{name}</h3>
-        <p className="product-price">{format(product.price)}</p>
+        <p className="product-price">
+          <span className="price-current">{format(product.price)}</span>
+          {hasDiscount && <del className="price-old">{format(oldPrice)}</del>}
+        </p>
       </Link>
     </article>
   );

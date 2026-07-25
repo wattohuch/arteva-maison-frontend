@@ -160,6 +160,14 @@ export const AdminAPI = {
     }),
   deletePromoCode: (id) => apiRequest(`/admin/promo-codes/${id}`, { method: 'DELETE' }),
   getPromoCodeDetails: (id) => apiRequest(`/admin/promo-codes/${id}`),
+  getPromoCodeStats: (id) => apiRequest(`/admin/promo-codes/${id}/stats`),
+  addProductsToPromo: (promoId, productsArray) =>
+    apiRequest(`/admin/promo-codes/${promoId}/products`, {
+      method: 'POST',
+      body: JSON.stringify({ products: productsArray }),
+    }),
+  removeProductFromPromo: (promoId, productId) =>
+    apiRequest(`/admin/promo-codes/${promoId}/products/${productId}`, { method: 'DELETE' }),
   addPromoProduct: (promoId, data) =>
     apiRequest(`/admin/promo-codes/${promoId}/products`, {
       method: 'POST',
