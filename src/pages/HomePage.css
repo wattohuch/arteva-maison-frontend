@@ -1,0 +1,255 @@
+/* ============================================
+   ARTÉVA Maison — Home
+   Editorial hero · collection rail · assurances
+   ============================================ */
+
+/* ══ Hero ══════════════════════════════════════
+   Pulled up under the floating navbar so the
+   imagery runs edge to edge behind the glass. */
+.hero {
+  position: relative;
+  margin-top: calc(-1 * var(--nav-overlay-height));
+  min-height: min(760px, 100svh);
+  display: flex;
+  align-items: center;
+  overflow: hidden;
+  background: var(--color-espresso);
+  isolation: isolate;
+}
+
+.hero-media { position: absolute; inset: 0; z-index: 0; }
+
+.hero-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
+  animation: heroSettle 1400ms var(--ease-out-luxe) both;
+}
+
+/* Very slow settle keeps the entrance premium rather than showy */
+@keyframes heroSettle {
+  from { opacity: 0; transform: scale(1.05); }
+  to   { opacity: 1; transform: scale(1); }
+}
+
+/* Directional scrim: copy side stays legible, image side stays visible */
+.hero-scrim {
+  position: absolute;
+  inset: 0;
+  background:
+    linear-gradient(to top, rgba(36, 28, 21, 0.55) 0%, rgba(36, 28, 21, 0) 55%),
+    linear-gradient(to right, rgba(36, 28, 21, 0.72) 0%, rgba(36, 28, 21, 0.34) 46%, rgba(36, 28, 21, 0.08) 100%);
+}
+[dir="rtl"] .hero-scrim {
+  background:
+    linear-gradient(to top, rgba(36, 28, 21, 0.55) 0%, rgba(36, 28, 21, 0) 55%),
+    linear-gradient(to left, rgba(36, 28, 21, 0.72) 0%, rgba(36, 28, 21, 0.34) 46%, rgba(36, 28, 21, 0.08) 100%);
+}
+
+.hero-inner {
+  position: relative;
+  z-index: 1;
+  padding-top: calc(var(--nav-overlay-height) + var(--space-8));
+  padding-bottom: var(--space-16);
+}
+
+.hero-copy { max-width: 40rem; }
+
+.hero-eyebrow {
+  color: var(--color-gold-soft);
+  margin-bottom: var(--space-5);
+}
+
+.hero-title {
+  font-family: var(--font-display);
+  font-size: var(--fs-hero);
+  font-weight: var(--fw-medium);
+  line-height: 1.04;
+  letter-spacing: -0.025em;
+  color: #FFFFFF;
+  margin-bottom: var(--space-5);
+  text-wrap: balance;
+}
+[dir="rtl"] .hero-title { font-family: var(--font-arabic); letter-spacing: 0; line-height: 1.25; }
+
+.hero-desc {
+  max-width: 34rem;
+  font-size: var(--fs-md);
+  line-height: 1.75;
+  color: var(--text-on-dark);
+  margin-bottom: var(--space-8);
+}
+
+.hero-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-3);
+  align-items: center;
+}
+
+/* ── Slide dots ── */
+.hero-dots {
+  position: absolute;
+  z-index: 2;
+  bottom: var(--space-8);
+  inset-inline-start: var(--gutter);
+  display: flex;
+  gap: 7px;
+}
+
+.hero-dot {
+  width: 26px;
+  height: 3px;
+  border-radius: var(--radius-full);
+  background: rgba(255, 255, 255, 0.32);
+  transition: background var(--transition-base), width var(--transition-base);
+}
+.hero-dot:hover { background: rgba(255, 255, 255, 0.55); }
+.hero-dot.is-active { background: #FFFFFF; width: 44px; }
+
+/* ══ Collection rail ════════════════════════
+   Card visuals live in components/product/CollectionCard.css;
+   this file only lays them out inside the rail. */
+.rail-wrap { position: relative; }
+
+.collections-rail {
+  --rail-gap: clamp(0.75rem, 0.3rem + 1.4vw, 1.5rem);
+  --rail-visible: 5;
+
+  display: flex;
+  gap: var(--rail-gap);
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  scroll-padding-inline-start: 0;
+  scrollbar-width: none;
+  -webkit-overflow-scrolling: touch;
+  padding-bottom: var(--space-2);
+}
+.collections-rail::-webkit-scrollbar { display: none; }
+
+.collections-rail .collection-card {
+  flex: 0 0 calc(
+    (100% - (var(--rail-visible) - 1) * var(--rail-gap)) / var(--rail-visible)
+  );
+  scroll-snap-align: start;
+}
+
+/* Rail arrow — desktop affordance only */
+.rail-next {
+  position: absolute;
+  top: 50%;
+  inset-inline-end: var(--space-3);
+  transform: translateY(-50%);
+  width: 46px;
+  height: 46px;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--radius-full);
+  background: var(--glass-light-bg-strong);
+  -webkit-backdrop-filter: var(--glass-blur);
+  backdrop-filter: var(--glass-blur);
+  border: 1px solid var(--glass-light-border);
+  box-shadow: var(--shadow-md), var(--glass-inset-light);
+  color: var(--text-primary);
+  transition: transform var(--transition-base), box-shadow var(--transition-base);
+}
+[dir="rtl"] .rail-next svg { transform: scaleX(-1); }
+.rail-next:hover { transform: translateY(-50%) scale(1.07); box-shadow: var(--shadow-lg); }
+
+/* ══ Assurances ═════════════════════════════ */
+.assurance {
+  background: var(--color-espresso);
+  color: var(--text-on-dark);
+  padding-block: clamp(2rem, 1.2rem + 2.4vw, 3.25rem);
+}
+
+.assurance-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: clamp(1.25rem, 0.6rem + 2vw, 2.5rem);
+}
+
+.assurance-item {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-3);
+  min-width: 0;
+}
+
+.assurance-icon {
+  flex-shrink: 0;
+  width: 42px;
+  height: 42px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--radius-full);
+  border: 1px solid rgba(210, 180, 127, 0.32);
+  color: var(--color-gold-soft);
+}
+
+.assurance-item h4 {
+  font-family: var(--font-primary);
+  font-size: var(--fs-xs);
+  font-weight: var(--fw-semibold);
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: #FFFFFF;
+  margin-bottom: 4px;
+}
+[dir="rtl"] .assurance-item h4 { font-family: var(--font-arabic); letter-spacing: 0; }
+
+.assurance-item p {
+  font-size: var(--fs-sm);
+  line-height: 1.55;
+  color: var(--text-on-dark-muted);
+}
+
+/* ══ Shared page loading state ══ */
+.page-loading {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 60svh;
+}
+
+/* ══ Responsive ═════════════════════════════ */
+/* Fewer cards in view as the viewport narrows — the tile never grows
+   into a single oversized card the way the old 1-column grid did. */
+@media (min-width: 1025px) {
+  .rail-next { display: inline-flex; }
+}
+
+@media (max-width: 1240px) { .collections-rail { --rail-visible: 4; } }
+@media (max-width: 1024px) {
+  .collections-rail { --rail-visible: 3; }
+  .assurance-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+
+@media (max-width: 760px) {
+  /* ~2.3 cards visible so the rail reads as scrollable at a glance */
+  .collections-rail {
+    --rail-visible: 2.3;
+    /* bleed to the screen edge so cards run off-canvas like a native app */
+    margin-inline: calc(-1 * var(--gutter));
+    padding-inline: var(--gutter);
+    scroll-padding-inline-start: var(--gutter);
+  }
+}
+
+@media (max-width: 640px) {
+  .hero { min-height: min(640px, 100svh); }
+  .hero-inner { padding-bottom: var(--space-12); }
+  .hero-copy { max-width: 100%; }
+  .hero-actions { gap: var(--space-2); }
+  .hero-actions .btn { flex: 1 1 auto; min-width: 148px; }
+  .hero-dots { bottom: var(--space-5); }
+  .assurance-item { gap: var(--space-3); }
+  .assurance-icon { width: 36px; height: 36px; }
+}
+
+@media (max-width: 420px) {
+  .assurance-grid { grid-template-columns: 1fr; gap: var(--space-4); }
+}

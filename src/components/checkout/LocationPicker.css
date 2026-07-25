@@ -1,0 +1,186 @@
+/* ============================================
+   ARTÉVA Maison — checkout location picker
+   ============================================ */
+
+.locpick { margin-bottom: var(--space-5); }
+
+.locpick-head {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: var(--space-4);
+  flex-wrap: wrap;
+  margin-bottom: var(--space-3);
+}
+
+.locpick-title { margin-bottom: 4px; }
+
+.locpick-hint {
+  font-size: var(--fs-xs);
+  color: var(--text-light);
+  line-height: 1.5;
+  max-width: 34rem;
+}
+
+/* ── Map viewport ── */
+.locpick-map {
+  position: relative;
+  height: clamp(220px, 34vw, 320px);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  background: var(--color-ink);
+  border: 1px solid var(--border-medium);
+  box-shadow: var(--shadow-md);
+  cursor: grab;
+  touch-action: none; /* pointer events drive panning, not the browser */
+  user-select: none;
+  contain: strict;    /* tiles never affect layout outside the viewport */
+}
+.locpick-map.is-dragging { cursor: grabbing; }
+.locpick-map:focus-visible { outline: 2px solid var(--color-gold); outline-offset: 2px; }
+
+.locpick-tiles {
+  position: absolute;
+  inset: 0;
+}
+.locpick-tiles img {
+  position: absolute;
+  top: 0;
+  inset-inline-start: 0;
+  width: 256px;
+  height: 256px;
+  max-width: none;
+  pointer-events: none;
+  filter:
+    invert(1)
+    hue-rotate(180deg)
+    saturate(0.42)
+    brightness(0.82)
+    contrast(1.08)
+    sepia(0.28);
+}
+
+/* RTL must not mirror the tile grid — geography is not directional */
+[dir="rtl"] .locpick-tiles img { inset-inline-start: auto; left: 0; }
+[dir="rtl"] .locpick-tiles { direction: ltr; }
+
+/* ── Centre pin ── */
+.locpick-pin {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -100%);
+  color: var(--color-gold-soft);
+  pointer-events: none;
+  filter: drop-shadow(0 3px 10px rgba(0, 0, 0, 0.7));
+}
+.locpick-pin svg { width: 34px; height: 34px; }
+
+.locpick-pin-shadow {
+  position: absolute;
+  left: 50%;
+  bottom: -5px;
+  width: 14px;
+  height: 5px;
+  transform: translateX(-50%);
+  border-radius: 50%;
+  background: rgba(0, 0, 0, 0.55);
+  filter: blur(1.5px);
+}
+
+/* ── Zoom controls ── */
+.locpick-zoom {
+  position: absolute;
+  top: var(--space-3);
+  inset-inline-end: var(--space-3);
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  box-shadow: var(--shadow-md);
+}
+.locpick-zoom button {
+  width: 34px;
+  height: 34px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(36, 28, 21, 0.72);
+  -webkit-backdrop-filter: var(--glass-blur-soft);
+  backdrop-filter: var(--glass-blur-soft);
+  color: var(--color-gold-soft);
+  font-size: 17px;
+  line-height: 1;
+  transition: background var(--transition-fast);
+}
+.locpick-zoom button:hover:not(:disabled) { background: rgba(36, 28, 21, 0.9); }
+.locpick-zoom button:disabled { opacity: 0.4; cursor: not-allowed; }
+
+.locpick-attribution {
+  position: absolute;
+  bottom: 0;
+  inset-inline-end: 0;
+  padding: 2px 7px;
+  font-size: 9.5px;
+  color: rgba(253, 251, 247, 0.6);
+  background: rgba(36, 28, 21, 0.66);
+  border-start-start-radius: var(--radius-xs);
+}
+
+/* ── Fallback when tiles cannot load ── */
+.locpick-fallback {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-6) var(--space-5);
+  text-align: center;
+  border: 1px dashed var(--border-medium);
+  border-radius: var(--radius-lg);
+  background: rgba(244, 234, 220, 0.4);
+}
+.locpick-fallback p { font-size: var(--fs-sm); color: var(--text-muted); max-width: 32rem; }
+.locpick-fallback-icon { color: var(--color-bronze); }
+.locpick-manual { width: 100%; max-width: 420px; margin-top: var(--space-2); }
+.locpick-manual .field { margin-bottom: 0; }
+
+/* ── Readout ── */
+.locpick-readout {
+  display: flex;
+  align-items: baseline;
+  gap: var(--space-3);
+  flex-wrap: wrap;
+  margin-top: var(--space-3);
+  padding-inline: var(--space-2);
+  min-height: 20px;
+}
+
+.locpick-coords {
+  font-size: var(--fs-xs);
+  font-weight: var(--fw-semibold);
+  letter-spacing: 0.06em;
+  color: var(--text-secondary);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.locpick-resolving { font-size: var(--fs-xs); color: var(--text-light); }
+
+.locpick-address {
+  font-size: var(--fs-xs);
+  color: var(--text-muted);
+  min-width: 0;
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.locpick-notice { margin-top: var(--space-2); }
+
+@media (max-width: 560px) {
+  .locpick-head { align-items: stretch; }
+  .locpick-head .btn { width: 100%; }
+  .locpick-map { height: 220px; }
+}

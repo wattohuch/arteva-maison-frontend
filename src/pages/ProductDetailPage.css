@@ -1,0 +1,178 @@
+/* ============================================
+   ARTÉVA Maison — Product detail
+   ============================================ */
+
+.pdp-layout {
+  display: grid;
+  grid-template-columns: 1.15fr 1fr;
+  gap: clamp(1.5rem, 0.8rem + 3vw, 4rem);
+  align-items: start;
+}
+
+/* ── Gallery ── */
+.pdp-gallery { position: sticky; top: calc(var(--header-height) + var(--space-5)); }
+
+.pdp-main-image {
+  aspect-ratio: 1;
+  border-radius: var(--radius-xl);
+  overflow: hidden;
+  background: var(--color-champagne);
+  box-shadow: var(--shadow-md);
+}
+.pdp-main-image img { width: 100%; height: 100%; object-fit: cover; }
+
+.pdp-thumbnails {
+  display: flex;
+  gap: var(--space-2);
+  margin-top: var(--space-3);
+  overflow-x: auto;
+  scrollbar-width: none;
+  padding-bottom: 2px;
+}
+.pdp-thumbnails::-webkit-scrollbar { display: none; }
+
+.pdp-thumb {
+  flex: 0 0 auto;
+  width: 68px;
+  height: 68px;
+  padding: 0;
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  background: var(--color-champagne);
+  border: 1px solid var(--border-hairline);
+  outline: 2px solid transparent;
+  outline-offset: 2px;
+  transition: outline-color var(--transition-fast), transform var(--transition-fast);
+}
+.pdp-thumb:hover { transform: translateY(-2px); }
+.pdp-thumb.active { outline-color: var(--color-gold); }
+.pdp-thumb img { width: 100%; height: 100%; object-fit: cover; }
+
+/* ── Info panel ── */
+.pdp-info {
+  padding: clamp(1.5rem, 1rem + 1.6vw, 2.5rem);
+  background: var(--glass-light-bg-strong);
+  -webkit-backdrop-filter: var(--glass-blur);
+  backdrop-filter: var(--glass-blur);
+  border: 1px solid var(--glass-light-border);
+  border-radius: var(--radius-xl);
+  box-shadow: var(--shadow-md), var(--glass-inset-light);
+}
+
+/* Static pill — the product-card badge is absolutely positioned and
+   would float into the panel corner if reused here. */
+.pdp-badge {
+  display: inline-block;
+  margin-bottom: var(--space-4);
+  padding: 5px 12px;
+  border-radius: var(--radius-pill);
+  background: var(--color-champagne);
+  color: var(--color-bronze);
+  font-size: 9.5px;
+  font-weight: var(--fw-semibold);
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  line-height: 1;
+}
+
+.pdp-name {
+  font-size: var(--fs-2xl);
+  line-height: 1.15;
+  margin-bottom: var(--space-3);
+  text-wrap: balance;
+}
+
+.pdp-price {
+  font-family: var(--font-display);
+  font-size: 1.75rem;
+  font-weight: var(--fw-medium);
+  color: var(--text-primary);
+  margin-bottom: var(--space-2);
+  font-variant-numeric: tabular-nums;
+}
+
+.pdp-sku {
+  font-size: var(--fs-xs);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--text-light);
+  margin-bottom: var(--space-5);
+}
+
+.pdp-desc {
+  font-size: var(--fs-base);
+  line-height: 1.8;
+  color: var(--text-secondary);
+  padding-top: var(--space-5);
+  margin-bottom: var(--space-6);
+  border-top: 1px solid var(--border-hairline);
+}
+
+/* ── Actions ── */
+.pdp-actions {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  margin-bottom: var(--space-6);
+}
+
+.pdp-buy-row {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.pdp-qty {
+  margin-top: 0;
+  height: 50px;
+  padding-inline: var(--space-2);
+  background: rgba(255, 255, 255, 0.72);
+}
+.pdp-qty button { width: 32px; height: 32px; }
+.pdp-qty span { min-width: 32px; font-size: var(--fs-base); }
+
+.pdp-wishlist {
+  width: 50px;
+  height: 50px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  border: 1px solid var(--border-light);
+  border-radius: var(--radius-full);
+  background: rgba(255, 255, 255, 0.72);
+  color: var(--text-secondary);
+  transition: color var(--transition-fast), border-color var(--transition-fast), transform var(--transition-base);
+}
+.pdp-wishlist:hover { transform: translateY(-2px); color: var(--color-gold); border-color: var(--border-medium); }
+.pdp-wishlist.is-saved { color: #B7524F; border-color: rgba(183, 82, 79, 0.35); }
+.pdp-wishlist.is-saved svg { animation: heartPop 380ms var(--ease-out-luxe); }
+
+/* ── Delivery notes ── */
+.pdp-delivery {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  padding: var(--space-5);
+  border-radius: var(--radius-lg);
+  background: rgba(244, 234, 220, 0.55);
+}
+.pdp-delivery li {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  font-size: var(--fs-sm);
+  color: var(--text-secondary);
+}
+.pdp-delivery svg { flex-shrink: 0; color: var(--color-bronze); }
+
+/* ── Responsive ── */
+@media (max-width: 900px) {
+  .pdp-layout { grid-template-columns: minmax(0, 1fr); }
+  .pdp-gallery { position: static; }
+}
+
+@media (max-width: 480px) {
+  .pdp-buy-row { flex-wrap: wrap; }
+  .pdp-qty { flex: 1; justify-content: space-between; }
+}

@@ -1,0 +1,96 @@
+/* ============================================
+   ARTÉVA Maison — floating contact actions
+   ============================================ */
+
+.floating-actions {
+  position: fixed;
+  z-index: var(--z-floating);
+  inset-inline-end: var(--gutter);
+  /* Sits above the mobile tab bar, mirroring the currency pill on the far side */
+  bottom: calc(var(--space-5) + var(--tabbar-height) + env(safe-area-inset-bottom, 0px));
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: var(--space-3);
+}
+[dir="rtl"] .floating-actions { align-items: flex-start; }
+
+/* ── Trigger ── */
+.fa-trigger {
+  width: 52px;
+  height: 52px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--radius-full);
+  background: var(--color-espresso);
+  color: var(--color-gold-soft);
+  box-shadow: var(--shadow-lg);
+  transition: transform var(--transition-base), background var(--transition-fast);
+}
+.fa-trigger:hover { transform: translateY(-2px) scale(1.04); background: var(--color-charcoal); }
+.fa-trigger:active { transform: scale(0.95); }
+
+/* ── Menu ── */
+.fa-menu {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: var(--space-2);
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(8px) scale(0.96);
+  transform-origin: bottom right;
+  transition:
+    opacity var(--transition-base),
+    transform var(--transition-base),
+    visibility var(--transition-base);
+}
+[dir="rtl"] .fa-menu { align-items: flex-start; transform-origin: bottom left; }
+
+.floating-actions.is-open .fa-menu {
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(0) scale(1);
+}
+
+.fa-item {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-3);
+  height: 46px;
+  padding-inline: var(--space-3) var(--space-5);
+  border-radius: var(--radius-pill);
+  background: var(--glass-light-bg-strong);
+  -webkit-backdrop-filter: var(--glass-blur);
+  backdrop-filter: var(--glass-blur);
+  border: 1px solid var(--glass-light-border);
+  box-shadow: var(--shadow-md), var(--glass-inset-light);
+  color: var(--text-primary);
+  font-size: var(--fs-sm);
+  font-weight: var(--fw-medium);
+  white-space: nowrap;
+  transition: transform var(--transition-fast), box-shadow var(--transition-fast);
+}
+.fa-item:hover { transform: translateY(-2px); box-shadow: var(--shadow-lg); color: var(--text-primary); }
+
+.fa-item-icon {
+  width: 32px;
+  height: 32px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  border-radius: var(--radius-full);
+  background: var(--color-champagne);
+  color: var(--color-bronze);
+}
+.fa-whatsapp .fa-item-icon { background: rgba(37, 211, 102, 0.14); color: #128C4A; }
+
+.fa-item-label { line-height: 1; }
+
+@media (max-width: 560px) {
+  .fa-trigger { width: 46px; height: 46px; }
+  .fa-item { height: 42px; font-size: var(--fs-xs); padding-inline: var(--space-2) var(--space-4); }
+  .fa-item-icon { width: 28px; height: 28px; }
+}

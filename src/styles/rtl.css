@@ -1,0 +1,62 @@
+/* ============================================
+   ARTÉVA Maison — RTL support
+
+   Most of the layout now uses logical properties
+   (inset-inline, padding-inline, margin-inline,
+   text-align: start/end), which mirror automatically.
+   Only the cases logical properties cannot express
+   are listed here.
+   ============================================ */
+
+[dir="rtl"] { text-align: right; }
+
+/* The navbar is a 3-column grid, and grid tracks already flow right-to-left
+   under dir="rtl" — links land on the right, actions on the left, logo stays
+   centred. The previous `order` overrides fought that: reordering flex/grid
+   items reassigns which *track* each column lands in, so the logo was pushed
+   out of the middle track and ended up hard against the edge.
+   Nothing is needed here; `justify-content: flex-start/end` mirrors on its own. */
+
+/* Directional glyphs that are not part of the icon set */
+[dir="rtl"] .nav-arrow,
+[dir="rtl"] .chevron-icon { transform: scaleX(-1); }
+
+/* Inputs */
+[dir="rtl"] input,
+[dir="rtl"] textarea,
+[dir="rtl"] select { text-align: right; }
+
+/* Product / cart text blocks */
+[dir="rtl"] .product-body,
+[dir="rtl"] .cart-item-body,
+[dir="rtl"] .cart-line-body { text-align: right; }
+
+[dir="rtl"] .checkout-form label { text-align: right; }
+[dir="rtl"] .order-meta { direction: rtl; }
+
+/* Tables */
+[dir="rtl"] th,
+[dir="rtl"] td { text-align: right; }
+
+/* Admin shell still uses physical offsets */
+[dir="rtl"] .admin-sidebar {
+  right: 0;
+  left: auto;
+  border-right: none;
+  border-left: 1px solid var(--border-light);
+}
+[dir="rtl"] .admin-content {
+  margin-right: 260px;
+  margin-left: 0;
+}
+
+[dir="rtl"] .badge {
+  margin-left: 0;
+  margin-right: var(--space-2);
+}
+
+[dir="rtl"] .flex-row-reverse { flex-direction: row; }
+
+@media (max-width: 768px) {
+  [dir="rtl"] .admin-content { margin-right: 0; }
+}

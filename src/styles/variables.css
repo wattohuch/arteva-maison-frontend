@@ -1,0 +1,200 @@
+/* ============================================
+   ARTÉVA Maison — Luxury Design Tokens
+   Warm beige palette · glassmorphism · editorial type
+   ============================================ */
+
+:root {
+  /* ── Core Palette ───────────────────────────
+     Ivory → Warm White → Champagne → Sand →
+     Beige → Taupe → Bronze → Gold → Charcoal   */
+  --color-ivory: #FDFBF7;
+  --color-warm-white: #F9F5EF;
+  --color-champagne: #F4EADC;
+  --color-sand: #EDDFCA;
+  --color-beige: #E2CFB2;
+  --color-taupe: #BCA484;
+  --color-bronze: #805F30;
+  --color-gold: #B58C4A;          /* decorative accent: fills, borders, dots */
+  --color-gold-text: #8C672C;     /* same family, AA on ivory — use for text */
+  --color-gold-soft: #D2B47F;
+  --color-espresso: #4A3B2C;
+  --color-charcoal: #362A20;
+  --color-ink: #241C15;
+
+  /* Legacy aliases (kept so existing rules stay valid) */
+  --color-stone: var(--color-beige);
+  --color-gold-muted: var(--color-gold);
+  --color-primary: var(--color-espresso);
+  --color-secondary: var(--color-beige);
+  --color-accent: var(--color-gold);
+  --color-gold-light: var(--color-gold-soft);
+  --color-gold-dark: var(--color-bronze);
+
+  /* ── Backgrounds ── */
+  --bg-base: #F9F5EF;
+  --bg-warm: #FDFBF7;
+  --bg-cream: #F4EADC;
+  --bg-sand: #EDDFCA;
+  --bg-dark: #3E3125;
+  --bg-darker: #2B2119;
+
+  /* ── Glassmorphism ───────────────────────────
+     Light glass sits on beige surfaces.
+     Dark glass sits over imagery (hero navbar).  */
+  --glass-light-bg: rgba(253, 251, 247, 0.74);
+  --glass-light-bg-strong: rgba(253, 251, 247, 0.92);
+  --glass-light-border: rgba(255, 255, 255, 0.55);
+  --glass-light-hairline: rgba(74, 59, 44, 0.07);
+
+  --glass-dark-bg: rgba(48, 38, 28, 0.44);
+  --glass-dark-bg-strong: rgba(43, 33, 25, 0.64);
+  --glass-dark-border: rgba(255, 255, 255, 0.14);
+
+  --glass-blur: blur(18px) saturate(1.35);
+  --glass-blur-soft: blur(12px) saturate(1.2);
+  --glass-blur-heavy: blur(26px) saturate(1.4);
+
+  /* Inner highlight that gives glass its "edge lit" depth */
+  --glass-inset-light: inset 0 1px 0 rgba(255, 255, 255, 0.6);
+  --glass-inset-dark: inset 0 1px 0 rgba(255, 255, 255, 0.12);
+
+  /* Legacy glass aliases */
+  --glass-bg: var(--glass-light-bg);
+  --glass-bg-hover: var(--glass-light-bg-strong);
+  --glass-border: 1px solid var(--glass-light-hairline);
+  --glass-border-warm: 1px solid var(--glass-light-hairline);
+
+  /* ── Shadows — layered, warm, never harsh ── */
+  --shadow-xs: 0 1px 2px rgba(74, 59, 44, 0.04);
+  --shadow-sm: 0 2px 6px rgba(74, 59, 44, 0.04), 0 6px 16px rgba(74, 59, 44, 0.04);
+  --shadow-md: 0 4px 10px rgba(74, 59, 44, 0.05), 0 14px 32px rgba(74, 59, 44, 0.06);
+  --shadow-lg: 0 8px 18px rgba(74, 59, 44, 0.06), 0 26px 56px rgba(74, 59, 44, 0.09);
+  --shadow-xl: 0 12px 28px rgba(74, 59, 44, 0.08), 0 40px 88px rgba(74, 59, 44, 0.12);
+  --shadow-gold: 0 10px 30px rgba(181, 140, 74, 0.24);
+
+  --glass-shadow: var(--shadow-sm);
+  --glass-shadow-lg: var(--shadow-lg);
+  --glass-shadow-gold: var(--shadow-gold);
+
+  /* ── Text ── */
+  --text-primary: #261E17;
+  --text-secondary: #46392C;
+  --text-muted: #7A6B5B;
+  --text-light: #87755E;
+  --text-white: #FBF9F6;
+  --text-gold: #8C672C;
+  --text-on-dark: rgba(253, 251, 247, 0.93);
+  --text-on-dark-muted: rgba(253, 251, 247, 0.66);
+
+  /* ── Borders ── */
+  --border-hairline: rgba(74, 59, 44, 0.06);
+  --border-light: rgba(74, 59, 44, 0.09);
+  --border-medium: rgba(74, 59, 44, 0.16);
+  --border-strong: rgba(74, 59, 44, 0.28);
+  --border-warm: rgba(74, 59, 44, 0.12);
+
+  /* ── Typography ── */
+  --font-display: 'Playfair Display', 'Cormorant Garamond', Georgia, 'Times New Roman', serif;
+  --font-serif-alt: 'Cormorant Garamond', 'Playfair Display', Georgia, serif;
+  --font-primary: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --font-arabic: 'Noto Sans Arabic', 'Segoe UI', sans-serif;
+
+  /* Fluid type scale */
+  --fs-xs: 0.6875rem;   /* 11 */
+  --fs-sm: 0.8125rem;   /* 13 */
+  --fs-base: 0.9375rem; /* 15 */
+  --fs-md: 1.0625rem;   /* 17 */
+  --fs-lg: 1.25rem;
+  --fs-xl: 1.5rem;
+  --fs-2xl: clamp(1.75rem, 1.2rem + 1.8vw, 2.5rem);
+  --fs-3xl: clamp(2.25rem, 1.4rem + 3vw, 3.25rem);
+  --fs-4xl: clamp(2.75rem, 1.5rem + 5vw, 4.5rem);
+  --fs-hero: clamp(2.6rem, 1.2rem + 5.4vw, 5rem);
+
+  --fw-light: 300;
+  --fw-normal: 400;
+  --fw-medium: 500;
+  --fw-semibold: 600;
+  --fw-bold: 700;
+
+  /* Letter spacing */
+  --ls-eyebrow: 0.22em;
+  --ls-nav: 0.16em;
+  --ls-button: 0.14em;
+  --ls-display: -0.02em;
+
+  /* ── Spacing scale (4px base) ── */
+  --space-1: 0.25rem;
+  --space-2: 0.5rem;
+  --space-3: 0.75rem;
+  --space-4: 1rem;
+  --space-5: 1.25rem;
+  --space-6: 1.5rem;
+  --space-7: 1.75rem;
+  --space-8: 2rem;
+  --space-10: 2.5rem;
+  --space-12: 3rem;
+  --space-14: 3.5rem;
+  --space-16: 4rem;
+  --space-20: 5rem;
+  --space-24: 6rem;
+  --space-32: 8rem;
+
+  /* Section rhythm — fluid so mobile never feels cramped or vast */
+  --section-y: clamp(3.5rem, 2rem + 6vw, 7.5rem);
+  --section-y-sm: clamp(2.5rem, 1.5rem + 4vw, 4.5rem);
+  --gutter: clamp(1.25rem, 0.5rem + 2.4vw, 2.5rem);
+
+  /* ── Radii ── */
+  --radius-xs: 6px;
+  --radius-sm: 10px;
+  --radius-md: 14px;
+  --radius-lg: 20px;
+  --radius-xl: 26px;
+  --radius-2xl: 32px;
+  --radius-pill: 999px;
+  --radius-full: 9999px;
+
+  /* ── Motion ── */
+  --ease-out-luxe: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-in-out-luxe: cubic-bezier(0.65, 0, 0.35, 1);
+  --transition-fast: 160ms var(--ease-out-luxe);
+  --transition-base: 280ms var(--ease-out-luxe);
+  --transition-slow: 520ms var(--ease-out-luxe);
+
+  /* ── Layout ── */
+  --max-width: 1440px;
+  --nav-height: 68px;
+  --nav-inset: 12px;
+  /* Height the floating navbar occupies over content (nav + its top gap) */
+  --nav-overlay-height: calc(var(--nav-height) + var(--nav-inset));
+  /* Total space the fixed header reserves at the top of <main> */
+  --header-height: var(--nav-overlay-height);
+  --tabbar-height: 0px;
+
+  /* ── Z-index scale ──────────────────────────
+     Single source of truth. Every layer below is
+     ordered so the cart can never fall behind a
+     card and the navbar always stays on top.     */
+  --z-below: -1;
+  --z-base: 0;
+  --z-raised: 10;
+  --z-badge: 20;
+  --z-tabbar: 700;
+  --z-floating: 800;
+  --z-drawer-backdrop: 900;
+  --z-drawer: 1000;
+  --z-sticky: 1100;         /* header — above the drawer, per spec */
+  --z-dropdown: 1150;
+  --z-modal-backdrop: 1200;
+  --z-modal: 1300;
+  --z-toast: 1500;
+}
+
+@media (max-width: 768px) {
+  :root {
+    --nav-height: 58px;
+    --nav-inset: 8px;
+    --tabbar-height: 68px;
+  }
+}

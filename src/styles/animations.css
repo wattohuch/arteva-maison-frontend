@@ -1,0 +1,131 @@
+/* ============================================
+   ARTÉVA Maison — Motion
+   Subtle, GPU-friendly, always interruptible.
+   Only transform/opacity are animated so nothing
+   triggers layout during a transition.
+   ============================================ */
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+@keyframes fadeInUp {
+  from { opacity: 0; transform: translate3d(0, 18px, 0); }
+  to   { opacity: 1; transform: translate3d(0, 0, 0); }
+}
+
+@keyframes fadeInDown {
+  from { opacity: 0; transform: translate3d(0, -18px, 0); }
+  to   { opacity: 1; transform: translate3d(0, 0, 0); }
+}
+
+@keyframes fadeInLeft {
+  from { opacity: 0; transform: translate3d(-18px, 0, 0); }
+  to   { opacity: 1; transform: translate3d(0, 0, 0); }
+}
+
+@keyframes fadeInRight {
+  from { opacity: 0; transform: translate3d(18px, 0, 0); }
+  to   { opacity: 1; transform: translate3d(0, 0, 0); }
+}
+
+@keyframes scaleIn {
+  from { opacity: 0; transform: scale(0.97); }
+  to   { opacity: 1; transform: scale(1); }
+}
+
+@keyframes slideInRight {
+  from { transform: translate3d(100%, 0, 0); }
+  to   { transform: translate3d(0, 0, 0); }
+}
+
+@keyframes slideInUp {
+  from { transform: translate3d(0, 100%, 0); }
+  to   { transform: translate3d(0, 0, 0); }
+}
+
+@keyframes shimmer {
+  0%   { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50%      { opacity: 0.45; }
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to   { transform: rotate(360deg); }
+}
+
+@keyframes float {
+  0%, 100% { transform: translate3d(0, 0, 0); }
+  50%      { transform: translate3d(0, -6px, 0); }
+}
+
+/* ── Section entrance ─────────────────────────
+   `reveal` fades content up on mount; stagger
+   siblings with reveal-1 … reveal-5.           */
+.reveal   { animation: fadeInUp 780ms var(--ease-out-luxe) both; }
+.reveal-1 { animation-delay: 90ms; }
+.reveal-2 { animation-delay: 180ms; }
+.reveal-3 { animation-delay: 270ms; }
+.reveal-4 { animation-delay: 360ms; }
+.reveal-5 { animation-delay: 450ms; }
+
+.stagger-1 { animation-delay: 0.05s; }
+.stagger-2 { animation-delay: 0.10s; }
+.stagger-3 { animation-delay: 0.15s; }
+.stagger-4 { animation-delay: 0.20s; }
+.stagger-5 { animation-delay: 0.25s; }
+.stagger-6 { animation-delay: 0.30s; }
+
+/* ── Utility animation classes ── */
+.animate-fade-in        { animation: fadeIn 520ms var(--ease-out-luxe) both; }
+.animate-fade-in-up     { animation: fadeInUp 520ms var(--ease-out-luxe) both; }
+.animate-fade-in-down   { animation: fadeInDown 520ms var(--ease-out-luxe) both; }
+.animate-scale-in       { animation: scaleIn 520ms var(--ease-out-luxe) both; }
+.animate-slide-in-right { animation: slideInRight 520ms var(--ease-out-luxe) both; }
+.animate-float          { animation: float 3.2s ease-in-out infinite; }
+
+.shimmer {
+  background: linear-gradient(90deg, var(--bg-sand) 25%, var(--bg-warm) 50%, var(--bg-sand) 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s ease-in-out infinite;
+}
+
+/* ── Hover primitives ── */
+.hover-lift {
+  transition: transform var(--transition-base), box-shadow var(--transition-base);
+  will-change: transform;
+}
+.hover-lift:hover { transform: translate3d(0, -5px, 0); box-shadow: var(--shadow-lg); }
+
+.hover-glow { transition: box-shadow var(--transition-base); }
+.hover-glow:hover { box-shadow: var(--shadow-gold); }
+
+.hover-scale { transition: transform var(--transition-base); }
+.hover-scale:hover { transform: scale(1.03); }
+
+/* ── Image zoom container ── */
+.img-zoom { overflow: hidden; }
+.img-zoom img {
+  transition: transform 700ms var(--ease-out-luxe);
+  will-change: transform;
+}
+.img-zoom:hover img { transform: scale(1.06); }
+
+/* ── Respect the user's motion preference ──── */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
+  html { scroll-behavior: auto; }
+}

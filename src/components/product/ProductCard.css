@@ -1,0 +1,211 @@
+/* ============================================
+   ARTÉVA Maison — Product card
+   Soft depth · image zoom · quick add · wishlist
+   ============================================ */
+
+.product-card {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  transition: transform var(--transition-base);
+  will-change: transform;
+}
+.product-card:hover { transform: translateY(-6px); }
+
+/* ── Media ── */
+.product-media {
+  position: relative;
+  aspect-ratio: 4 / 5;
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  background: var(--color-champagne);
+  box-shadow: var(--shadow-sm);
+  transition: box-shadow var(--transition-base);
+}
+.product-card:hover .product-media { box-shadow: var(--shadow-lg); }
+
+.product-media-link {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+.product-media img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transform: scale(1);
+  transition: transform 700ms var(--ease-out-luxe);
+  will-change: transform;
+}
+.product-card:hover .product-media img { transform: scale(1.06); }
+
+/* Warm scrim so the quick-add button always has contrast */
+.product-media::after {
+  content: '';
+  position: absolute;
+  inset-inline: 0;
+  bottom: 0;
+  height: 42%;
+  background: linear-gradient(to top, rgba(43, 33, 25, 0.28), transparent);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity var(--transition-base);
+}
+.product-card:hover .product-media::after { opacity: 1; }
+
+/* ── Badge ── */
+.product-badge {
+  position: absolute;
+  top: var(--space-3);
+  inset-inline-start: var(--space-3);
+  z-index: var(--z-badge);
+  padding: 5px 12px;
+  border-radius: var(--radius-pill);
+  background: var(--glass-light-bg-strong);
+  -webkit-backdrop-filter: var(--glass-blur-soft);
+  backdrop-filter: var(--glass-blur-soft);
+  border: 1px solid var(--glass-light-border);
+  color: var(--text-primary);
+  font-size: 9.5px;
+  font-weight: var(--fw-semibold);
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  line-height: 1;
+}
+
+/* ── Wishlist ── */
+.product-wishlist {
+  position: absolute;
+  top: var(--space-3);
+  inset-inline-end: var(--space-3);
+  z-index: var(--z-badge);
+  width: 36px;
+  height: 36px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--radius-full);
+  background: var(--glass-light-bg-strong);
+  -webkit-backdrop-filter: var(--glass-blur-soft);
+  backdrop-filter: var(--glass-blur-soft);
+  border: 1px solid var(--glass-light-border);
+  color: var(--text-secondary);
+  box-shadow: var(--shadow-xs);
+  transition:
+    color var(--transition-fast),
+    background var(--transition-fast),
+    transform var(--transition-base);
+}
+.product-wishlist:hover { transform: scale(1.08); color: var(--color-gold-text); }
+.product-wishlist:active { transform: scale(0.92); }
+.product-wishlist.is-saved { color: #B7524F; }
+.product-wishlist.is-saved svg { animation: heartPop 380ms var(--ease-out-luxe); }
+
+@keyframes heartPop {
+  0%   { transform: scale(1); }
+  45%  { transform: scale(1.3); }
+  100% { transform: scale(1); }
+}
+
+/* ── Quick add ── */
+.product-quick-add {
+  position: absolute;
+  inset-inline: var(--space-3);
+  bottom: var(--space-3);
+  z-index: var(--z-badge);
+  height: 42px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  border-radius: var(--radius-pill);
+  background: var(--glass-light-bg-strong);
+  -webkit-backdrop-filter: var(--glass-blur);
+  backdrop-filter: var(--glass-blur);
+  border: 1px solid var(--glass-light-border);
+  color: var(--text-primary);
+  font-size: 10px;
+  font-weight: var(--fw-semibold);
+  letter-spacing: var(--ls-button);
+  text-transform: uppercase;
+  box-shadow: var(--shadow-md), var(--glass-inset-light);
+  opacity: 0;
+  transform: translateY(12px);
+  transition:
+    opacity var(--transition-base),
+    transform var(--transition-base),
+    background var(--transition-fast),
+    color var(--transition-fast);
+}
+[dir="rtl"] .product-quick-add { letter-spacing: 0; }
+
+.product-card:hover .product-quick-add,
+.product-quick-add:focus-visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+.product-quick-add:hover {
+  background: var(--color-espresso);
+  color: var(--text-white);
+  border-color: var(--color-espresso);
+}
+.product-quick-add:active { transform: translateY(0) scale(0.98); }
+
+/* ── Body ── */
+.product-body {
+  display: block;
+  padding: var(--space-4) var(--space-1) 0;
+  color: inherit;
+}
+.product-body:hover { color: inherit; }
+
+.product-name {
+  font-family: var(--font-display);
+  font-size: 1.0625rem;
+  font-weight: var(--fw-medium);
+  line-height: 1.35;
+  letter-spacing: -0.01em;
+  color: var(--text-primary);
+  margin-bottom: 5px;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  transition: color var(--transition-fast);
+}
+.product-card:hover .product-name { color: var(--color-bronze); }
+
+[dir="rtl"] .product-name { font-family: var(--font-arabic); letter-spacing: 0; }
+
+.product-price {
+  font-family: var(--font-primary);
+  font-size: var(--fs-sm);
+  font-weight: var(--fw-medium);
+  letter-spacing: 0.02em;
+  color: var(--text-muted);
+  font-variant-numeric: tabular-nums;
+}
+
+/* ── Touch: hover states never fire, so surface the controls ── */
+@media (hover: none) {
+  .product-quick-add { opacity: 1; transform: translateY(0); }
+  .product-media::after { opacity: 1; }
+}
+
+@media (max-width: 560px) {
+  .product-body { padding-top: var(--space-3); }
+  .product-name { font-size: 0.9375rem; }
+  .product-price { font-size: var(--fs-xs); }
+  .product-quick-add {
+    height: 36px;
+    inset-inline: var(--space-2);
+    bottom: var(--space-2);
+    font-size: 9px;
+    gap: 6px;
+  }
+  .product-quick-add svg { width: 14px; height: 14px; }
+  .product-wishlist { width: 32px; height: 32px; top: var(--space-2); inset-inline-end: var(--space-2); }
+  .product-badge { top: var(--space-2); inset-inline-start: var(--space-2); padding: 4px 9px; font-size: 8.5px; }
+}

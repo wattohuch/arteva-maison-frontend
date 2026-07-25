@@ -1,0 +1,82 @@
+/* ============================================
+   ARTÉVA Maison — Collection card
+   ============================================ */
+
+.collection-card {
+  position: relative;
+  display: block;
+  min-width: 0;
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  color: inherit;
+  box-shadow: var(--shadow-sm);
+  transition: transform var(--transition-base), box-shadow var(--transition-base);
+  will-change: transform;
+}
+.collection-card:hover {
+  transform: translate3d(0, -6px, 0);
+  box-shadow: var(--shadow-lg);
+  color: inherit;
+}
+
+.collection-media {
+  aspect-ratio: 3 / 4;
+  background: var(--color-champagne);
+  overflow: hidden;
+}
+.collection-media img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 700ms var(--ease-out-luxe);
+  will-change: transform;
+}
+.collection-card:hover .collection-media img { transform: scale(1.07); }
+
+.collection-caption {
+  position: absolute;
+  inset-inline: 0;
+  bottom: 0;
+  padding: var(--space-8) var(--space-4) var(--space-4);
+  background: linear-gradient(
+    to top,
+    rgba(36, 28, 21, 0.78) 0%,
+    rgba(36, 28, 21, 0.28) 55%,
+    transparent 100%
+  );
+  color: #FFFFFF;
+  pointer-events: none;
+}
+
+.collection-caption h3 {
+  font-family: var(--font-display);
+  font-size: clamp(0.95rem, 0.8rem + 0.5vw, 1.25rem);
+  font-weight: var(--fw-medium);
+  line-height: 1.25;
+  color: #FFFFFF;
+}
+[dir="rtl"] .collection-caption h3 { font-family: var(--font-arabic); }
+
+.collection-caption span {
+  display: block;
+  margin-top: 4px;
+  font-size: 9.5px;
+  font-weight: var(--fw-medium);
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.72);
+}
+
+/* Grid used by the collections index page */
+.collections-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: clamp(0.75rem, 0.3rem + 1.4vw, 1.5rem);
+}
+
+@media (max-width: 1100px) { .collections-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
+@media (max-width: 720px)  { .collections-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+
+@media (max-width: 560px) {
+  .collection-caption { padding: var(--space-6) var(--space-3) var(--space-3); }
+}

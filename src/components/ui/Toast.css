@@ -1,0 +1,66 @@
+/* ============================================
+   ARTÉVA Maison — Toasts
+   ============================================ */
+
+.toast-container {
+  position: fixed;
+  z-index: var(--z-toast);
+  inset-inline-end: var(--gutter);
+  /* Stacks above the mobile tab bar AND the floating help button, which shares
+     this corner — without the 68px the two overlapped. */
+  bottom: calc(
+    var(--space-5) + 68px + var(--tabbar-height) + env(safe-area-inset-bottom, 0px)
+  );
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  width: min(360px, calc(100vw - 2 * var(--gutter)));
+  pointer-events: none;
+}
+
+.toast {
+  pointer-events: auto;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  padding: 13px var(--space-4);
+  border-radius: var(--radius-md);
+  font-size: var(--fs-sm);
+  font-weight: var(--fw-medium);
+  line-height: 1.45;
+  -webkit-backdrop-filter: var(--glass-blur);
+  backdrop-filter: var(--glass-blur);
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  box-shadow: var(--shadow-lg), var(--glass-inset-dark);
+  color: #FFFFFF;
+}
+
+.toast span { min-width: 0; overflow-wrap: anywhere; }
+
+.toast button {
+  flex-shrink: 0;
+  width: 22px;
+  height: 22px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--radius-full);
+  color: inherit;
+  opacity: 0.6;
+  font-size: 11px;
+  transition: opacity var(--transition-fast), background var(--transition-fast);
+}
+.toast button:hover { opacity: 1; background: rgba(255, 255, 255, 0.14); }
+
+.toast-success { background: rgba(58, 108, 79, 0.9); }
+.toast-error   { background: rgba(157, 66, 63, 0.9); }
+.toast-info    { background: rgba(74, 59, 44, 0.88); }
+.toast-info    { border-color: rgba(210, 180, 127, 0.28); }
+
+@media (max-width: 560px) {
+  .toast-container {
+    inset-inline: var(--space-3);
+    width: auto;
+  }
+}

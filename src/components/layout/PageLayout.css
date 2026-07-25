@@ -1,0 +1,86 @@
+/* ============================================
+   ARTÉVA Maison — Page shell
+   ============================================ */
+
+.page-main {
+  /* Reserve the fixed header. HomePage's hero deliberately pulls back up
+     under the floating navbar via a negative margin. */
+  padding-top: var(--header-height);
+  min-height: calc(100svh - var(--header-height));
+  /* `backwards`, not `both`: a retained transform would turn <main> into a
+     containing block and break any position:fixed inside a page. */
+  animation: pageEnter 420ms var(--ease-out-luxe) backwards;
+}
+
+/* Short, low-travel page transition — enough to feel deliberate,
+   not enough to delay the content. */
+@keyframes pageEnter {
+  from { opacity: 0; transform: translate3d(0, 8px, 0); }
+  to   { opacity: 1; transform: translate3d(0, 0, 0); }
+}
+
+/* ── Shared empty state (wishlist, empty cart, no results) ── */
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-4);
+  text-align: center;
+  padding: clamp(3rem, 2rem + 5vw, 6rem) var(--space-4);
+}
+
+.empty-state-icon {
+  width: 74px;
+  height: 74px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--radius-full);
+  background: var(--color-champagne);
+  color: var(--color-bronze);
+}
+
+.empty-state h3 { font-size: var(--fs-xl); }
+
+.empty-state p {
+  max-width: 34rem;
+  color: var(--text-muted);
+  font-size: var(--fs-sm);
+}
+
+.empty-state .btn { margin-top: var(--space-2); }
+
+.notfound-code {
+  font-family: var(--font-display);
+  font-size: clamp(4rem, 2rem + 9vw, 7rem);
+  font-weight: var(--fw-medium);
+  line-height: 1;
+  letter-spacing: 0.02em;
+  color: var(--color-beige);
+}
+
+/* Shared status badge used by order-success, payment-error, tracking,
+   password reset and contact confirmations. Replaces the ad-hoc emoji each
+   of those pages used to render at its own font-size. */
+.status-icon {
+  width: 72px;
+  height: 72px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto var(--space-4);
+  border-radius: var(--radius-full);
+  background: var(--color-champagne);
+  color: var(--color-bronze);
+}
+.status-icon-success { background: rgba(58, 108, 79, 0.12); color: #3A6C4F; }
+.status-icon-error { background: rgba(183, 82, 79, 0.12); color: #B7524F; }
+
+.notfound-actions {
+  display: flex;
+  gap: var(--space-3);
+  flex-wrap: wrap;
+  justify-content: center;
+  margin-top: var(--space-2);
+}

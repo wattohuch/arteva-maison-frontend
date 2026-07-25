@@ -1,0 +1,157 @@
+/* ============================================
+   ARTÉVA Maison — Footer
+   ============================================ */
+
+.footer {
+  background: var(--bg-dark);
+  color: var(--text-on-dark-muted);
+  padding-top: clamp(3rem, 2rem + 3vw, 5rem);
+  /* Clears the mobile tab bar so nothing overlaps the copyright line */
+  padding-bottom: calc(var(--space-8) + var(--tabbar-height) + env(safe-area-inset-bottom, 0px));
+  border-top: 1px solid rgba(210, 180, 127, 0.14);
+}
+
+.footer-grid {
+  display: grid;
+  grid-template-columns: 1.6fr 1fr 1fr 1.4fr;
+  gap: clamp(1.75rem, 1rem + 2.4vw, 3.5rem);
+  padding-bottom: clamp(2rem, 1.4rem + 2vw, 3.5rem);
+}
+
+/* ── Brand column ── */
+.footer-brand { min-width: 0; }
+
+.footer-logo {
+  display: block;
+  font-family: var(--font-display);
+  font-size: 1.5rem;
+  font-weight: var(--fw-semibold);
+  letter-spacing: 0.16em;
+  color: #FFFFFF;
+  line-height: 1;
+}
+
+.footer-logo-sub {
+  display: block;
+  margin-top: 5px;
+  font-size: 9px;
+  font-weight: var(--fw-medium);
+  letter-spacing: 0.42em;
+  text-transform: uppercase;
+  color: var(--color-gold-soft);
+}
+
+.footer-brand p {
+  margin-top: var(--space-5);
+  max-width: 30rem;
+  font-size: var(--fs-sm);
+  line-height: 1.75;
+  color: var(--text-on-dark-muted);
+}
+
+/* ── Link / info columns ── */
+.footer-col {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  min-width: 0;
+}
+
+.footer-col h4 {
+  font-family: var(--font-primary);
+  font-size: var(--fs-xs);
+  font-weight: var(--fw-semibold);
+  letter-spacing: var(--ls-eyebrow);
+  text-transform: uppercase;
+  color: var(--color-gold-soft);
+  margin-bottom: var(--space-1);
+}
+[dir="rtl"] .footer-col h4 { font-family: var(--font-arabic); letter-spacing: 0; }
+
+.footer-col a,
+.footer-col p {
+  font-size: var(--fs-sm);
+  color: var(--text-on-dark-muted);
+  line-height: 1.6;
+  transition: color var(--transition-fast), transform var(--transition-fast);
+  overflow-wrap: anywhere;
+}
+.footer-col a { width: fit-content; }
+.footer-col a:hover {
+  color: var(--color-gold-soft);
+  transform: translateX(3px);
+}
+[dir="rtl"] .footer-col a:hover { transform: translateX(-3px); }
+
+/* ── Newsletter ── */
+.footer-newsletter p { margin-bottom: var(--space-1); }
+
+.newsletter-form {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  height: 48px;
+  max-width: 360px;
+  padding: 4px 4px 4px var(--space-4);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  border-radius: var(--radius-pill);
+  background: rgba(255, 255, 255, 0.05);
+  -webkit-backdrop-filter: var(--glass-blur-soft);
+  backdrop-filter: var(--glass-blur-soft);
+  transition: border-color var(--transition-fast), background var(--transition-fast);
+}
+.newsletter-form:focus-within {
+  border-color: rgba(210, 180, 127, 0.5);
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.newsletter-form input {
+  flex: 1;
+  min-width: 0;
+  font-size: var(--fs-sm);
+  color: #FFFFFF;
+}
+.newsletter-form input::placeholder { color: rgba(253, 251, 247, 0.35); }
+
+.newsletter-form button {
+  flex-shrink: 0;
+  width: 38px;
+  height: 38px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--radius-full);
+  background: var(--color-gold);
+  color: #FFFFFF;
+  transition: background var(--transition-fast), transform var(--transition-fast);
+}
+.newsletter-form button:hover { background: var(--color-gold-soft); transform: scale(1.06); }
+[dir="rtl"] .newsletter-form button svg { transform: scaleX(-1); }
+
+/* ── Bottom bar ── */
+.footer-bottom {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-4);
+  flex-wrap: wrap;
+  padding-top: var(--space-6);
+  border-top: 1px solid rgba(255, 255, 255, 0.07);
+}
+.footer-bottom p {
+  font-size: var(--fs-xs);
+  color: rgba(253, 251, 247, 0.4);
+  letter-spacing: 0.04em;
+}
+
+/* ── Responsive ── */
+@media (max-width: 900px) {
+  .footer-grid { grid-template-columns: 1fr 1fr; }
+  .footer-brand { grid-column: 1 / -1; }
+}
+
+@media (max-width: 560px) {
+  .footer-grid { grid-template-columns: 1fr; gap: var(--space-8); }
+  .footer-bottom { flex-direction: column; align-items: flex-start; gap: var(--space-2); }
+  .newsletter-form { max-width: none; }
+}

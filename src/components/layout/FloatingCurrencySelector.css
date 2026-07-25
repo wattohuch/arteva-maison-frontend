@@ -1,0 +1,116 @@
+/* ============================================
+   ARTÉVA Maison — Floating currency selector
+   ============================================ */
+
+.floating-currency-wrap {
+  position: fixed;
+  z-index: var(--z-floating);
+  inset-inline-start: var(--gutter);
+  /* Lifts above the mobile tab bar instead of sitting behind it */
+  bottom: calc(var(--space-5) + var(--tabbar-height) + env(safe-area-inset-bottom, 0px));
+}
+
+.floating-currency-btn {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  height: 42px;
+  padding-inline: var(--space-4);
+  border-radius: var(--radius-pill);
+  background: var(--glass-light-bg-strong);
+  -webkit-backdrop-filter: var(--glass-blur);
+  backdrop-filter: var(--glass-blur);
+  border: 1px solid var(--glass-light-border);
+  box-shadow: var(--shadow-md), var(--glass-inset-light);
+  color: var(--text-primary);
+  font-size: var(--fs-xs);
+  font-weight: var(--fw-semibold);
+  letter-spacing: 0.1em;
+  transition: transform var(--transition-base), box-shadow var(--transition-base);
+}
+.floating-currency-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-lg), var(--glass-inset-light);
+}
+
+.currency-flag-icon {
+  font-size: 15px;
+  border-radius: 2px;
+  box-shadow: 0 1px 2px rgba(74, 59, 44, 0.18);
+}
+
+.currency-btn-code { letter-spacing: 0.1em; }
+
+.currency-chevron {
+  margin-inline-start: 2px;
+  color: var(--text-muted);
+  transition: transform var(--transition-base);
+}
+.currency-chevron.open { transform: rotate(180deg); }
+
+/* ── Menu ── */
+.floating-currency-menu {
+  position: absolute;
+  bottom: calc(100% + 10px);
+  inset-inline-start: 0;
+  min-width: 214px;
+  padding: var(--space-2);
+  border-radius: var(--radius-lg);
+  background: var(--glass-light-bg-strong);
+  -webkit-backdrop-filter: var(--glass-blur-heavy);
+  backdrop-filter: var(--glass-blur-heavy);
+  border: 1px solid var(--glass-light-border);
+  box-shadow: var(--shadow-xl), var(--glass-inset-light);
+  max-height: 60vh;
+  overflow-y: auto;
+}
+
+.floating-currency-title {
+  padding: 4px 12px 8px;
+  margin-bottom: var(--space-1);
+  border-bottom: 1px solid var(--border-hairline);
+  font-size: 9.5px;
+  font-weight: var(--fw-semibold);
+  letter-spacing: var(--ls-eyebrow);
+  text-transform: uppercase;
+  color: var(--text-light);
+}
+
+.floating-currency-item {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  width: 100%;
+  padding: 9px 12px;
+  border-radius: var(--radius-md);
+  font-size: var(--fs-sm);
+  color: var(--text-secondary);
+  text-align: start;
+  transition: background var(--transition-fast), color var(--transition-fast);
+}
+.floating-currency-item:hover {
+  background: rgba(74, 59, 44, 0.055);
+  color: var(--text-primary);
+}
+.floating-currency-item.active {
+  background: rgba(181, 140, 74, 0.12);
+  color: var(--color-bronze);
+  font-weight: var(--fw-semibold);
+}
+
+.currency-code { font-weight: var(--fw-semibold); min-width: 36px; }
+
+.currency-name {
+  font-size: var(--fs-xs);
+  color: var(--text-light);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.floating-currency-item.active .currency-name { color: var(--color-bronze); }
+
+/* The selector would collide with the tab bar on the smallest phones */
+@media (max-width: 380px) {
+  .floating-currency-btn { height: 38px; padding-inline: var(--space-3); }
+  .currency-btn-code { font-size: 10px; }
+}

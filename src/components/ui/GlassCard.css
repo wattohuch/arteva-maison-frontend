@@ -1,0 +1,20 @@
+/* ============================================
+   ARTÉVA Maison — Glass surface
+   Used for account, cart, checkout and order panels.
+   ============================================ */
+
+.glass-card-component {
+  position: relative;
+  background: var(--glass-light-bg);
+  -webkit-backdrop-filter: var(--glass-blur);
+  backdrop-filter: var(--glass-blur);
+  border: 1px solid var(--glass-light-border);
+  border-radius: var(--radius-xl);
+  box-shadow: var(--shadow-sm), var(--glass-inset-light);
+  transition: transform var(--transition-base), box-shadow var(--transition-base);
+}
+
+.glass-card-component.glass-hover:hover {
+  transform: translate3d(0, -4px, 0);
+  box-shadow: var(--shadow-lg), var(--glass-inset-light);
+}

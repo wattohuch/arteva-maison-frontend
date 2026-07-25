@@ -1,0 +1,24 @@
+/* ============================================
+   ARTÉVA Maison — Button component
+
+   The visual system for `.btn` and every variant lives in
+   styles/global.css so that <Button/> and plain
+   `className="btn btn-primary"` links render identically.
+   This file only adds what is specific to the component:
+   the loading spinner.
+
+   (This file previously re-declared .btn / .btn-primary /
+   .btn-sm / .btn-lg with a different look, so buttons changed
+   appearance depending on whether the page happened to import
+   the component. That duplication is gone.)
+   ============================================ */
+
+.btn-spinner {
+  width: 16px;
+  height: 16px;
+  border: 2px solid currentColor;
+  border-top-color: transparent;
+  border-radius: 50%;
+  opacity: 0.85;
+  animation: spin 0.65s linear infinite;
+}

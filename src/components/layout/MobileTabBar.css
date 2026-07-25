@@ -1,0 +1,85 @@
+/* ============================================
+   ARTÉVA Maison — Mobile bottom navigation
+   ============================================ */
+
+.tabbar {
+  display: none;
+  position: fixed;
+  inset-inline: 0;
+  bottom: 0;
+  z-index: var(--z-tabbar);
+  padding: 0 var(--space-3) env(safe-area-inset-bottom, 0px);
+  pointer-events: none;
+}
+
+.tabbar-inner {
+  pointer-events: auto;
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  align-items: stretch;
+  height: var(--tabbar-height);
+  margin-bottom: var(--space-2);
+  padding-inline: var(--space-1);
+  background: var(--glass-light-bg-strong);
+  -webkit-backdrop-filter: var(--glass-blur);
+  backdrop-filter: var(--glass-blur);
+  border: 1px solid var(--glass-light-border);
+  border-radius: var(--radius-xl);
+  box-shadow: var(--shadow-lg), var(--glass-inset-light);
+}
+
+.tab-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  min-width: 0;
+  border-radius: var(--radius-lg);
+  color: var(--text-muted);
+  transition: color var(--transition-fast);
+}
+.tab-item:hover { color: var(--text-secondary); }
+.tab-item.is-active { color: var(--text-primary); }
+
+.tab-icon {
+  position: relative;
+  display: inline-flex;
+  transition: transform var(--transition-base);
+}
+.tab-item.is-active .tab-icon { transform: translateY(-1px); }
+.tab-item:active .tab-icon { transform: scale(0.9); }
+
+.tab-label {
+  font-size: 9.5px;
+  font-weight: var(--fw-medium);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  line-height: 1;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.tab-badge {
+  position: absolute;
+  top: -5px;
+  inset-inline-end: -7px;
+  min-width: 15px;
+  height: 15px;
+  padding-inline: 3px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--radius-full);
+  background: var(--color-gold);
+  color: #FFFFFF;
+  font-size: 9px;
+  font-weight: var(--fw-bold);
+  line-height: 1;
+}
+
+@media (max-width: 768px) {
+  .tabbar { display: block; }
+}
