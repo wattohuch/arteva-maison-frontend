@@ -1,4 +1,6 @@
-import { createContext, useContext, useState, useCallback, useEffect } from 'react';
+import {
+  createContext, useContext, useState, useCallback, useEffect, useMemo,
+} from 'react';
 import { CartAPI } from '../api/cart';
 import { useAuth } from './AuthContext';
 
@@ -17,13 +19,16 @@ export function CartProvider({ children }) {
     localStorage.setItem('arteva_cart', JSON.stringify(newItems));
   }, []);
 
-  const count = items.reduce((sum, item) => sum + (Number(item.quantity) || 1), 0);
-
-  const subtotal = items.reduce((sum, item) => {
-    const price = Number(item.price) || 0;
-    const qty = Number(item.quantity) || 1;
-    return sum + (price * qty);
-  }, 0);
+  // Derived once per basket change rather than on every provider render.
+  const { count, subtotal } = useMemo(() => items.reduce(
+    (acc, item) => {
+      const qty = Number(item.quantity) || 1;
+      acc.count += qty;
+      acc.subtotal += (Number(item.price) || 0) * qty;
+      return acc;
+    },
+    { count: 0, subtotal: 0 }
+  ), [items]);
 
   const addItem = useCallback((product, quantity = 1) => {
     setItems(prev => {
@@ -112,11 +117,16 @@ export function CartProvider({ children }) {
     }
   }, [isLoggedIn]); // eslint-disable-line react-hooks/exhaustive-deps
 
+  // A fresh object literal here would give every consumer a new context value
+  // on every provider render — the header badge, each product card and the
+  // drawer would all re-render whenever anything above them changed.
+  const value = useMemo(() => ({
+    items, count, subtotal,
+    addItem, updateQuantity, removeItem, clearCart,
+  }), [items, count, subtotal, addItem, updateQuantity, removeItem, clearCart]);
+
   return (
-    <CartContext.Provider value={{
-      items, count, subtotal,
-      addItem, updateQuantity, removeItem, clearCart,
-    }}>
+    <CartContext.Provider value={value}>
       {children}
     </CartContext.Provider>
   );

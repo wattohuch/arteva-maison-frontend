@@ -19,17 +19,20 @@ export default function AddressesPage() {
   const [saving, setSaving] = useState(false);
   const [form, setForm] = useState({ label: '', street: '', city: '', zipCode: '', phone: '', isDefault: false });
 
-  useEffect(() => {
-    if (!isLoggedIn) { navigate('/account'); return; }
-    loadAddresses();
-  }, [isLoggedIn, navigate]);
-
-  const loadAddresses = async () => {
+  // Declared before the effect that calls it, and wrapped in useCallback so it
+  // can be a real dependency instead of being referenced out of scope.
+  const loadAddresses = useCallback(async () => {
     try {
       const res = await AuthAPI.getMe();
       if (res.success && res.data?.addresses) setAddresses(res.data.addresses);
-    } catch {} finally { setLoading(false); }
-  };
+    } catch { /* the empty-state below covers a failed load */ }
+    finally { setLoading(false); }
+  }, []);
+
+  useEffect(() => {
+    if (!isLoggedIn) { navigate('/account'); return; }
+    loadAddresses();
+  }, [isLoggedIn, navigate, loadAddresses]);
 
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;

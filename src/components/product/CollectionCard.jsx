@@ -2,6 +2,7 @@ import { memo } from 'react';
 import { Link } from 'react-router-dom';
 import { useI18n } from '../../contexts/I18nContext';
 import { useCategories } from '../../contexts/CategoriesContext';
+import { cloudinaryImage, cloudinarySrcSet } from '../../utils/imageHelpers';
 import './CollectionCard.css';
 
 const PLACEHOLDER = '/assets/images/categories/placeholder.jpg';
@@ -18,7 +19,9 @@ const CollectionCard = memo(function CollectionCard({ category }) {
     <Link to={`/collection/${slug}`} className="collection-card">
       <div className="collection-media">
         <img
-          src={category.image || PLACEHOLDER}
+          src={cloudinaryImage(category.image || PLACEHOLDER, 600)}
+          srcSet={cloudinarySrcSet(category.image)}
+          sizes="(max-width: 640px) 90vw, (max-width: 1024px) 45vw, 360px"
           alt=""
           loading="lazy"
           decoding="async"

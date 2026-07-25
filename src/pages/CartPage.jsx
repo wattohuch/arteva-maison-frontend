@@ -2,14 +2,21 @@ import { Link } from 'react-router-dom';
 import { useI18n } from '../contexts/I18nContext';
 import { useCurrency } from '../contexts/CurrencyContext';
 import { useCart } from '../contexts/CartContext';
+import { usePromo } from '../contexts/PromoContext';
 import { handleImageError } from '../utils/imageHelpers';
 import { BagIcon, TrashIcon, PlusIcon, MinusIcon } from '../components/ui/Icons';
+import PromoCodeField from '../components/promo/PromoCodeField';
 import './CartPage.css';
 
 export default function CartPage() {
   const { t } = useI18n();
   const { format } = useCurrency();
   const { items, subtotal, updateQuantity, removeItem, clearCart } = useCart();
+  const { discount } = usePromo();
+
+  // Shipping is free at the cart stage; the 2 KWD delivery fee is added at
+  // checkout, which is where the address makes it meaningful.
+  const total = Math.max(0, subtotal - discount);
 
   if (items.length === 0) {
     return (
@@ -92,11 +99,19 @@ export default function CartPage() {
           <aside className="cart-summary">
             <h2 className="cart-summary-title">{t('order_summary')}</h2>
 
+            <PromoCodeField />
+
             <dl className="summary-rows">
               <div>
                 <dt>{t('subtotal')}</dt>
                 <dd>{format(subtotal)}</dd>
               </div>
+              {discount > 0 && (
+                <div className="summary-discount">
+                  <dt>{t('discount')}</dt>
+                  <dd>−{format(discount)}</dd>
+                </div>
+              )}
               <div>
                 <dt>{t('shipping')}</dt>
                 <dd className="summary-free">{t('free')}</dd>
@@ -105,7 +120,7 @@ export default function CartPage() {
 
             <div className="summary-total">
               <span>{t('total')}</span>
-              <strong>{format(subtotal)}</strong>
+              <strong>{format(total)}</strong>
             </div>
 
             <Link to="/checkout" className="btn btn-primary btn-full">

@@ -1,0 +1,546 @@
+/* ══════════════════════════════════════════════════════
+   Receipt Generator
+   Mobile-first: single column, form and preview as tabs,
+   sticky action bar. Side-by-side from 1100px.
+   ══════════════════════════════════════════════════════ */
+
+.rg {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  /* Leave room for the sticky action bar so the last field is never trapped
+     underneath it. */
+  padding-bottom: 96px;
+}
+
+/* ── Start screen ── */
+.rg-start-lead {
+  margin: 0 0 var(--space-6);
+  color: var(--text-muted);
+  font-size: var(--fs-base);
+  max-width: 60ch;
+}
+
+.rg-start-grid {
+  display: grid;
+  gap: var(--space-4);
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 280px), 1fr));
+}
+
+.rg-start-card {
+  padding: var(--space-6);
+  background: var(--color-ivory);
+  border: 1px solid var(--border-hairline);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-sm);
+}
+.rg-start-card h3 {
+  margin: 0 0 var(--space-2);
+  font-family: var(--font-display);
+  font-size: var(--fs-md);
+  color: var(--text-primary);
+}
+.rg-start-card p {
+  margin: 0 0 var(--space-5);
+  font-size: var(--fs-sm);
+  color: var(--text-muted);
+  line-height: 1.5;
+}
+
+.rg-lookup { display: flex; gap: var(--space-2); }
+.rg-lookup input {
+  flex: 1;
+  min-width: 0;
+  padding: 12px var(--space-4);
+  font-size: 16px; /* no iOS zoom on focus */
+  font-family: var(--font-primary);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  border: 1px solid var(--border-medium);
+  border-radius: var(--radius-md);
+  background: var(--color-warm-white);
+  color: var(--text-primary);
+}
+.rg-lookup input:focus {
+  outline: none;
+  border-color: var(--color-gold-soft);
+  box-shadow: 0 0 0 3px rgba(181, 140, 74, 0.13);
+}
+
+/* ── Header ── */
+.rg-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--space-4);
+  margin-bottom: var(--space-4);
+}
+.rg-header-text { min-width: 0; }
+.rg-header-sub {
+  margin: 4px 0 0;
+  font-size: var(--fs-xs);
+  color: var(--text-muted);
+}
+
+/* ── Mobile tabs ── */
+.rg-tabs {
+  display: flex;
+  gap: 4px;
+  padding: 4px;
+  margin-bottom: var(--space-4);
+  background: var(--color-champagne);
+  border-radius: var(--radius-pill);
+}
+.rg-tab {
+  flex: 1;
+  min-height: 40px;
+  border: none;
+  border-radius: var(--radius-pill);
+  background: none;
+  font-family: var(--font-primary);
+  font-size: var(--fs-xs);
+  font-weight: var(--fw-semibold);
+  letter-spacing: var(--ls-button);
+  text-transform: uppercase;
+  color: var(--text-muted);
+  cursor: pointer;
+  transition: background var(--transition-fast), color var(--transition-fast);
+}
+.rg-tab.is-active {
+  background: var(--color-ivory);
+  color: var(--text-primary);
+  box-shadow: var(--shadow-xs);
+}
+
+/* ── Layout ── */
+.rg-layout {
+  display: grid;
+  gap: var(--space-5);
+  min-height: 0;
+}
+
+.rg-form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  min-width: 0;
+}
+
+/* Tabs hide rather than unmount, so the canvas keeps what it rendered and
+   switching back is instant. */
+.is-hidden-mobile { display: none; }
+
+/* ── Sections ── */
+.rg-section {
+  padding: var(--space-5) var(--space-4);
+  background: var(--color-ivory);
+  border: 1px solid var(--border-hairline);
+  border-radius: var(--radius-lg);
+}
+
+.rg-section-title {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  margin: 0 0 var(--space-4);
+  font-family: var(--font-primary);
+  font-size: var(--fs-xs);
+  font-weight: var(--fw-semibold);
+  letter-spacing: var(--ls-eyebrow);
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
+.rg-count {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 20px;
+  height: 20px;
+  padding: 0 6px;
+  border-radius: var(--radius-pill);
+  background: var(--color-champagne);
+  font-size: 11px;
+  color: var(--text-secondary);
+  letter-spacing: 0;
+}
+
+/* ── Fields ── */
+.rg-grid {
+  display: grid;
+  gap: var(--space-3);
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 180px), 1fr));
+}
+
+.rg-field { display: flex; flex-direction: column; gap: 6px; min-width: 0; }
+.rg-field--wide { grid-column: 1 / -1; }
+
+.rg-field > span {
+  font-size: var(--fs-xs);
+  font-weight: var(--fw-semibold);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
+.rg-field input,
+.rg-field select,
+.rg-field textarea {
+  width: 100%;
+  min-height: 44px;
+  padding: 11px var(--space-3);
+  /* 16px keeps iOS from zooming the whole page when a field takes focus. */
+  font-size: 16px;
+  font-family: var(--font-primary);
+  color: var(--text-primary);
+  background: var(--color-warm-white);
+  border: 1px solid var(--border-light);
+  border-radius: var(--radius-md);
+}
+.rg-field textarea { resize: vertical; line-height: 1.5; }
+.rg-field input:focus,
+.rg-field select:focus,
+.rg-field textarea:focus {
+  outline: none;
+  border-color: var(--color-gold-soft);
+  box-shadow: 0 0 0 3px rgba(181, 140, 74, 0.13);
+}
+.rg-field input:disabled { opacity: 0.55; cursor: not-allowed; }
+
+.rg-hint { font-size: 11px; color: var(--text-light); }
+
+.rg-promo-row { display: grid; gap: var(--space-2); }
+
+/* ── Line items ── */
+.rg-items {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  margin: var(--space-4) 0;
+}
+
+.rg-item {
+  padding: var(--space-3);
+  background: var(--color-warm-white);
+  border: 1px solid var(--border-light);
+  border-radius: var(--radius-md);
+}
+.rg-item.is-refunded {
+  background: rgba(239, 68, 68, 0.04);
+  border-color: rgba(239, 68, 68, 0.2);
+}
+
+.rg-item-main {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  margin-bottom: var(--space-3);
+}
+
+.rg-item-name {
+  flex: 1;
+  min-width: 0;
+  min-height: 40px;
+  padding: 8px var(--space-3);
+  font-size: 16px;
+  font-family: var(--font-primary);
+  font-weight: var(--fw-medium);
+  color: var(--text-primary);
+  background: var(--color-ivory);
+  border: 1px solid var(--border-light);
+  border-radius: var(--radius-sm);
+}
+.rg-item-name:focus {
+  outline: none;
+  border-color: var(--color-gold-soft);
+}
+
+.rg-refunded-badge {
+  flex-shrink: 0;
+  padding: 3px 8px;
+  border-radius: var(--radius-pill);
+  background: rgba(239, 68, 68, 0.12);
+  color: #dc2626;
+  font-size: 10px;
+  font-weight: var(--fw-bold);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.rg-item-fields {
+  display: grid;
+  /* SKU gets the room; price/qty/total are narrow and fixed-ish so the row
+     stays readable at 360px. */
+  grid-template-columns: 1fr 90px 64px;
+  gap: var(--space-2);
+  align-items: end;
+}
+
+.rg-item-field { display: flex; flex-direction: column; gap: 4px; min-width: 0; }
+.rg-item-field > span {
+  font-size: 10px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--text-light);
+}
+.rg-item-field input {
+  width: 100%;
+  min-height: 40px;
+  padding: 8px var(--space-2);
+  font-size: 16px;
+  font-family: var(--font-primary);
+  color: var(--text-primary);
+  background: var(--color-ivory);
+  border: 1px solid var(--border-light);
+  border-radius: var(--radius-sm);
+}
+.rg-item-field input:focus {
+  outline: none;
+  border-color: var(--color-gold-soft);
+}
+
+.rg-item-total {
+  grid-column: 1 / -1;
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  padding-top: var(--space-2);
+  margin-top: var(--space-1);
+  border-top: 1px dashed var(--border-light);
+}
+.rg-item-total span {
+  font-size: 10px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--text-light);
+}
+.rg-item-total strong {
+  font-size: var(--fs-sm);
+  color: var(--text-primary);
+  font-variant-numeric: tabular-nums;
+}
+
+.rg-item-actions {
+  display: flex;
+  gap: var(--space-2);
+  margin-top: var(--space-3);
+}
+
+.rg-item-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  flex: 1;
+  min-height: 40px;
+  padding: 0 var(--space-3);
+  border: 1px solid var(--border-light);
+  border-radius: var(--radius-sm);
+  background: var(--color-ivory);
+  font-family: var(--font-primary);
+  font-size: var(--fs-xs);
+  font-weight: var(--fw-medium);
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: background var(--transition-fast), color var(--transition-fast);
+}
+.rg-item-btn:hover { background: var(--color-champagne); }
+.rg-item-btn--danger:hover {
+  background: rgba(239, 68, 68, 0.1);
+  color: #dc2626;
+  border-color: rgba(239, 68, 68, 0.25);
+}
+
+.rg-add-line {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  width: 100%;
+  min-height: 44px;
+  border: 1px dashed var(--border-medium);
+  border-radius: var(--radius-md);
+  background: none;
+  font-family: var(--font-primary);
+  font-size: var(--fs-sm);
+  color: var(--text-muted);
+  cursor: pointer;
+  transition: border-color var(--transition-fast), color var(--transition-fast);
+}
+.rg-add-line:hover { border-color: var(--color-gold-soft); color: var(--color-gold-text); }
+
+/* Explains how stock follows an edit — the only way inventory moves now that
+   refunds are settled over WhatsApp. */
+.rg-note {
+  margin: 0 0 var(--space-4);
+  padding: var(--space-3);
+  background: rgba(181, 140, 74, 0.08);
+  border-inline-start: 2px solid var(--color-gold-soft);
+  border-radius: var(--radius-sm);
+  font-size: var(--fs-xs);
+  line-height: 1.55;
+  color: var(--text-secondary);
+}
+
+.rg-empty {
+  margin: 0;
+  padding: var(--space-5) var(--space-3);
+  text-align: center;
+  font-size: var(--fs-sm);
+  color: var(--text-light);
+}
+
+/* ── Totals ── */
+.rg-totals {
+  margin: var(--space-5) 0 0;
+  padding-top: var(--space-4);
+  border-top: 1px solid var(--border-hairline);
+}
+.rg-totals > div {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--space-4);
+  padding: 5px 0;
+}
+.rg-totals dt { font-size: var(--fs-sm); color: var(--text-muted); margin: 0; }
+.rg-totals dd {
+  margin: 0;
+  font-size: var(--fs-sm);
+  color: var(--text-secondary);
+  font-variant-numeric: tabular-nums;
+}
+.rg-totals .is-discount dt, .rg-totals .is-discount dd { color: #047857; }
+.rg-totals .is-refund dt, .rg-totals .is-refund dd { color: #dc2626; }
+.rg-totals .is-grand {
+  margin-top: var(--space-2);
+  padding-top: var(--space-3);
+  border-top: 1px solid var(--border-hairline);
+}
+.rg-totals .is-grand dt {
+  font-size: var(--fs-xs);
+  font-weight: var(--fw-semibold);
+  letter-spacing: var(--ls-eyebrow);
+  text-transform: uppercase;
+  color: var(--text-primary);
+}
+.rg-totals .is-grand dd {
+  font-family: var(--font-display);
+  font-size: var(--fs-lg);
+  color: var(--text-primary);
+}
+
+/* ── Preview ── */
+.rg-preview { min-width: 0; }
+
+.rg-canvas-frame {
+  padding: var(--space-3);
+  background: var(--color-champagne);
+  border-radius: var(--radius-lg);
+  /* A4 at 300 DPI is 2480px wide; without its own scroll container it would
+     force the whole admin page to scroll sideways on a phone. */
+  overflow: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+.rg-canvas {
+  display: block;
+  width: 100%;
+  height: auto;
+  max-width: 100%;
+  background: #fff;
+  border-radius: var(--radius-sm);
+  box-shadow: var(--shadow-md);
+}
+
+/* ── Sticky action bar ── */
+.rg-actions {
+  position: fixed;
+  inset-inline: 0;
+  bottom: 0;
+  /* Above page content, deliberately below the sidebar drawer and its backdrop
+     so opening the admin nav covers it rather than fighting it. */
+  z-index: var(--z-floating);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  padding: var(--space-3) var(--space-4);
+  padding-bottom: max(var(--space-3), env(safe-area-inset-bottom));
+  background: var(--glass-light-bg-strong);
+  -webkit-backdrop-filter: var(--glass-blur-soft);
+  backdrop-filter: var(--glass-blur-soft);
+  border-top: 1px solid var(--border-light);
+  box-shadow: 0 -4px 20px rgba(74, 59, 44, 0.08);
+}
+
+.rg-actions-total { display: flex; flex-direction: column; line-height: 1.2; }
+.rg-actions-total span {
+  font-size: 10px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+.rg-actions-total strong {
+  font-family: var(--font-display);
+  font-size: var(--fs-md);
+  color: var(--text-primary);
+  font-variant-numeric: tabular-nums;
+}
+
+.rg-actions-buttons {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  min-width: 0;
+}
+
+/* Icon-only on small screens — four labelled buttons will not fit at 360px. */
+.rg-btn-label { display: none; }
+
+@media (min-width: 560px) {
+  .rg-btn-label { display: inline; }
+  .rg-item-fields { grid-template-columns: 1fr 110px 80px auto; }
+  .rg-item-total {
+    grid-column: auto;
+    flex-direction: column;
+    align-items: flex-end;
+    justify-content: center;
+    gap: 2px;
+    padding-top: 0;
+    margin-top: 0;
+    border-top: none;
+    min-width: 96px;
+  }
+  .rg-item-actions { justify-content: flex-end; }
+  .rg-item-btn { flex: 0 0 auto; }
+  .rg-promo-row { grid-template-columns: 1fr 1fr; }
+}
+
+/* ── Desktop: form + live preview side by side ── */
+@media (min-width: 1100px) {
+  .rg-tabs { display: none; }
+  .is-hidden-mobile { display: block; }
+
+  .rg-layout {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 420px);
+    align-items: start;
+  }
+
+  .rg-preview {
+    position: sticky;
+    /* Sits below the admin topbar as the form scrolls past it. */
+    top: var(--space-4);
+  }
+
+  .rg-canvas-frame { max-height: calc(100vh - 220px); }
+
+  .rg-actions {
+    /* Clears the fixed admin sidebar so the bar does not sit over navigation. */
+    inset-inline-start: var(--admin-sidebar-w);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .rg-tab, .rg-item-btn, .rg-add-line { transition: none; }
+}

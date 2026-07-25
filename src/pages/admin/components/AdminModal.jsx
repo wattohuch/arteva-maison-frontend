@@ -1,42 +1,27 @@
-import { useEffect, useRef } from 'react';
-import { CloseIcon } from '../../../components/ui/Icons';
+import AppSheet from '../../../components/ui/AppSheet';
 
 /**
- * Reusable admin modal — matches the vanilla admin-modal pattern.
- * Closes on overlay click, Escape key, or the X button.
+ * Admin modal.
+ *
+ * Kept as a name so the existing sections do not all have to change, but it is
+ * now a thin adapter over `AppSheet`: what used to render as a small centred
+ * popup with its own scrollbar is presented as a full-screen view on phones
+ * and tablets, and as a proper panel on desktop.
+ *
+ * `wide` maps to the default sheet width — the old 580px/820px distinction
+ * stopped meaning anything once the layout became responsive.
  */
-export default function AdminModal({ open, onClose, title, wide, children, footer }) {
-  const dialogRef = useRef(null);
-
-  useEffect(() => {
-    if (!open) return;
-    const onKey = (e) => { if (e.key === 'Escape') onClose(); };
-    document.addEventListener('keydown', onKey);
-    document.body.style.overflow = 'hidden';
-    return () => {
-      document.removeEventListener('keydown', onKey);
-      document.body.style.overflow = '';
-    };
-  }, [open, onClose]);
-
-  if (!open) return null;
-
+export default function AdminModal({ open, onClose, title, subtitle, wide, children, footer }) {
   return (
-    <div className="admin-modal-backdrop" onClick={onClose}>
-      <div
-        ref={dialogRef}
-        className={`admin-modal${wide ? ' admin-modal--wide' : ''}`}
-        onClick={(e) => e.stopPropagation()}
-      >
-        <div className="admin-modal-header">
-          <h2 className="admin-modal-title">{title}</h2>
-          <button className="admin-icon-btn" onClick={onClose} title="Close">
-            <CloseIcon size={18} />
-          </button>
-        </div>
-        <div className="admin-modal-body">{children}</div>
-        {footer && <div className="admin-modal-footer">{footer}</div>}
-      </div>
-    </div>
+    <AppSheet
+      open={open}
+      onClose={onClose}
+      title={title}
+      subtitle={subtitle}
+      size={wide ? 'default' : 'compact'}
+      footer={footer}
+    >
+      {children}
+    </AppSheet>
   );
 }

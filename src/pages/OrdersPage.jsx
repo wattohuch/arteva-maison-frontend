@@ -3,15 +3,22 @@ import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { useI18n } from '../contexts/I18nContext';
 import { useCurrency } from '../contexts/CurrencyContext';
+import { useSiteSettings } from '../contexts/SiteSettingsContext';
 import { OrdersAPI } from '../api/orders';
 import { formatDate, getStatusColor } from '../utils/formatters';
+import { buildRefundMessage } from '../utils/refundRequest';
+import { cloudinaryImage } from '../utils/imageHelpers';
 import Loader from '../components/ui/Loader';
 import './OrdersPage.css';
 
+/** Statuses where a refund request still makes sense to offer. */
+const REFUNDABLE = new Set(['delivered', 'out_for_delivery', 'handed_over', 'packed', 'processing', 'confirmed']);
+
 export default function OrdersPage() {
-  const { isLoggedIn } = useAuth();
+  const { isLoggedIn, user } = useAuth();
   const { t, lang } = useI18n();
   const { format } = useCurrency();
+  const { whatsappUrl } = useSiteSettings();
   const navigate = useNavigate();
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -67,7 +74,15 @@ export default function OrdersPage() {
                       const name = lang === 'ar' && item.product?.nameAr ? item.product.nameAr : (item.product?.name || item.name || 'Item');
                       return (
                         <div key={i} className="order-item-mini">
-                          <img src={item.product?.images?.[0]?.url || item.image || '/assets/images/products/placeholder.png'} alt={name} />
+                          <img
+                            src={cloudinaryImage(
+                              item.product?.images?.[0]?.url || item.image || '/assets/images/products/placeholder.png',
+                              120
+                            )}
+                            alt={name}
+                            loading="lazy"
+                            decoding="async"
+                          />
                           <div>
                             <span className="order-item-name">{name}</span>
                             <span className="order-item-qty">×{item.quantity}</span>
@@ -83,9 +98,20 @@ export default function OrdersPage() {
                   <div className="order-card-footer">
                     <span className="order-total">{t('total')}: {format(order.totalAmount || order.total || 0)}</span>
                     <div className="order-actions">
-                      <Link to={`/order/${order._id}/tracking`} className="btn btn-ghost btn-sm">
-                        {t('track')}
-                      </Link>
+                      {/* Refunds are handled by a person, not an endpoint: this
+                          opens WhatsApp with the order details already written
+                          out, so the customer does not have to retype them and
+                          the shop gets a request it can act on directly. */}
+                      {REFUNDABLE.has(order.orderStatus || order.status) && (
+                        <a
+                          className="btn btn-ghost btn-sm"
+                          href={whatsappUrl(buildRefundMessage(order, { customerName: user?.name, lang }))}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                        >
+                          {t('request_refund')}
+                        </a>
+                      )}
                       <Link to={`/order/${order._id}/tracking`} className="btn btn-secondary btn-sm">
                         {t('view_details')}
                       </Link>

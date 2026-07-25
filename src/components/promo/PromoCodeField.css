@@ -1,0 +1,156 @@
+/* ── Promo code field ───────────────────────────────
+   Sits inside the cart and checkout summary cards.
+   Touch targets are 44px so the apply button is
+   comfortably thumb-reachable on a phone.            */
+
+.promo-field {
+  margin: var(--space-4) 0;
+}
+
+.promo-input-row {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: 4px 4px 4px var(--space-3);
+  background: var(--color-warm-white);
+  border: 1px solid var(--border-light);
+  border-radius: var(--radius-pill);
+  transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
+}
+
+.promo-input-row:focus-within {
+  border-color: var(--color-gold-soft);
+  box-shadow: 0 0 0 3px rgba(181, 140, 74, 0.13);
+}
+
+.promo-input-icon {
+  display: inline-flex;
+  color: var(--text-light);
+  flex-shrink: 0;
+}
+
+.promo-input {
+  flex: 1;
+  min-width: 0;
+  border: none;
+  background: none;
+  /* 16px minimum — anything smaller makes iOS Safari zoom the page on focus. */
+  font-size: 16px;
+  font-family: var(--font-primary);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-primary);
+  padding: 10px 0;
+  outline: none;
+}
+
+.promo-input::placeholder {
+  letter-spacing: 0.04em;
+  text-transform: none;
+  color: var(--text-light);
+}
+
+.promo-apply {
+  flex-shrink: 0;
+  min-height: 40px;
+  padding: 0 var(--space-5);
+  border: none;
+  border-radius: var(--radius-pill);
+  background: var(--color-espresso);
+  color: var(--text-white);
+  font-family: var(--font-primary);
+  font-size: var(--fs-xs);
+  font-weight: var(--fw-semibold);
+  letter-spacing: var(--ls-button);
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: background var(--transition-fast), opacity var(--transition-fast);
+}
+
+.promo-apply:hover:not(:disabled) { background: var(--color-ink); }
+.promo-apply:disabled { opacity: 0.4; cursor: not-allowed; }
+
+/* ── Applied state ── */
+.promo-field--applied {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-3) var(--space-4);
+  background: rgba(16, 185, 129, 0.07);
+  border: 1px solid rgba(16, 185, 129, 0.22);
+  border-radius: var(--radius-md);
+}
+
+.promo-applied-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  flex-shrink: 0;
+  border-radius: 50%;
+  background: #10b981;
+  color: #fff;
+}
+
+.promo-applied-body {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+}
+
+.promo-applied-code {
+  font-family: var(--font-primary);
+  font-size: var(--fs-sm);
+  font-weight: var(--fw-semibold);
+  letter-spacing: 0.1em;
+  color: #047857;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.promo-applied-saving {
+  font-size: var(--fs-sm);
+  font-weight: var(--fw-semibold);
+  color: #047857;
+  white-space: nowrap;
+}
+
+.promo-remove {
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border: none;
+  border-radius: 50%;
+  background: none;
+  color: var(--text-muted);
+  cursor: pointer;
+  transition: background var(--transition-fast), color var(--transition-fast);
+}
+
+.promo-remove:hover {
+  background: rgba(239, 68, 68, 0.1);
+  color: #ef4444;
+}
+
+.promo-error {
+  margin: var(--space-2) 0 0;
+  font-size: var(--fs-xs);
+  color: #dc2626;
+  padding-inline-start: var(--space-3);
+}
+
+.promo-field.is-compact { margin: var(--space-3) 0; }
+
+@media (prefers-reduced-motion: reduce) {
+  .promo-input-row,
+  .promo-apply,
+  .promo-remove { transition: none; }
+}

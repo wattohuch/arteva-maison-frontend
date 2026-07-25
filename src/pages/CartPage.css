@@ -119,6 +119,10 @@
 }
 .summary-free { color: var(--color-gold-text) !important; }
 
+/* Promo saving — green so it reads as money back, not another charge */
+.summary-discount dt,
+.summary-discount dd { color: #047857 !important; }
+
 .summary-total {
   display: flex;
   align-items: baseline;

@@ -257,6 +257,56 @@ export const SettingsIcon = (p) => (
   </Svg>
 );
 
+export const CheckIcon = (p) => (
+  <Svg {...p}><path d="M20 6L9 17l-5-5" /></Svg>
+);
+
+export const ArrowLeftIcon = (p) => (
+  <Svg {...p}><path d="M19 12H5" /><path d="M11 18l-6-6 6-6" /></Svg>
+);
+
+export const DownloadIcon = (p) => (
+  <Svg {...p}><path d="M12 3v12" /><path d="M7.5 10.5L12 15l4.5-4.5" /><path d="M20 16.5v2.2a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2v-2.2" /></Svg>
+);
+
+export const PrinterIcon = (p) => (
+  <Svg {...p}>
+    <path d="M7 9V4h10v5" />
+    <path d="M7 18H5.5A2.5 2.5 0 0 1 3 15.5v-3A2.5 2.5 0 0 1 5.5 10h13a2.5 2.5 0 0 1 2.5 2.5v3a2.5 2.5 0 0 1-2.5 2.5H17" />
+    <rect x="7" y="14.5" width="10" height="6" rx="1" />
+  </Svg>
+);
+
+export const FilterIcon = (p) => (
+  <Svg {...p}><path d="M3.5 5.5h17" /><path d="M6.5 12h11" /><path d="M10 18.5h4" /></Svg>
+);
+
+export const RefreshIcon = (p) => (
+  <Svg {...p}>
+    <path d="M20.5 12a8.5 8.5 0 1 1-2.5-6" />
+    <path d="M20.5 4v5h-5" />
+  </Svg>
+);
+
+export const CoinsIcon = (p) => (
+  <Svg {...p}>
+    <ellipse cx="12" cy="6.5" rx="7.5" ry="3" />
+    <path d="M4.5 6.5v5c0 1.7 3.4 3 7.5 3s7.5-1.3 7.5-3v-5" />
+    <path d="M4.5 11.5v5c0 1.7 3.4 3 7.5 3s7.5-1.3 7.5-3v-5" />
+  </Svg>
+);
+
+export const StoreIcon = (p) => (
+  <Svg {...p}>
+    <path d="M3.5 9.5V19a1.5 1.5 0 0 0 1.5 1.5h14a1.5 1.5 0 0 0 1.5-1.5V9.5" />
+    <path d="M3 6.5L4.7 3.5h14.6L21 6.5a3 3 0 0 1-5.6 1.7 3 3 0 0 1-5.6 0A3 3 0 0 1 3 6.5z" />
+  </Svg>
+);
+
+export const UndoIcon = (p) => (
+  <Svg {...p}><path d="M3.5 12a8.5 8.5 0 1 0 2.5-6" /><path d="M3.5 4v5h5" /></Svg>
+);
+
 export default {
   SearchIcon, UserIcon, HeartIcon, BagIcon, MenuIcon, CloseIcon,
   ChevronDownIcon, ChevronRightIcon, ChevronLeftIcon, ArrowRightIcon,
@@ -266,4 +316,6 @@ export default {
   CheckCircleIcon, AlertCircleIcon, KeyIcon, CarIcon,
   ImageIcon, TagIcon, FolderIcon, ChartIcon, ReceiptIcon,
   GlobeIcon, TicketIcon, EyeIcon, EditIcon, SendIcon, SettingsIcon,
+  CheckIcon, ArrowLeftIcon, DownloadIcon, PrinterIcon, FilterIcon,
+  RefreshIcon, CoinsIcon, StoreIcon, UndoIcon,
 };

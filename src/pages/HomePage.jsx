@@ -7,6 +7,7 @@ import { HeroAPI } from '../api/hero';
 import ProductCard from '../components/product/ProductCard';
 import CollectionCard from '../components/product/CollectionCard';
 import Loader from '../components/ui/Loader';
+import { cloudinaryImage, cloudinarySrcSet } from '../utils/imageHelpers';
 import {
   ArrowRightIcon, ChevronRightIcon,
   TruckIcon, SparkleIcon, ShieldIcon, SupportIcon,
@@ -83,12 +84,18 @@ export default function HomePage() {
       <section className="hero">
         <div className="hero-media">
           {/* Only the active slide is rendered opaque; the rest cross-fade out */}
+          {/* The hero is the LCP element on nearly every visit. Sizing it per
+              viewport keeps a phone from downloading a 2000px-wide photo to
+              display it 390px wide. */}
           <img
             key={slide?.image || 'fallback'}
-            src={slide?.image || HERO_FALLBACK}
+            src={cloudinaryImage(slide?.image || HERO_FALLBACK, 1600)}
+            srcSet={cloudinarySrcSet(slide?.image, [640, 960, 1280, 1920])}
+            sizes="100vw"
             alt=""
             className="hero-image"
             fetchPriority="high"
+            decoding="async"
           />
           <div className="hero-scrim" />
         </div>

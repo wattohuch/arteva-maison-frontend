@@ -1,0 +1,218 @@
+/* ── Orders: source tabs ── */
+.ord-tabs {
+  display: flex;
+  gap: 4px;
+  padding: 4px;
+  margin-bottom: var(--space-4);
+  background: var(--color-champagne);
+  border-radius: var(--radius-pill);
+  /* Three tabs fit at 360px, but a longer locale should scroll rather than
+     squash the labels into ellipses. */
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+.ord-tabs::-webkit-scrollbar { display: none; }
+
+.ord-tab {
+  flex: 1 0 auto;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  min-height: 40px;
+  padding: 0 var(--space-4);
+  border: none;
+  border-radius: var(--radius-pill);
+  background: none;
+  font-family: var(--font-primary);
+  font-size: var(--fs-xs);
+  font-weight: var(--fw-semibold);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  white-space: nowrap;
+  cursor: pointer;
+  transition: background var(--transition-fast), color var(--transition-fast);
+}
+.ord-tab.is-active {
+  background: var(--color-ivory);
+  color: var(--text-primary);
+  box-shadow: var(--shadow-xs);
+}
+
+.ord-tab-count {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 20px;
+  height: 18px;
+  padding: 0 6px;
+  border-radius: var(--radius-pill);
+  background: rgba(74, 59, 44, 0.09);
+  font-size: 10px;
+  letter-spacing: 0;
+}
+.ord-tab.is-active .ord-tab-count {
+  background: var(--color-gold);
+  color: #fff;
+}
+
+/* ── Row bits ──
+   `.ord-source` (the Online/Receipt badge) lives in AdminLayout.css because
+   the revenue dashboard shows the same badge. */
+.ord-num { display: flex; align-items: center; gap: var(--space-2); flex-wrap: wrap; }
+
+.ord-total { display: flex; flex-direction: column; }
+.ord-refunded { color: #dc2626; font-size: 11px; }
+
+.admin-icon-btn--danger:hover {
+  background: rgba(239, 68, 68, 0.12) !important;
+  color: #dc2626 !important;
+}
+
+/* ── Pager ── */
+.ord-pager {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-4);
+  margin-top: var(--space-5);
+  font-size: var(--fs-sm);
+  color: var(--text-muted);
+}
+
+/* ── Detail sheet ── */
+.ord-detail-grid {
+  display: grid;
+  gap: var(--space-4);
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 200px), 1fr));
+  padding: var(--space-4);
+  margin-bottom: var(--space-5);
+  background: var(--color-champagne);
+  border-radius: var(--radius-md);
+}
+
+.ord-detail-block h4 {
+  margin: 0 0 var(--space-2);
+  font-size: var(--fs-xs);
+  font-weight: var(--fw-semibold);
+  letter-spacing: var(--ls-eyebrow);
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+.ord-detail-block p {
+  margin: 0 0 3px;
+  font-size: var(--fs-sm);
+  color: var(--text-secondary);
+  word-break: break-word;
+}
+.ord-promo { color: #047857 !important; font-weight: var(--fw-medium); }
+
+.ord-items-title {
+  margin: 0 0 var(--space-3);
+  font-size: var(--fs-xs);
+  font-weight: var(--fw-semibold);
+  letter-spacing: var(--ls-eyebrow);
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
+/* A list of cards rather than a table — a 5-column table cannot be read at
+   360px without horizontal scrolling. */
+.ord-items { list-style: none; margin: 0 0 var(--space-5); padding: 0; }
+
+.ord-item {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-3) 0;
+  border-bottom: 1px solid var(--border-hairline);
+}
+.ord-item.is-refunded { opacity: 0.6; }
+
+.ord-item img {
+  width: 44px;
+  height: 44px;
+  flex-shrink: 0;
+  object-fit: cover;
+  border-radius: var(--radius-sm);
+  background: var(--color-champagne);
+}
+
+.ord-item-body { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+.ord-item-body strong {
+  font-size: var(--fs-sm);
+  font-weight: var(--fw-medium);
+  color: var(--text-primary);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.ord-item-body small { font-size: var(--fs-xs); color: var(--text-muted); }
+
+.ord-item-refunded {
+  align-self: flex-start;
+  padding: 1px 6px;
+  border-radius: var(--radius-pill);
+  background: rgba(239, 68, 68, 0.12);
+  color: #dc2626;
+  font-size: 10px;
+  font-weight: var(--fw-semibold);
+  text-transform: uppercase;
+}
+
+.ord-item-total {
+  flex-shrink: 0;
+  font-size: var(--fs-sm);
+  font-weight: var(--fw-medium);
+  color: var(--text-primary);
+  font-variant-numeric: tabular-nums;
+}
+
+.ord-summary { margin: 0; padding-top: var(--space-4); border-top: 1px solid var(--border-light); }
+.ord-summary > div {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--space-4);
+  padding: 5px 0;
+}
+.ord-summary dt { margin: 0; font-size: var(--fs-sm); color: var(--text-muted); }
+.ord-summary dd {
+  margin: 0;
+  font-size: var(--fs-sm);
+  color: var(--text-secondary);
+  font-variant-numeric: tabular-nums;
+}
+.ord-summary .is-discount dt, .ord-summary .is-discount dd { color: #047857; }
+.ord-summary .is-refund dt, .ord-summary .is-refund dd { color: #dc2626; }
+.ord-summary .is-grand {
+  margin-top: var(--space-2);
+  padding-top: var(--space-3);
+  border-top: 1px solid var(--border-hairline);
+}
+.ord-summary .is-grand dt {
+  font-weight: var(--fw-semibold);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--text-primary);
+}
+.ord-summary .is-grand dd {
+  font-family: var(--font-display);
+  font-size: var(--fs-lg);
+  color: var(--text-primary);
+}
+
+/* ── Map ── */
+.ord-map {
+  height: min(60vh, 460px);
+  width: 100%;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border-light);
+  overflow: hidden;
+  background: var(--color-champagne);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ord-tab { transition: none; }
+}

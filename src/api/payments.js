@@ -10,14 +10,29 @@ export const PaymentsAPI = {
       body: JSON.stringify({ shippingAddress }),
     }),
 
-  executePayment: (paymentMethodId, shippingAddress, promoCode) => {
+  executePayment: (paymentMethodId, shippingAddress, promoCode, promoVisitId) => {
     const payload = { paymentMethodId, shippingAddress };
     if (promoCode) payload.promoCode = promoCode;
+    // Links the resulting order back to the click that brought the shopper in.
+    if (promoVisitId) payload.promoVisitId = promoVisitId;
     return apiRequest('/payments/execute', {
       method: 'POST',
       body: JSON.stringify(payload),
     });
   },
+
+  /**
+   * Open an Apple Pay merchant session.
+   *
+   * Merchant validation requires the gateway secret key, so it cannot happen
+   * in the browser. Returns the gateway-resolved Apple Pay method id, which is
+   * per-merchant and must not be hardcoded.
+   */
+  initApplePaySession: (amount) =>
+    apiRequest('/payments/applepay/session', {
+      method: 'POST',
+      body: JSON.stringify({ amount }),
+    }),
 
   verifyPayment: (paymentId) =>
     apiRequest(`/payments/verify/${paymentId}`),

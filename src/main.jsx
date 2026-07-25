@@ -13,6 +13,8 @@ import { I18nProvider } from './contexts/I18nContext';
 import { CurrencyProvider } from './contexts/CurrencyContext';
 import { CategoriesProvider } from './contexts/CategoriesContext';
 import { WishlistProvider } from './contexts/WishlistContext';
+import { PromoProvider } from './contexts/PromoContext';
+import { SiteSettingsProvider } from './contexts/SiteSettingsContext';
 import App from './App';
 
 // Apply the stored language/direction BEFORE the first paint. Doing this inside
@@ -39,17 +41,25 @@ createRoot(document.getElementById('root')).render(
   <StrictMode>
     <BrowserRouter>
       <I18nProvider>
-        <AuthProvider>
-          <CurrencyProvider>
-            <CategoriesProvider>
-              <WishlistProvider>
-                <CartProvider>
-                  <App />
-                </CartProvider>
-              </WishlistProvider>
-            </CategoriesProvider>
-          </CurrencyProvider>
-        </AuthProvider>
+        {/* Contact details (WhatsApp, Instagram) — used by the footer, the
+            support button and the WhatsApp refund request. */}
+        <SiteSettingsProvider>
+          <AuthProvider>
+            <CurrencyProvider>
+              <CategoriesProvider>
+                <WishlistProvider>
+                  <CartProvider>
+                    {/* Inside CartProvider — promo pricing is a function of the
+                        basket, so it has to be able to read it. */}
+                    <PromoProvider>
+                      <App />
+                    </PromoProvider>
+                  </CartProvider>
+                </WishlistProvider>
+              </CategoriesProvider>
+            </CurrencyProvider>
+          </AuthProvider>
+        </SiteSettingsProvider>
       </I18nProvider>
     </BrowserRouter>
   </StrictMode>

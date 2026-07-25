@@ -1,0 +1,256 @@
+/* ══════════════════════════════════════════════════════
+   AppSheet — full-screen app view
+   Mobile: edge-to-edge, slides up from the bottom.
+   Desktop: centred panel, scales in.
+   ══════════════════════════════════════════════════════ */
+
+.app-sheet-root {
+  position: fixed;
+  inset: 0;
+  z-index: var(--z-modal);
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+}
+
+.app-sheet-scrim {
+  position: absolute;
+  inset: 0;
+  background: rgba(36, 28, 21, 0.5);
+  /* Blur is a real cost on mid-range phones during the open transition, so it
+     is only applied where the compositor can afford it (see media query). */
+  animation: sheetScrimIn 220ms var(--ease-out-luxe);
+}
+
+.app-sheet {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  /* Fills the viewport on a phone. dvh tracks the collapsing browser chrome so
+     the footer is not pushed under the address bar mid-scroll. */
+  height: 100dvh;
+  max-height: 100dvh;
+  background: var(--color-ivory);
+  outline: none;
+  overflow: hidden;
+  animation: sheetUp 300ms var(--ease-out-luxe);
+  /* Promote to its own layer so the slide animates on the compositor rather
+     than repainting the admin table underneath on every frame. */
+  will-change: transform;
+}
+
+/* ── Header ── */
+.app-sheet-header {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-3) var(--space-4);
+  /* Clears the notch / status bar on iOS when the sheet is full-bleed. */
+  padding-top: max(var(--space-3), env(safe-area-inset-top));
+  background: var(--color-champagne);
+  border-bottom: 1px solid var(--border-hairline);
+}
+
+.app-sheet-back {
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  /* 44px — the minimum comfortable touch target. */
+  width: 44px;
+  height: 44px;
+  margin-inline-start: calc(var(--space-2) * -1);
+  border: none;
+  border-radius: 50%;
+  background: none;
+  color: var(--text-primary);
+  cursor: pointer;
+  transition: background var(--transition-fast);
+}
+.app-sheet-back:hover { background: rgba(74, 59, 44, 0.07); }
+.app-sheet-back:focus-visible {
+  outline: 2px solid var(--color-gold);
+  outline-offset: 2px;
+}
+
+/* Direction-aware: the back arrow must point at the inline start edge. */
+[dir="rtl"] .app-sheet-back-mobile { transform: scaleX(-1); }
+
+.app-sheet-back-desktop { display: none; }
+
+.app-sheet-heading {
+  flex: 1;
+  min-width: 0;
+}
+
+.app-sheet-title {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: var(--fs-md);
+  font-weight: var(--fw-medium);
+  color: var(--text-primary);
+  line-height: 1.25;
+  /* Long order numbers must not push the header action off screen. */
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.app-sheet-subtitle {
+  margin: 2px 0 0;
+  font-size: var(--fs-xs);
+  color: var(--text-muted);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.app-sheet-header-action {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+/* ── Body ── */
+.app-sheet-body {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  /* Momentum scrolling that stops at the sheet edge instead of dragging the
+     page behind it. */
+  overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch;
+  padding: var(--space-5) var(--space-4);
+}
+
+.app-sheet-message {
+  margin: 0;
+  font-size: var(--fs-base);
+  line-height: 1.6;
+  color: var(--text-secondary);
+}
+
+.app-sheet-confirm-field {
+  display: block;
+  margin-top: var(--space-5);
+  font-size: var(--fs-sm);
+  color: var(--text-muted);
+}
+.app-sheet-confirm-field input {
+  width: 100%;
+  margin-top: var(--space-2);
+  padding: 12px var(--space-4);
+  /* 16px keeps iOS from zooming the viewport on focus. */
+  font-size: 16px;
+  font-family: var(--font-primary);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  border: 1px solid var(--border-medium);
+  border-radius: var(--radius-md);
+  background: var(--color-warm-white);
+  color: var(--text-primary);
+}
+.app-sheet-confirm-field input:focus {
+  outline: none;
+  border-color: var(--color-gold-soft);
+  box-shadow: 0 0 0 3px rgba(181, 140, 74, 0.13);
+}
+
+/* ── Footer ── */
+.app-sheet-footer {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: var(--space-3);
+  padding: var(--space-4);
+  /* Keeps the primary action clear of the iOS home indicator. */
+  padding-bottom: max(var(--space-4), env(safe-area-inset-bottom));
+  background: var(--color-warm-white);
+  border-top: 1px solid var(--border-hairline);
+}
+
+/* On a phone the actions go full width and stack, so the primary action is a
+   single unambiguous target under the thumb. */
+.app-sheet-footer > * { flex: 1; }
+
+@media (min-width: 480px) {
+  .app-sheet-footer > * { flex: 0 0 auto; }
+}
+
+/* ── Desktop: centred panel ── */
+@media (min-width: 768px) {
+  .app-sheet-root {
+    align-items: center;
+    padding: var(--space-6);
+  }
+
+  .app-sheet-scrim {
+    -webkit-backdrop-filter: blur(6px);
+    backdrop-filter: blur(6px);
+  }
+
+  .app-sheet {
+    width: min(920px, 100%);
+    height: auto;
+    max-height: min(88vh, 900px);
+    border-radius: var(--radius-xl);
+    border: 1px solid var(--border-light);
+    box-shadow: var(--shadow-xl);
+    animation: sheetPop 240ms var(--ease-out-luxe);
+  }
+
+  .app-sheet--compact { width: min(520px, 100%); }
+  /* The receipt generator needs the height for its live preview. */
+  .app-sheet--full {
+    width: min(1280px, 100%);
+    height: 90vh;
+    max-height: 90vh;
+  }
+
+  .app-sheet-header { padding: var(--space-4) var(--space-6); }
+  .app-sheet-body { padding: var(--space-6); }
+  .app-sheet-footer { padding: var(--space-4) var(--space-6); }
+
+  .app-sheet-title { font-size: var(--fs-lg); }
+
+  .app-sheet-back-mobile { display: none; }
+  .app-sheet-back-desktop { display: inline-flex; }
+
+  /* On desktop the close control belongs at the trailing edge, where an
+     overlay dismiss is expected. */
+  .app-sheet-back {
+    order: 3;
+    margin-inline: 0 calc(var(--space-2) * -1);
+    width: 38px;
+    height: 38px;
+  }
+  .app-sheet-header-action { order: 2; }
+}
+
+@keyframes sheetUp {
+  from { transform: translateY(100%); }
+  to { transform: translateY(0); }
+}
+
+@keyframes sheetPop {
+  from { opacity: 0; transform: scale(0.97) translateY(10px); }
+  to { opacity: 1; transform: scale(1) translateY(0); }
+}
+
+@keyframes sheetScrimIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+/* Respect the OS setting — a full-screen slide is exactly the kind of motion
+   that triggers vestibular discomfort. */
+@media (prefers-reduced-motion: reduce) {
+  .app-sheet,
+  .app-sheet-scrim { animation: none; }
+  .app-sheet { will-change: auto; }
+  .app-sheet-back { transition: none; }
+}

@@ -24,7 +24,17 @@ export const AdminAPI = {
     }),
 
   // ── Orders ──
-  getOrders: () => apiRequest('/admin/orders'),
+  /**
+   * @param {Object} params source|status|paymentStatus|search|from|to|page|limit
+   * Filtering happens server-side; the client no longer downloads every order
+   * on every visit to the Orders page.
+   */
+  getOrders: (params = {}) => {
+    const qs = new URLSearchParams(
+      Object.entries(params).filter(([, v]) => v !== undefined && v !== null && v !== '')
+    ).toString();
+    return apiRequest(`/admin/orders${qs ? `?${qs}` : ''}`);
+  },
   updateOrderStatus: (id, status) =>
     apiRequest(`/admin/orders/${id}/status`, {
       method: 'PUT',
@@ -35,6 +45,33 @@ export const AdminAPI = {
       method: 'PUT',
       body: JSON.stringify({ driverId }),
     }),
+
+  // ── Manual receipts (orders created in the receipt generator) ──
+  createOrder: (data) =>
+    apiRequest('/admin/orders', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    }),
+  updateOrderReceipt: (id, data) =>
+    apiRequest(`/admin/orders/${id}/receipt`, {
+      method: 'PUT',
+      body: JSON.stringify(data),
+    }),
+  refundOrder: (id, payload) =>
+    apiRequest(`/admin/orders/${id}/refund`, {
+      method: 'POST',
+      body: JSON.stringify(payload),
+    }),
+  /** Owner only — restores stock and releases the promo use. */
+  deleteOrder: (id) => apiRequest(`/admin/orders/${id}`, { method: 'DELETE' }),
+
+  // ── Revenue ──
+  getRevenueOverview: (params = {}) => {
+    const qs = new URLSearchParams(
+      Object.entries(params).filter(([, v]) => v !== undefined && v !== null && v !== '')
+    ).toString();
+    return apiRequest(`/admin/revenue/overview${qs ? `?${qs}` : ''}`);
+  },
 
   // ── Users ──
   getUsers: () => apiRequest('/admin/users'),

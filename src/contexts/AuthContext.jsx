@@ -1,4 +1,6 @@
-import { createContext, useContext, useState, useCallback, useEffect } from 'react';
+import {
+  createContext, useContext, useState, useCallback, useEffect, useMemo,
+} from 'react';
 import { AuthAPI } from '../api/auth';
 import { setAuthToken, getAuthToken } from '../api/client';
 
@@ -98,11 +100,18 @@ export function AuthProvider({ children }) {
     if (token) refreshUser();
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
+  // Auth sits above the whole tree, so an unstable value here re-renders every
+  // page on any parent update.
+  const value = useMemo(() => ({
+    user, token, isLoggedIn, loading, authChecked,
+    login, register, logout, refreshUser, updateProfile,
+  }), [
+    user, token, isLoggedIn, loading, authChecked,
+    login, register, logout, refreshUser, updateProfile,
+  ]);
+
   return (
-    <AuthContext.Provider value={{
-      user, token, isLoggedIn, loading, authChecked,
-      login, register, logout, refreshUser, updateProfile,
-    }}>
+    <AuthContext.Provider value={value}>
       {children}
     </AuthContext.Provider>
   );

@@ -7,7 +7,7 @@ import Loader from '../../components/ui/Loader';
 import {
   GridIcon, BagIcon, UserIcon, HomeIcon, MenuIcon, CloseIcon, SparkleIcon,
   ImageIcon, FolderIcon, CarIcon, SendIcon, ChartIcon, TagIcon,
-  ReceiptIcon, GlobeIcon, TicketIcon, PhoneIcon,
+  ReceiptIcon, GlobeIcon, TicketIcon, PhoneIcon, CoinsIcon,
 } from '../../components/ui/Icons';
 import './AdminLayout.css';
 
@@ -35,6 +35,10 @@ const ReceiptsSection = lazy(() => import('./sections/ReceiptsSection'));
 const VisitorsSection = lazy(() => import('./sections/VisitorsSection'));
 const PromoCodesSection = lazy(() => import('./sections/PromoCodesSection'));
 const SocialContactsSection = lazy(() => import('./sections/SocialContactsSection'));
+// The generator pulls in a canvas renderer and a QR encoder, so it stays in
+// its own chunk and is only fetched when an admin actually opens it.
+const ReceiptGenerator = lazy(() => import('./receipt/ReceiptGenerator'));
+const RevenueSection = lazy(() => import('./sections/RevenueSection'));
 
 export default function AdminLayout() {
   const { user, logout } = useAuth();
@@ -43,6 +47,11 @@ export default function AdminLayout() {
   const location = useLocation();
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
+  // Revenue is owner-only. The nav is hidden for other roles as a courtesy —
+  // the endpoint itself is guarded server-side by the `owner` middleware, so
+  // hiding it here is presentation, not access control.
+  const isOwner = user?.role === 'owner' || user?.role === 'superuser';
+
   const navItems = [
     { to: '/admin/dashboard', Icon: SparkleIcon, label: t('dashboard') },
     { to: '/admin/products', Icon: GridIcon, label: t('products') },
@@ -50,6 +59,8 @@ export default function AdminLayout() {
     { to: '/admin/browse-collections', Icon: GridIcon, label: 'Browse Collections' },
     { to: '/admin/categories', Icon: FolderIcon, label: 'Categories' },
     { to: '/admin/orders', Icon: BagIcon, label: t('orders') },
+    { to: '/admin/receipt-generator', Icon: ReceiptIcon, label: 'Receipt Generator' },
+    ...(isOwner ? [{ to: '/admin/revenue', Icon: CoinsIcon, label: 'Revenue' }] : []),
     { to: '/admin/users', Icon: UserIcon, label: t('users') },
     { to: '/admin/drivers', Icon: CarIcon, label: 'Drivers' },
     { to: '/admin/marketing', Icon: SendIcon, label: 'Marketing' },
@@ -151,6 +162,8 @@ export default function AdminLayout() {
               <Route path="analytics" element={<AnalyticsSection />} />
               <Route path="discounts" element={<DiscountsSection />} />
               <Route path="receipts" element={<ReceiptsSection />} />
+              <Route path="receipt-generator" element={<ReceiptGenerator />} />
+              <Route path="revenue" element={<RevenueSection />} />
               <Route path="visitors" element={<VisitorsSection />} />
               <Route path="promo-codes" element={<PromoCodesSection />} />
               <Route path="social-contacts" element={<SocialContactsSection />} />

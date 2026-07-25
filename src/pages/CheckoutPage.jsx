@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { useCart } from '../contexts/CartContext';
+import { usePromo } from '../contexts/PromoContext';
 import { useI18n } from '../contexts/I18nContext';
 import { useCurrency } from '../contexts/CurrencyContext';
 import { PaymentsAPI } from '../api/payments';
@@ -13,6 +14,7 @@ import { AlertCircleIcon } from '../components/ui/Icons';
 import Button from '../components/ui/Button';
 import { Input, Select, Textarea, FieldRow } from '../components/ui/Field';
 import LocationPicker from '../components/checkout/LocationPicker';
+import PromoCodeField from '../components/promo/PromoCodeField';
 import {
   CardMark, KnetMark, BnplMark, WalletMark,
   HomeMark, WorkMark, PinMark, LockMark,
@@ -34,6 +36,7 @@ const ADDRESS_TYPES = [
 export default function CheckoutPage() {
   const { isLoggedIn } = useAuth();
   const { items, subtotal } = useCart();
+  const { discount, promoCode, promoVisitId } = usePromo();
   const { t, lang } = useI18n();
   const { format } = useCurrency();
   const navigate = useNavigate();
@@ -48,6 +51,9 @@ export default function CheckoutPage() {
     deema: { available: true },
   });
   const [gatewayChecked, setGatewayChecked] = useState(false);
+  // Whether the gateway account actually offers Apple Pay. Independent of
+  // whether the *device* can present it — both have to be true.
+  const [applePayEnabled, setApplePayEnabled] = useState(false);
   const [savedAddresses, setSavedAddresses] = useState([]);
   const [addressType, setAddressType] = useState('Home');
   const [processing, setProcessing] = useState(false);
@@ -59,7 +65,9 @@ export default function CheckoutPage() {
   });
 
   const shipping = 2.0;
-  const total = subtotal + shipping;
+  // Display only. The server re-prices the promo against the live cart during
+  // /payments/execute, so this figure can never become the charged amount.
+  const total = Math.max(0, subtotal + shipping - discount);
 
   // Redirect if not logged in or cart empty
   useEffect(() => {
@@ -102,6 +110,7 @@ export default function CheckoutPage() {
         if (cancelled) return;
         setPaymentMethods(res.data || []);
         if (res.gateways) setGateways(res.gateways);
+        setApplePayEnabled(!!res.applePay?.available);
       })
       .catch(() => {
         // The endpoint no longer 500s, but a network drop is still possible.
@@ -132,19 +141,24 @@ export default function CheckoutPage() {
   /** Options the shopper can actually complete, given gateway availability. */
   const availableOptions = useMemo(() => {
     const online = gateways.myfatoorah?.available !== false;
-    const canApplePay =
+
+    // Apple Pay needs three things to line up: the device can present the
+    // sheet, the browser reports an active card, and the merchant account has
+    // Apple Pay switched on. Showing the option when any is false produces a
+    // dead-end at the last step of checkout.
+    const deviceCanApplePay =
       typeof window !== 'undefined' &&
-      window.ApplePaySession &&
-      window.ApplePaySession.canMakePayments?.();
+      !!window.ApplePaySession &&
+      window.ApplePaySession.canMakePayments?.() === true;
 
     // Cash on delivery is not offered by ARTÉVA — card, KNET and Deema only.
     return [
       { id: 'card', Mark: CardMark, title: t('credit_card'), desc: t('secure_payment'), enabled: online },
       { id: 'knet', Mark: KnetMark, title: t('knet'), desc: t('knet_desc'), enabled: online },
-      { id: 'applepay', Mark: WalletMark, title: t('apple_pay'), desc: t('apple_pay_desc'), enabled: online && !!canApplePay },
+      { id: 'applepay', Mark: WalletMark, title: t('apple_pay'), desc: t('apple_pay_desc'), enabled: online && deviceCanApplePay && applePayEnabled },
       { id: 'deema', Mark: BnplMark, title: t('deema_bnpl'), desc: t('deema_desc'), enabled: gateways.deema?.available !== false },
     ].filter(o => o.enabled);
-  }, [gateways, t]);
+  }, [gateways, applePayEnabled, t]);
 
   // Never leave a selection pointing at a method that has since disappeared.
   useEffect(() => {
@@ -263,14 +277,38 @@ export default function CheckoutPage() {
       await syncCartToServer();
 
       if (paymentMethod === 'deema') {
-        const data = await PaymentsAPI.createDeemaCheckout({ shippingAddress: address });
+        const data = await PaymentsAPI.createDeemaCheckout({
+          shippingAddress: address,
+          promoCode: promoCode || undefined,
+          promoVisitId: promoVisitId || undefined,
+        });
+        if (!data.success || !data.data?.paymentUrl) throw new Error(data.message || t('payment_failed'));
+        window.location.href = data.data.paymentUrl;
+        return;
+      }
+
+      // Apple Pay opens a merchant session first. That call is what validates
+      // our domain with Apple — it needs the gateway secret, so it can only
+      // happen server-side. Settlement then runs through the same execute →
+      // callback → verify pipeline as every other method, which is what makes
+      // the payment verifiable rather than trusted.
+      if (paymentMethod === 'applepay') {
+        const session = await PaymentsAPI.initApplePaySession(total);
+        if (!session.success || !session.data?.methodId) {
+          throw new Error(t('apple_pay_unavailable'));
+        }
+        const data = await PaymentsAPI.executePayment(
+          session.data.methodId, address, promoCode, promoVisitId
+        );
         if (!data.success || !data.data?.paymentUrl) throw new Error(data.message || t('payment_failed'));
         window.location.href = data.data.paymentUrl;
         return;
       }
 
       const methodId = getMethodId(paymentMethod);
-      const data = await PaymentsAPI.executePayment(methodId, address);
+      const data = await PaymentsAPI.executePayment(
+        methodId, address, promoCode, promoVisitId
+      );
       if (!data.success || !data.data?.paymentUrl) throw new Error(data.message || t('payment_failed'));
       window.location.href = data.data.paymentUrl;
     } catch (err) {
@@ -462,10 +500,18 @@ export default function CheckoutPage() {
                 })}
               </div>
 
+              <PromoCodeField compact />
+
               <div className="checkout-totals">
                 <div className="checkout-total-row">
                   <span>{t('subtotal')}</span><span>{format(subtotal)}</span>
                 </div>
+                {discount > 0 && (
+                  <div className="checkout-total-row checkout-total-discount">
+                    <span>{t('discount')} · {promoCode}</span>
+                    <span>−{format(discount)}</span>
+                  </div>
+                )}
                 <div className="checkout-total-row">
                   <span>{t('shipping')}</span><span>{format(shipping)}</span>
                 </div>

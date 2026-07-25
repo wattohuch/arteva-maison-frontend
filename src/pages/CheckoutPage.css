@@ -299,6 +299,16 @@
   font-variant-numeric: tabular-nums;
 }
 
+/* Promo saving — green, and the code is shown so the shopper can see which
+   one is responsible for the reduction. */
+.checkout-total-discount span,
+.checkout-total-discount span:last-child { color: #047857; }
+.checkout-total-discount span:first-child {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
 .checkout-total-final {
   margin-top: var(--space-3);
   padding-top: var(--space-4);

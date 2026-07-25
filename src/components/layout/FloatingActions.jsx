@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useI18n } from '../../contexts/I18nContext';
-import { CloseIcon, MailIcon } from '../ui/Icons';
+import { SupportIcon, CloseIcon, MailIcon } from '../ui/Icons';
 import './FloatingActions.css';
 
 /**
@@ -79,7 +79,7 @@ export default function FloatingActions() {
         aria-expanded={open}
         aria-label={open ? t('close') : t('need_help')}
       >
-        {open ? <CloseIcon size={20} /> : <WhatsAppGlyph size={21} />}
+        {open ? <CloseIcon size={20} /> : <SupportIcon size={21} />}
       </button>
     </div>
   );

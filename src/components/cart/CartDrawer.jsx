@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import { useCart } from '../../contexts/CartContext';
 import { useI18n } from '../../contexts/I18nContext';
 import { useCurrency } from '../../contexts/CurrencyContext';
-import { handleImageError } from '../../utils/imageHelpers';
+import { handleImageError, cloudinaryImage } from '../../utils/imageHelpers';
 import { CloseIcon, TrashIcon, PlusIcon, MinusIcon, BagIcon } from '../ui/Icons';
 import './CartDrawer.css';
 
@@ -71,9 +71,10 @@ export default function CartDrawer({ open, onClose }) {
                   <article key={id} className="cart-item">
                     <div className="cart-item-media">
                       <img
-                        src={item.image}
+                        src={cloudinaryImage(item.image, 160)}
                         alt={item.name}
                         loading="lazy"
+                        decoding="async"
                         onError={handleImageError}
                       />
                     </div>

@@ -1,4 +1,6 @@
-import { createContext, useContext, useState, useEffect, useCallback } from 'react';
+import {
+  createContext, useContext, useState, useEffect, useCallback, useMemo,
+} from 'react';
 import { CategoriesAPI } from '../api/categories';
 import { useI18n } from './I18nContext';
 
@@ -40,14 +42,16 @@ export function CategoriesProvider({ children }) {
     return category.name || category.title || '';
   }, [lang]);
 
+  const value = useMemo(() => ({
+    categories,
+    loading,
+    error,
+    getCategoryName,
+    refetchCategories: fetchCategories,
+  }), [categories, loading, error, getCategoryName, fetchCategories]);
+
   return (
-    <CategoriesContext.Provider value={{
-      categories,
-      loading,
-      error,
-      getCategoryName,
-      refetchCategories: fetchCategories
-    }}>
+    <CategoriesContext.Provider value={value}>
       {children}
     </CategoriesContext.Provider>
   );

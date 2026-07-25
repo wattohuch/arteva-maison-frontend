@@ -5,7 +5,9 @@ import { useCurrency } from '../contexts/CurrencyContext';
 import { useCart } from '../contexts/CartContext';
 import { useWishlist } from '../contexts/WishlistContext';
 import { ProductsAPI } from '../api/products';
-import { getProductImage, handleImageError } from '../utils/imageHelpers';
+import {
+  getProductImage, handleImageError, cloudinaryImage, cloudinarySrcSet,
+} from '../utils/imageHelpers';
 import { showToast } from '../components/ui/Toast';
 import Loader from '../components/ui/Loader';
 import Button from '../components/ui/Button';
@@ -74,7 +76,17 @@ export default function ProductDetailPage() {
         {/* Gallery */}
         <div className="pdp-gallery">
           <div className="pdp-main-image">
-            <img src={images[selectedImage]?.url} alt={name} onError={handleImageError} />
+            {/* The gallery image is this page's LCP element, so it is sized to
+                the viewport and fetched at high priority rather than lazily. */}
+            <img
+              src={cloudinaryImage(images[selectedImage]?.url, 1000)}
+              srcSet={cloudinarySrcSet(images[selectedImage]?.url, [480, 720, 1000, 1400])}
+              sizes="(max-width: 900px) 100vw, 560px"
+              alt={name}
+              fetchPriority="high"
+              decoding="async"
+              onError={handleImageError}
+            />
           </div>
           {images.length > 1 && (
             <div className="pdp-thumbnails">
@@ -86,7 +98,14 @@ export default function ProductDetailPage() {
                   aria-label={`${name} — ${i + 1}`}
                   aria-pressed={i === selectedImage}
                 >
-                  <img src={img.url} alt="" onError={handleImageError} />
+                  {/* Thumbnails render ~72px — no reason to fetch more. */}
+                  <img
+                    src={cloudinaryImage(img.url, 160)}
+                    alt=""
+                    loading="lazy"
+                    decoding="async"
+                    onError={handleImageError}
+                  />
                 </button>
               ))}
             </div>

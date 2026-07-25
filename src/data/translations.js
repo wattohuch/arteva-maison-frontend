@@ -319,6 +319,33 @@ export const translations = {
     locating: "Locating…",
     latitude: "Latitude", longitude: "Longitude",
     zoom_in: "Zoom in", zoom_out: "Zoom out",
+
+    // Promo codes
+    promo_code: "Promo code", promo_placeholder: "Promo code",
+    apply: "Apply", discount: "Discount",
+    promo_applied: "Promo code applied",
+    promo_removed: "Promo code removed",
+
+    // Apple Pay
+    apple_pay_unavailable: "Apple Pay is not available on this device.",
+    apple_pay_cancelled: "Apple Pay was cancelled.",
+
+    // Admin — orders, receipts, revenue
+    all_orders: "All Orders", online_orders: "Online Orders",
+    manual_orders: "Manual Receipts",
+    delete_order: "Delete Order",
+    delete_order_warning: "This permanently deletes the order and restores its stock. This cannot be undone.",
+    confirm_delete_type: "Type the order number to confirm",
+    order_deleted: "Order deleted",
+    revenue: "Revenue", gross_revenue: "Gross Revenue", net_revenue: "Net Revenue",
+    refunds: "Refunds", average_order: "Average Order",
+    receipt_generator: "Receipt Generator",
+    save_receipt: "Save Receipt", update_receipt: "Update Receipt",
+    refund_item: "Refund item", refund_all: "Refund entire receipt",
+    add_item: "Add item", line_items: "Line Items",
+
+    // Refunds — requested over WhatsApp and settled by an admin, not by an API
+    request_refund: "Request refund",
   },
 
   ar: {
@@ -647,5 +674,32 @@ export const translations = {
     locating: "جارٍ التحديد…",
     latitude: "خط العرض", longitude: "خط الطول",
     zoom_in: "تكبير", zoom_out: "تصغير",
+
+    // Promo codes
+    promo_code: "كود الخصم", promo_placeholder: "كود الخصم",
+    apply: "تطبيق", discount: "الخصم",
+    promo_applied: "تم تطبيق كود الخصم",
+    promo_removed: "تم إزالة كود الخصم",
+
+    // Apple Pay
+    apple_pay_unavailable: "Apple Pay غير متاح على هذا الجهاز.",
+    apple_pay_cancelled: "تم إلغاء Apple Pay.",
+
+    // Admin — orders, receipts, revenue
+    all_orders: "كل الطلبات", online_orders: "الطلبات الإلكترونية",
+    manual_orders: "الإيصالات اليدوية",
+    delete_order: "حذف الطلب",
+    delete_order_warning: "سيتم حذف الطلب نهائياً وإرجاع المخزون. لا يمكن التراجع عن هذا الإجراء.",
+    confirm_delete_type: "اكتب رقم الطلب للتأكيد",
+    order_deleted: "تم حذف الطلب",
+    revenue: "الإيرادات", gross_revenue: "إجمالي الإيرادات", net_revenue: "صافي الإيرادات",
+    refunds: "المبالغ المستردة", average_order: "متوسط الطلب",
+    receipt_generator: "منشئ الإيصالات",
+    save_receipt: "حفظ الإيصال", update_receipt: "تحديث الإيصال",
+    refund_item: "استرداد الصنف", refund_all: "استرداد الإيصال بالكامل",
+    add_item: "إضافة صنف", line_items: "الأصناف",
+
+    // Refunds — requested over WhatsApp and settled by an admin, not by an API
+    request_refund: "طلب استرجاع",
   },
 };

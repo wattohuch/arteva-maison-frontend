@@ -1,4 +1,6 @@
-import { createContext, useContext, useState, useCallback, useEffect } from 'react';
+import {
+  createContext, useContext, useState, useCallback, useEffect, useMemo,
+} from 'react';
 import { translations } from '../data/translations';
 
 const I18nContext = createContext(null);
@@ -48,8 +50,15 @@ export function I18nProvider({ children }) {
     document.body.classList.toggle('rtl', isRTL);
   }, [lang, isRTL]);
 
+  // `t` is consumed by almost every component in the tree — an unstable value
+  // here defeats memoisation everywhere at once.
+  const value = useMemo(
+    () => ({ lang, isRTL, setLang, t }),
+    [lang, isRTL, setLang, t]
+  );
+
   return (
-    <I18nContext.Provider value={{ lang, isRTL, setLang, t }}>
+    <I18nContext.Provider value={value}>
       {children}
     </I18nContext.Provider>
   );

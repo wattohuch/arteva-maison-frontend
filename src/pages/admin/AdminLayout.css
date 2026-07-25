@@ -652,6 +652,22 @@
   color: var(--color-bronze);
 }
 
+/* ── Order source badge ──
+   Shared by the Orders table and the Revenue dashboard, so it lives with the
+   admin shell rather than in either section's stylesheet. */
+.ord-source {
+  display: inline-block;
+  padding: 2px 7px;
+  border-radius: var(--radius-pill);
+  font-size: 10px;
+  font-weight: var(--fw-semibold);
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+.ord-source.is-manual { background: rgba(181, 140, 74, 0.16); color: var(--color-gold-text); }
+.ord-source.is-online { background: rgba(74, 59, 44, 0.08); color: var(--text-muted); }
+
 @keyframes modalPop {
   from { opacity: 0; transform: scale(0.96) translateY(8px); }
   to { opacity: 1; transform: scale(1) translateY(0); }

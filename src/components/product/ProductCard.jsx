@@ -4,7 +4,9 @@ import { useI18n } from '../../contexts/I18nContext';
 import { useCurrency } from '../../contexts/CurrencyContext';
 import { useCart } from '../../contexts/CartContext';
 import { useWishlist } from '../../contexts/WishlistContext';
-import { getProductImage, handleImageError } from '../../utils/imageHelpers';
+import {
+  getProductImage, handleImageError, cloudinaryImage, cloudinarySrcSet,
+} from '../../utils/imageHelpers';
 import { showToast } from '../ui/Toast';
 import { HeartIcon, BagIcon } from '../ui/Icons';
 import './ProductCard.css';
@@ -39,7 +41,18 @@ const ProductCard = memo(function ProductCard({ product }) {
         {/* The link covers the image; the controls sit above it as siblings so
             we never nest interactive elements inside an anchor. */}
         <Link to={href} className="product-media-link" tabIndex={-1} aria-hidden="true">
-          <img src={image} alt="" loading="lazy" decoding="async" onError={handleImageError} />
+          <img
+            src={cloudinaryImage(image, 600)}
+            srcSet={cloudinarySrcSet(image)}
+            /* Two columns on a phone, up to four on a wide grid — this tells
+               the browser the real rendered width so it picks the smallest
+               adequate source instead of the largest. */
+            sizes="(max-width: 640px) 45vw, (max-width: 1024px) 30vw, 300px"
+            alt=""
+            loading="lazy"
+            decoding="async"
+            onError={handleImageError}
+          />
         </Link>
 
         {product.isNewArrival && <span className="product-badge">{t('badge_new')}</span>}
