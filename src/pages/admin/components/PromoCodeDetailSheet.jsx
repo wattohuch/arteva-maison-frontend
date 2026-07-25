@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { AdminAPI } from '../../../api/admin';
 import { showToast } from '../../../components/ui/Toast';
-import { resolveImageUrl } from '../../../utils/imageHelpers';
+import { resolveImageUrl, getProductImage } from '../../../utils/imageHelpers';
 import { TrashIcon, SearchIcon, CheckIcon } from '../../../components/ui/Icons';
 import AppSheet from '../../../components/ui/AppSheet';
 
@@ -273,7 +273,7 @@ export default function PromoCodeDetailSheet({ promo, onClose, onUpdated }) {
                     {/* Top Row: Product Info */}
                     <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
                       <img
-                        src={resolveImageUrl(prod.images?.[0] || prod.image)}
+                        src={resolveImageUrl(getProductImage(prod))}
                         alt={prod.name || 'Product'}
                         style={{ width: 44, height: 44, objectFit: 'cover', borderRadius: 6, border: '1px solid #ddd' }}
                       />
@@ -411,7 +411,7 @@ export default function PromoCodeDetailSheet({ promo, onClose, onUpdated }) {
                     style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '8px 12px', borderBottom: '1px solid #eee' }}
                   >
                     <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                      <img src={resolveImageUrl(p.images?.[0])} alt="" style={{ width: 32, height: 32, objectFit: 'cover', borderRadius: 4 }} />
+                      <img src={resolveImageUrl(getProductImage(p))} alt={p.name || ''} style={{ width: 32, height: 32, objectFit: 'cover', borderRadius: 4 }} />
                       <span style={{ fontSize: '0.85rem' }}>{p.name} ({kwd(p.price)})</span>
                     </div>
                     <button

@@ -10,6 +10,7 @@ import {
 import {
   renderReceipt, downloadReceiptJPEG, printReceipt,
 } from '../../../utils/receiptCanvas';
+import { resolveImageUrl, getProductImage } from '../../../utils/imageHelpers';
 import {
   useReceiptDraft, emptyDraft, draftFromOrder, generateOrderNumber,
 } from './useReceiptDraft';
@@ -142,6 +143,58 @@ export default function ReceiptGenerator() {
       quantity: 1,
     });
   }, [products, actions]);
+
+  const [exchangingLine, setExchangingLine] = useState(null);
+
+  const handleRefundItem = useCallback(async (line) => {
+    if (!draft.orderId || !line._id) {
+      // Unsaved line item, just mark or remove
+      actions.updateItem(line.key, { isRefunded: true });
+      return;
+    }
+
+    if (!confirm(`Refund line item "${line.name}" for order ${draft.orderNumber}?`)) return;
+
+    try {
+      const res = await AdminAPI.refundOrder(draft.orderId, {
+        type: 'item',
+        itemId: line._id,
+        reason: 'Item refund via Receipt Generator',
+      });
+      if (res?.data) {
+        actions.reset(draftFromOrder(res.data));
+        showToast(`Refunded ${line.name} successfully`, 'success');
+      }
+    } catch (err) {
+      showToast(err.message || 'Failed to refund line item', 'error');
+    }
+  }, [draft.orderId, draft.orderNumber, actions]);
+
+  const handleExchangeItem = useCallback((line) => {
+    setExchangingLine(line);
+  }, []);
+
+  const handleConfirmExchange = useCallback((replacementProd, priceDiff) => {
+    if (!exchangingLine) return;
+    const oldPrice = Number(exchangingLine.price) || 0;
+    const newPrice = Number(replacementProd.price) || 0;
+
+    actions.updateItem(exchangingLine.key, {
+      product: replacementProd._id,
+      name: replacementProd.name,
+      nameAr: replacementProd.nameAr || '',
+      sku: replacementProd.sku || '',
+      image: replacementProd.images?.[0]?.url || replacementProd.image || '',
+      price: newPrice,
+      isExchanged: true,
+      oldName: exchangingLine.oldName || exchangingLine.name,
+      oldPrice: exchangingLine.oldPrice !== undefined ? exchangingLine.oldPrice : oldPrice,
+      exchangeDiff: priceDiff,
+    });
+
+    showToast(`Exchanged ${exchangingLine.name} for ${replacementProd.name}`, 'success');
+    setExchangingLine(null);
+  }, [exchangingLine, actions]);
 
   /** Ask the server to price the code — the client never computes a discount. */
   const applyPromo = useCallback(async (rawCode) => {
@@ -306,10 +359,13 @@ export default function ReceiptGenerator() {
           <LineItems
             items={draft.items}
             products={products}
+            isExisting={isExisting}
             onAdd={quickAddProduct}
             onAddCustom={() => actions.addItem({ name: '', price: 0, quantity: 1 })}
             onUpdate={actions.updateItem}
             onRemove={actions.removeItem}
+            onRefundItem={handleRefundItem}
+            onExchangeItem={handleExchangeItem}
           />
 
           <PricingFields
@@ -355,6 +411,14 @@ export default function ReceiptGenerator() {
         </div>
       </div>
 
+      {exchangingLine && (
+        <ExchangeModal
+          line={exchangingLine}
+          products={products}
+          onClose={() => setExchangingLine(null)}
+          onConfirm={handleConfirmExchange}
+        />
+      )}
     </div>
   );
 }
@@ -478,8 +542,83 @@ const ReceiptFields = memo(function ReceiptFields({ draft, actions }) {
   );
 });
 
+const ExchangeModal = memo(function ExchangeModal({ line, products, onClose, onConfirm }) {
+  const [selectedProductId, setSelectedProductId] = useState('');
+
+  const selectedProd = products.find(p => p._id === selectedProductId);
+  const oldPrice = Number(line.price) || 0;
+  const newPrice = selectedProd ? Number(selectedProd.price) || 0 : 0;
+  const diff = newPrice - oldPrice;
+
+  return (
+    <div className="rg-modal-backdrop" style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.5)', zIndex: 1000, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 16 }}>
+      <div className="rg-modal" style={{ background: '#fff', borderRadius: 10, padding: 20, maxWidth: 460, width: '100%', boxShadow: '0 20px 25px -5px rgba(0,0,0,0.1)' }}>
+        <h3 style={{ margin: '0 0 8px', fontSize: '1.1rem', display: 'flex', alignItems: 'center', gap: 6 }}>
+          🔄 Exchange Product
+        </h3>
+        <p style={{ margin: 0, fontSize: '0.85rem', color: '#64748b' }}>
+          Exchanging: <strong style={{ color: '#0f172a' }}>{line.name}</strong> ({kwd(oldPrice)})
+        </p>
+
+        <label className="rg-field" style={{ marginTop: 16, display: 'block' }}>
+          <span style={{ fontSize: '0.82rem', fontWeight: 600, color: '#334155', display: 'block', marginBottom: 4 }}>
+            Select Replacement Product
+          </span>
+          <select
+            value={selectedProductId}
+            onChange={e => setSelectedProductId(e.target.value)}
+            style={{ width: '100%', padding: '8px 10px', borderRadius: 6, border: '1px solid #cbd5e1' }}
+          >
+            <option value="">Select a product catalog item…</option>
+            {products.map(p => (
+              <option key={p._id} value={p._id}>
+                {p.name}{p.sku ? ` (${p.sku})` : ''} — {kwd(p.price)}
+              </option>
+            ))}
+          </select>
+        </label>
+
+        {selectedProd && (
+          <div style={{ background: '#f8fafc', padding: 12, borderRadius: 8, border: '1px solid #e2e8f0', marginTop: 14 }}>
+            <div style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
+              <img
+                src={resolveImageUrl(getProductImage(selectedProd))}
+                alt=""
+                style={{ width: 44, height: 44, objectFit: 'cover', borderRadius: 6, border: '1px solid #cbd5e1' }}
+              />
+              <div>
+                <strong style={{ fontSize: '0.9rem', color: '#0f172a', display: 'block' }}>{selectedProd.name}</strong>
+                <div style={{ fontSize: '0.82rem', color: '#475569' }}>New Price: {kwd(newPrice)}</div>
+              </div>
+            </div>
+            <div style={{ marginTop: 10, paddingTop: 8, borderTop: '1px solid #e2e8f0', fontSize: '0.88rem' }}>
+              {diff > 0 && <span style={{ color: '#059669', fontWeight: 700 }}>💵 Paid Extra: +{kwd(diff)}</span>}
+              {diff < 0 && <span style={{ color: '#dc2626', fontWeight: 700 }}>↩️ Refunded Amount: -{kwd(Math.abs(diff))}</span>}
+              {diff === 0 && <span style={{ color: '#4b5563', fontWeight: 600 }}>⚖️ Even Exchange (0.000 KWD)</span>}
+            </div>
+          </div>
+        )}
+
+        <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 8, marginTop: 20 }}>
+          <button type="button" className="btn btn-ghost btn-sm" onClick={onClose}>
+            Cancel
+          </button>
+          <button
+            type="button"
+            className="btn btn-primary btn-sm"
+            disabled={!selectedProd}
+            onClick={() => onConfirm(selectedProd, diff)}
+          >
+            Confirm Exchange
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+});
+
 const LineItems = memo(function LineItems({
-  items, products, onAdd, onAddCustom, onUpdate, onRemove,
+  items, products, isExisting, onAdd, onAddCustom, onUpdate, onRemove, onRefundItem, onExchangeItem,
 }) {
   return (
     <section className="rg-section">
@@ -487,10 +626,6 @@ const LineItems = memo(function LineItems({
         Items <span className="rg-count">{items.length}</span>
       </h3>
 
-      {/* Refunds are settled over WhatsApp by a person. What the admin does
-          here is adjust the order to match reality, and the stock follows:
-          lowering a quantity returns those units to inventory, raising it
-          takes more, removing a line returns all of them. */}
       <p className="rg-note">
         Reducing a quantity or removing a line returns that stock to inventory.
         Adding items takes stock when you save.
@@ -517,8 +652,11 @@ const LineItems = memo(function LineItems({
           <LineRow
             key={line.key}
             line={line}
+            isExisting={isExisting}
             onUpdate={onUpdate}
             onRemove={onRemove}
+            onRefund={onRefundItem}
+            onExchange={onExchangeItem}
           />
         ))}
         {items.length === 0 && (
@@ -533,18 +671,35 @@ const LineItems = memo(function LineItems({
   );
 });
 
-const LineRow = memo(function LineRow({ line, isExisting, onUpdate, onRemove, onRefund }) {
+const LineRow = memo(function LineRow({ line, isExisting, onUpdate, onRemove, onRefund, onExchange }) {
+  const thumbnail = resolveImageUrl(line.image || getProductImage(line));
+
   return (
-    <div className={`rg-item ${line.isRefunded ? 'is-refunded' : ''}`}>
-      <div className="rg-item-main">
-        <input
-          type="text"
-          className="rg-item-name"
-          value={line.name}
-          placeholder="Item name"
-          onChange={e => onUpdate(line.key, { name: e.target.value })}
-        />
-        {line.isRefunded && <span className="rg-refunded-badge">Refunded</span>}
+    <div className={`rg-item ${line.isRefunded ? 'is-refunded' : ''} ${line.isExchanged ? 'is-exchanged' : ''}`}>
+      <div className="rg-item-main" style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+        {thumbnail && (
+          <img
+            src={thumbnail}
+            alt={line.name || 'Product'}
+            style={{ width: 38, height: 38, objectFit: 'cover', borderRadius: 6, border: '1px solid #e2e8f0', flexShrink: 0 }}
+          />
+        )}
+        <div style={{ flex: 1, minWidth: 0 }}>
+          <input
+            type="text"
+            className="rg-item-name"
+            value={line.name}
+            placeholder="Item name"
+            onChange={e => onUpdate(line.key, { name: e.target.value })}
+          />
+          {line.isRefunded && <span className="rg-refunded-badge" style={{ marginLeft: 6 }}>Refunded</span>}
+          {line.isExchanged && <span className="rg-exchanged-badge" style={{ marginLeft: 6, background: '#dbeafe', color: '#1e40af', padding: '2px 6px', borderRadius: 4, fontSize: '0.72rem', fontWeight: 600 }}>Exchanged</span>}
+          {line.oldName && (
+            <div style={{ fontSize: '0.78rem', color: '#2563eb', marginTop: 2 }}>
+              Original: {line.oldName} ({kwd(line.oldPrice || 0)})
+            </div>
+          )}
+        </div>
       </div>
 
       <div className="rg-item-fields">
@@ -585,7 +740,29 @@ const LineRow = memo(function LineRow({ line, isExisting, onUpdate, onRemove, on
         </div>
       </div>
 
-      <div className="rg-item-actions">
+      <div className="rg-item-actions" style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
+        {isExisting && !line.isRefunded && (
+          <>
+            <button
+              type="button"
+              className="rg-item-btn"
+              style={{ background: '#fef2f2', color: '#dc2626', borderColor: '#fca5a5' }}
+              onClick={() => onRefund?.(line)}
+              title="Refund this line item"
+            >
+              ↩️ Refund
+            </button>
+            <button
+              type="button"
+              className="rg-item-btn"
+              style={{ background: '#eff6ff', color: '#2563eb', borderColor: '#bfdbfe' }}
+              onClick={() => onExchange?.(line)}
+              title="Exchange product"
+            >
+              🔄 Exchange
+            </button>
+          </>
+        )}
         <button
           type="button"
           className="rg-item-btn rg-item-btn--danger"

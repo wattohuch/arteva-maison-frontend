@@ -59,6 +59,10 @@ export function makeLine(partial = {}) {
     price: Number(partial.price) || 0,
     quantity: Math.max(1, Number(partial.quantity) || 1),
     isRefunded: !!partial.isRefunded,
+    isExchanged: !!partial.isExchanged,
+    oldName: partial.oldName || '',
+    oldPrice: partial.oldPrice !== undefined ? Number(partial.oldPrice) : undefined,
+    exchangeDiff: partial.exchangeDiff !== undefined ? Number(partial.exchangeDiff) : undefined,
   };
 }
 
@@ -94,6 +98,10 @@ export function draftFromOrder(order) {
       price: item.price,
       quantity: item.quantity,
       isRefunded: item.isRefunded,
+      isExchanged: item.isExchanged,
+      oldName: item.oldName,
+      oldPrice: item.oldPrice,
+      exchangeDiff: item.exchangeDiff,
     })),
     shippingCost: Number(order.shippingCost ?? 2),
     discount: Number(order.promoCode?.totalDiscount ?? order.discount ?? 0),
@@ -225,6 +233,11 @@ export function useReceiptDraft(initial) {
       image: line.image,
       price: line.price,
       quantity: line.quantity,
+      isRefunded: line.isRefunded,
+      isExchanged: line.isExchanged,
+      oldName: line.oldName,
+      oldPrice: line.oldPrice,
+      exchangeDiff: line.exchangeDiff,
     })),
     shippingCost: Number(draft.shippingCost) || 0,
     // Sent for the no-code case. When a code is present the server re-prices

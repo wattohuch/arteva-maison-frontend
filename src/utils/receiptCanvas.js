@@ -268,6 +268,8 @@ export async function renderReceipt(canvas, order, { isStale } = {}) {
     const displayName = trunc(c, item.name || 'Product', cols[1].w - f(40));
     c.fillText(displayName, cols[1].x, y);
 
+    const isExchanged = !!(item.isExchanged || item.oldName);
+
     if (refunded) {
       const nameW = c.measureText(displayName).width;
       const badgeX = cols[1].x + nameW + f(4);
@@ -278,11 +280,36 @@ export async function renderReceipt(canvas, order, { isStale } = {}) {
       c.strokeStyle = '#ef4444'; c.lineWidth = f(0.3);
       rr(c, badgeX, y - f(1), btW + f(4), f(9), f(2)); c.stroke();
       c.fillStyle = '#ef4444'; c.fillText(badgeText, badgeX + f(2), y + f(1));
+    } else if (isExchanged) {
+      const nameW = c.measureText(displayName).width;
+      const badgeX = cols[1].x + nameW + f(4);
+      const badgeText = 'EXCHANGED';
+      c.font = `700 ${f(6)}px Arial`;
+      const btW = c.measureText(badgeText).width;
+      c.fillStyle = '#dbeafe'; rr(c, badgeX, y - f(1), btW + f(4), f(9), f(2)); c.fill();
+      c.strokeStyle = '#2563eb'; c.lineWidth = f(0.3);
+      rr(c, badgeX, y - f(1), btW + f(4), f(9), f(2)); c.stroke();
+      c.fillStyle = '#2563eb'; c.fillText(badgeText, badgeX + f(2), y + f(1));
     }
 
     if (showNameAr) {
       c.fillStyle = LIGHT; c.font = `${f(7.5)}px Arial`;
       c.fillText(item.nameAr, cols[1].x, y + f(11));
+    }
+
+    if (isExchanged) {
+      const exY = y + (showNameAr ? f(22) : f(11));
+      c.fillStyle = '#2563eb'; c.font = `600 ${f(7)}px Arial`;
+      const oldP = money(item.oldPrice || 0);
+      c.fillText(`Old: ${item.oldName || 'Item'} (${oldP})`, cols[1].x, exY);
+      const diff = Number(item.exchangeDiff) || 0;
+      if (diff > 0) {
+        c.fillStyle = '#059669'; c.font = `bold ${f(7)}px Arial`;
+        c.fillText(`Paid Extra: +${money(diff)}`, cols[1].x, exY + f(9));
+      } else if (diff < 0) {
+        c.fillStyle = '#dc2626'; c.font = `bold ${f(7)}px Arial`;
+        c.fillText(`Refunded Amount: -${money(Math.abs(diff))}`, cols[1].x, exY + f(9));
+      }
     }
 
     c.font = `${f(9)}px Arial`;
@@ -411,45 +438,91 @@ export async function renderReceipt(canvas, order, { isStale } = {}) {
     y += nH + f(10);
   }
 
-  // ═══ QR CODE ═══
-  const qrSz = f(60);
-  const qrHt = qrSz + f(14);
-  c.fillStyle = BG; rr(c, LM, y, CW, qrHt, f(5)); c.fill();
-  c.strokeStyle = BORDER; c.lineWidth = f(0.5); rr(c, LM, y, CW, qrHt, f(5)); c.stroke();
+  // ═══ QR CODE SECTION (Dual QR: Digital Receipt & WhatsApp) ═══
+  const qrSz = f(50);
+  const qrBoxW = (CW - f(20)) / 2;
+  const qrHt = qrSz + f(34);
+  c.fillStyle = BG; rr(c, LM, y, CW, qrHt, f(6)); c.fill();
+  c.strokeStyle = GOLD; c.lineWidth = f(0.8); rr(c, LM, y, CW, qrHt, f(6)); c.stroke();
 
   try {
     const QRCode = await loadQR();
-    const qrUrl = `https://www.artevamaisonkw.com/receipt.html?order=${order.orderNumber || ''}`;
-    const qrDataUrl = await (QRCode.toDataURL || QRCode.default.toDataURL)(qrUrl, {
-      width: qrSz,
-      margin: 1,
-      color: { dark: '#2c241b', light: '#ffffff' },
-      errorCorrectionLevel: 'H',
+    const toDataURL = QRCode.toDataURL || QRCode.default?.toDataURL;
+
+    // 1. Digital Receipt QR
+    const trackingToken = order.trackingToken || '';
+    const receiptUrl = `https://www.artevamaisonkw.com/receipt.html?order=${encodeURIComponent(order.orderNumber || '')}${trackingToken ? '&token=' + encodeURIComponent(trackingToken) : ''}`;
+    const receiptDataUrl = await toDataURL(receiptUrl, {
+      width: qrSz, margin: 1, color: { dark: '#2c241b', light: '#ffffff' }, errorCorrectionLevel: 'H'
     });
 
-    const qrImg = new Image();
-    await new Promise((resolve, reject) => {
-      qrImg.onload = resolve;
-      qrImg.onerror = reject;
-      qrImg.src = qrDataUrl;
+    // 2. WhatsApp QR
+    const whatsappUrl = 'https://wa.me/96550683207';
+    const whatsappDataUrl = await toDataURL(whatsappUrl, {
+      width: qrSz, margin: 1, color: { dark: '#2c241b', light: '#ffffff' }, errorCorrectionLevel: 'H'
     });
 
-    // A newer render has taken over the canvas — stop before drawing over it.
+    const [imgReceipt, imgWA] = await Promise.all([
+      new Promise((res, rej) => { const img = new Image(); img.onload = () => res(img); img.onerror = rej; img.src = receiptDataUrl; }),
+      new Promise((res, rej) => { const img = new Image(); img.onload = () => res(img); img.onerror = rej; img.src = whatsappDataUrl; }),
+    ]);
+
     if (isStale?.()) return;
 
-    const qrX = LM + f(10);
-    const qrY = y + (qrHt - qrSz) / 2;
-    c.drawImage(qrImg, qrX, qrY, qrSz, qrSz);
+    // --- Box 1: Digital Receipt ---
+    const box1X = LM;
+    const qr1X = box1X + (qrBoxW - qrSz) / 2;
+    const qr1Y = y + f(6);
+    c.drawImage(imgReceipt, qr1X, qr1Y, qrSz, qrSz);
 
-    const lx = qrX + qrSz + f(14);
-    c.textAlign = 'left'; c.fillStyle = DARK; c.font = `600 ${f(10)}px Arial`;
-    c.fillText('Scan for Digital Receipt', lx, y + f(20));
-    c.fillStyle = MID; c.font = `${f(8.5)}px Arial`;
-    c.fillText('امسح للإيصال الرقمي', lx, y + f(32));
-    c.fillStyle = LIGHT; c.font = `${f(8)}px Arial`;
-    c.fillText('www.artevamaisonkw.com', lx, y + f(46));
+    // Border around QR 1
+    c.strokeStyle = GOLD; c.lineWidth = f(0.8);
+    c.strokeRect(qr1X, qr1Y, qrSz, qrSz);
+
+    // Overlay Box on QR 1
+    const ovW = f(18), ovH = f(18);
+    const ovX = qr1X + (qrSz - ovW) / 2, ovY = qr1Y + (qrSz - ovH) / 2;
+    c.fillStyle = '#ffffff'; rr(c, ovX, ovY, ovW, ovH, f(2)); c.fill();
+    c.strokeStyle = GOLD; c.lineWidth = f(0.5); rr(c, ovX, ovY, ovW, ovH, f(2)); c.stroke();
+    c.textAlign = 'center'; c.fillStyle = DARK; c.font = `bold ${f(4.5)}px Georgia`;
+    c.fillText('ARTÉVA', ovX + ovW / 2, ovY + f(3));
+    c.fillStyle = GOLD; c.font = `${f(3.5)}px Georgia`;
+    c.fillText('MAISON', ovX + ovW / 2, ovY + f(10));
+
+    // Label 1
+    c.textAlign = 'center'; c.fillStyle = DARK; c.font = `600 ${f(7.5)}px Arial`;
+    c.fillText('Scan for Digital Receipt', box1X + qrBoxW / 2, qr1Y + qrSz + f(4));
+    c.fillStyle = MID; c.font = `${f(6.5)}px Arial`;
+    c.fillText('امسح للإيصال الرقمي', box1X + qrBoxW / 2, qr1Y + qrSz + f(14));
+
+    // Divider line between boxes
+    c.strokeStyle = BORDER; c.lineWidth = f(0.5);
+    c.beginPath(); c.moveTo(LM + qrBoxW + f(10), y + f(6)); c.lineTo(LM + qrBoxW + f(10), y + qrHt - f(6)); c.stroke();
+
+    // --- Box 2: WhatsApp ---
+    const box2X = LM + qrBoxW + f(20);
+    const qr2X = box2X + (qrBoxW - qrSz) / 2;
+    const qr2Y = y + f(6);
+    c.drawImage(imgWA, qr2X, qr2Y, qrSz, qrSz);
+
+    // Border around QR 2
+    c.strokeStyle = GOLD; c.lineWidth = f(0.8);
+    c.strokeRect(qr2X, qr2Y, qrSz, qrSz);
+
+    // Overlay Circle on QR 2 (Green WhatsApp Badge)
+    const waOvR = f(7);
+    const waOvX = qr2X + qrSz / 2, waOvY = qr2Y + qrSz / 2;
+    c.fillStyle = '#25D366'; c.beginPath(); c.arc(waOvX, waOvY, waOvR, 0, Math.PI * 2); c.fill();
+    c.textAlign = 'center'; c.fillStyle = '#ffffff'; c.font = `bold ${f(7)}px Arial`;
+    c.fillText('W', waOvX, waOvY - f(3.5));
+
+    // Label 2
+    c.textAlign = 'center'; c.fillStyle = DARK; c.font = `600 ${f(7.5)}px Arial`;
+    c.fillText('Contact us on WhatsApp', box2X + qrBoxW / 2, qr2Y + qrSz + f(4));
+    c.fillStyle = MID; c.font = `${f(6.5)}px Arial`;
+    c.fillText('تواصل معنا عبر واتساب', box2X + qrBoxW / 2, qr2Y + qrSz + f(14));
+
   } catch (err) {
-    // A missing QR must not stop the receipt from being printed.
     console.error('[RECEIPT] QR render failed:', err);
   }
 
