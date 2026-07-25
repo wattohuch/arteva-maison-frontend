@@ -59,7 +59,6 @@ const extractCoords = (input) => {
   for (let c of targets) {
     if (!c) continue;
 
-    // Attempt JSON parsing if stringified
     if (typeof c === 'string') {
       try {
         c = JSON.parse(c);
@@ -69,7 +68,6 @@ const extractCoords = (input) => {
           const p1 = parseNum(parts[0]);
           const p2 = parseNum(parts[1]);
           if (p1 !== null && p2 !== null) {
-            // Kuwait longitude ~ 47.9, latitude ~ 29.3
             if (p1 > 40 && p2 < 35) return { lat: p2, lng: p1 };
             return { lat: p1, lng: p2 };
           }
@@ -84,7 +82,6 @@ const extractCoords = (input) => {
       lat = parseNum(c.lat ?? c.latitude ?? c.y);
       lng = parseNum(c.lng ?? c.longitude ?? c.long ?? c.x);
 
-      // GeoJSON point array format
       if ((lat === null || lng === null) && Array.isArray(c.coordinates)) {
         const first = parseNum(c.coordinates[0]);
         const second = parseNum(c.coordinates[1]);
@@ -235,7 +232,7 @@ export default function DriverDashboard() {
   const [activeOrder, setActiveOrder] = useState(null);
   const [showModal, setShowModal] = useState(false);
   const [updatingStatus, setUpdatingStatus] = useState(false);
-  const [showItemsChecklist, setShowItemsChecklist] = useState(false);
+  const [showItemsChecklist, setShowItemsChecklist] = useState(true);
   const [notifPermission, setNotifPermission] = useState('default');
   const [socketConnected, setSocketConnected] = useState(false);
 
@@ -289,7 +286,7 @@ export default function DriverDashboard() {
     }
   };
 
-  // Register service worker for background backgrounding
+  // Register service worker
   useEffect(() => {
     if ('serviceWorker' in navigator) {
       navigator.serviceWorker.register('/sw.js').catch(err => {
@@ -362,7 +359,7 @@ export default function DriverDashboard() {
     };
   }, [user, loadOrders]);
 
-  // Tab visibility resync (handles phone lock / tab minimize unlock)
+  // Tab visibility resync
   useEffect(() => {
     const handleVisibilityChange = () => {
       if (document.visibilityState === 'visible') {
@@ -411,7 +408,7 @@ export default function DriverDashboard() {
 
   const openOrder = (order) => {
     setActiveOrder(order);
-    setShowItemsChecklist(false);
+    setShowItemsChecklist(true);
     setShowModal(true);
   };
 
@@ -474,12 +471,11 @@ export default function DriverDashboard() {
     }
   };
 
-  // Google Maps navigation URL builder — prioritizing exact GPS coordinates
+  // Direct Google Maps query link — uses maps.google.com/?q=lat,lng format to keep exact coordinates in search box
   const getGoogleMapsUrl = (order) => {
     const parsed = extractCoords(order);
     if (parsed) {
-      // Use direct lat,lng search query so Google Maps drops pin directly on GPS coordinates
-      return `https://www.google.com/maps/search/?api=1&query=${parsed.lat},${parsed.lng}`;
+      return `https://maps.google.com/?q=${parsed.lat},${parsed.lng}`;
     }
     const addr = [
       order?.shippingAddress?.street,
@@ -487,10 +483,10 @@ export default function DriverDashboard() {
       order?.shippingAddress?.city,
       order?.shippingAddress?.country || 'Kuwait',
     ].filter(Boolean).join(', ');
-    return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(addr)}`;
+    return `https://maps.google.com/?q=${encodeURIComponent(addr)}`;
   };
 
-  // Waze navigation helper — prioritizing exact GPS coordinates
+  // Waze direct coordinate navigation link
   const getWazeUrl = (order) => {
     const parsed = extractCoords(order);
     if (parsed) {
@@ -650,6 +646,26 @@ export default function DriverDashboard() {
               <div className="driver-order-info" style={{ marginTop: 2 }}>
                 📍 <span>{order.shippingAddress?.street || 'Street'}, {order.shippingAddress?.city || 'Kuwait City'}</span>
                 {order.shippingAddress?.state && <span style={{ color: '#64748b' }}> • Block {order.shippingAddress.state}</span>}
+              </div>
+
+              {/* Items preview with prominent SKUs */}
+              <div style={{ marginTop: 10, padding: '8px 12px', background: '#f8fafc', borderRadius: 8, border: '1px solid #e2e8f0' }}>
+                <div style={{ fontSize: '0.78rem', fontWeight: 700, color: '#475569', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: 4 }}>
+                  📦 Items ({order.items?.length || 0}):
+                </div>
+                {(order.items || []).map((item, idx) => {
+                  const sku = item.sku || item.product?.sku || item.productSku || 'N/A';
+                  return (
+                    <div key={idx} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '0.82rem', padding: '3px 0', borderBottom: idx < order.items.length - 1 ? '1px dashed #cbd5e1' : 'none' }}>
+                      <span style={{ fontWeight: 600, color: '#1e293b', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: '60%' }}>
+                        x{item.quantity} {item.name}
+                      </span>
+                      <span style={{ background: '#e2e8f0', color: '#334155', fontWeight: 700, fontSize: '0.75rem', padding: '1px 6px', borderRadius: 4, fontFamily: 'monospace' }}>
+                        SKU: {sku}
+                      </span>
+                    </div>
+                  );
+                })}
               </div>
 
               {/* Dynamic Mini Map */}
@@ -830,35 +846,42 @@ export default function DriverDashboard() {
                 </div>
 
                 {/* Package Items Checklist Accordion */}
-                <div style={{ marginBottom: 16, border: '1px solid #e2e8f0', borderRadius: 8, overflow: 'hidden' }}>
+                <div style={{ marginBottom: 16, border: '1px solid #cbd5e1', borderRadius: 8, overflow: 'hidden', boxShadow: '0 2px 8px rgba(0,0,0,0.04)' }}>
                   <button
                     type="button"
-                    style={{ width: '100%', padding: '10px 14px', background: '#f8fafc', border: 'none', textAlign: 'left', fontWeight: 600, fontSize: '0.88rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center', cursor: 'pointer' }}
+                    style={{ width: '100%', padding: '12px 14px', background: '#f1f5f9', border: 'none', textAlign: 'left', fontWeight: 700, fontSize: '0.92rem', color: '#0f172a', display: 'flex', justifyContent: 'space-between', alignItems: 'center', cursor: 'pointer' }}
                     onClick={() => setShowItemsChecklist(!showItemsChecklist)}
                   >
-                    <span>📦 Package Contents ({activeOrder.items?.length || 0} items)</span>
+                    <span>📦 Package Contents & SKUs ({activeOrder.items?.length || 0} items)</span>
                     <span>{showItemsChecklist ? '▲ Hide' : '▼ View Items'}</span>
                   </button>
                   {showItemsChecklist && (
-                    <div style={{ padding: 12, background: '#fff' }}>
-                      {(activeOrder.items || []).map((item, i) => (
-                        <div key={i} style={{ display: 'flex', gap: 10, alignItems: 'center', marginBottom: 8, paddingBottom: 8, borderBottom: i < activeOrder.items.length - 1 ? '1px dashed #e2e8f0' : 'none' }}>
-                          {resolveImageUrl(item.image || getProductImage(item)) && (
-                            <img
-                              src={resolveImageUrl(item.image || getProductImage(item))}
-                              alt=""
-                              style={{ width: 36, height: 36, objectFit: 'cover', borderRadius: 6, border: '1px solid #cbd5e1' }}
-                            />
-                          )}
-                          <div style={{ flex: 1, minWidth: 0 }}>
-                            <div style={{ fontWeight: 600, fontSize: '0.85rem' }}>{item.name}</div>
-                            {item.sku && <div style={{ fontSize: '0.75rem', color: '#64748b' }}>SKU: {item.sku}</div>}
+                    <div style={{ padding: 14, background: '#fff' }}>
+                      {(activeOrder.items || []).map((item, i) => {
+                        const itemSku = item.sku || item.product?.sku || item.productSku || 'N/A';
+                        return (
+                          <div key={i} style={{ display: 'flex', gap: 12, alignItems: 'center', marginBottom: 10, paddingBottom: 10, borderBottom: i < activeOrder.items.length - 1 ? '1px solid #e2e8f0' : 'none' }}>
+                            {resolveImageUrl(item.image || getProductImage(item)) && (
+                              <img
+                                src={resolveImageUrl(item.image || getProductImage(item))}
+                                alt=""
+                                style={{ width: 44, height: 44, objectFit: 'cover', borderRadius: 6, border: '1px solid #cbd5e1' }}
+                              />
+                            )}
+                            <div style={{ flex: 1, minWidth: 0 }}>
+                              <div style={{ fontWeight: 700, fontSize: '0.9rem', color: '#0f172a' }}>{item.name}</div>
+                              <div style={{ marginTop: 4, display: 'inline-flex', alignItems: 'center', gap: 4, background: '#f1f5f9', padding: '3px 8px', borderRadius: 6, border: '1px solid #cbd5e1' }}>
+                                <span style={{ fontSize: '0.75rem', fontWeight: 800, color: '#334155', fontFamily: 'monospace' }}>
+                                  🏷️ SKU: {itemSku}
+                                </span>
+                              </div>
+                            </div>
+                            <div style={{ fontWeight: 800, fontSize: '0.95rem', background: '#e2e8f0', color: '#0f172a', padding: '4px 10px', borderRadius: 6 }}>
+                              x{item.quantity}
+                            </div>
                           </div>
-                          <div style={{ fontWeight: 700, fontSize: '0.85rem', background: '#f1f5f9', padding: '2px 8px', borderRadius: 4 }}>
-                            x{item.quantity}
-                          </div>
-                        </div>
-                      ))}
+                        );
+                      })}
                     </div>
                   )}
                 </div>
