@@ -8,6 +8,8 @@ const WHATSAPP_NUMBER = '96550683207';
 const WHATSAPP_URL = `https://api.whatsapp.com/send?phone=${WHATSAPP_NUMBER}`;
 
 export default function Footer() {
+  const { t, lang } = useI18n();
+  const { categories, getCategoryName } = useCategories();
   const fallbackCategories = [
     { slug: 'living-room', name: lang === 'ar' ? 'غرفة المعيشة' : 'Living Room' },
     { slug: 'bedroom', name: lang === 'ar' ? 'غرفة النوم' : 'Bedroom' },
@@ -46,7 +48,7 @@ export default function Footer() {
             <h4>{lang === 'ar' ? 'الفئات' : 'Categories'}</h4>
             {displayedCategories.slice(0, 8).map(cat => (
               <Link key={cat._id || cat.id || cat.slug} to={`/collection/${cat.slug}`}>
-                {cat.name || getCategoryName ? getCategoryName(cat) : cat.name}
+                {getCategoryName ? getCategoryName(cat) : cat.name}
               </Link>
             ))}
           </nav>
