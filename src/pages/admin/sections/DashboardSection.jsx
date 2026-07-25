@@ -7,6 +7,7 @@ import Loader from '../../../components/ui/Loader';
 import AdminTable from '../components/AdminTable';
 import StatCard from '../components/StatCard';
 import StatusPill from '../components/StatusPill';
+import OrderDetailSheet from '../components/OrderDetailSheet';
 import { BagIcon, GridIcon, UserIcon, SparkleIcon, GlobeIcon, TicketIcon, TagIcon, ReceiptIcon } from '../../../components/ui/Icons';
 
 export default function DashboardSection() {
@@ -14,6 +15,8 @@ export default function DashboardSection() {
   const navigate = useNavigate();
   const [stats, setStats] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [selectedOrder, setSelectedOrder] = useState(null);
+  const [drivers, setDrivers] = useState([]);
 
   useEffect(() => {
     let cancelled = false;
@@ -29,6 +32,12 @@ export default function DashboardSection() {
     }, 30000);
 
     return () => { cancelled = true; clearInterval(interval); };
+  }, []);
+
+  useEffect(() => {
+    AdminAPI.getUsers()
+      .then(res => setDrivers((res.data || []).filter(u => u.role === 'driver')))
+      .catch(() => {});
   }, []);
 
   if (loading) return <div className="admin-loading"><Loader /></div>;
@@ -84,15 +93,22 @@ export default function DashboardSection() {
             rows={stats.recentOrders.slice(0, 10)}
             columns={[
               { key: 'orderNumber', header: '#', render: o => <span className="order-num">{o.orderNumber}</span> },
-              { key: 'customer', header: t('customer'), render: o => o.user?.name || t('guest') },
+              { key: 'customer', header: t('customer'), render: o => o.user?.name || o.shippingAddress?.fullName || t('guest') },
               { key: 'total', header: t('total'), render: o => `${(o.totalAmount || o.total || 0).toFixed(3)} KWD` },
               { key: 'status', header: t('status'), render: o => <StatusPill status={o.status || o.orderStatus} /> },
               { key: 'date', header: t('date'), render: o => timeAgo(o.createdAt) },
             ]}
             empty={t('admin_no_orders')}
+            onRowClick={(row) => setSelectedOrder(row)}
           />
         </section>
       )}
+
+      <OrderDetailSheet
+        order={selectedOrder}
+        onClose={() => setSelectedOrder(null)}
+        drivers={drivers}
+      />
     </div>
   );
 }

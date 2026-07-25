@@ -28,7 +28,7 @@
   height: clamp(220px, 34vw, 320px);
   border-radius: var(--radius-lg);
   overflow: hidden;
-  background: var(--color-ink);
+  background: #f4eae0;
   border: 1px solid var(--border-medium);
   box-shadow: var(--shadow-md);
   cursor: grab;
@@ -51,13 +51,6 @@
   height: 256px;
   max-width: none;
   pointer-events: none;
-  filter:
-    invert(1)
-    hue-rotate(180deg)
-    saturate(0.42)
-    brightness(0.82)
-    contrast(1.08)
-    sepia(0.28);
 }
 
 /* RTL must not mirror the tile grid — geography is not directional */

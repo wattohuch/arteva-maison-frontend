@@ -46,7 +46,14 @@ export default function AdminTable({
         </thead>
         <tbody>
           {rows.map(row => (
-            <tr key={rowKey(row)}>
+            <tr
+              key={rowKey(row)}
+              onClick={(e) => {
+                if (e.target.closest('button, input, select, a, .admin-row-actions')) return;
+                onRowClick?.(row);
+              }}
+              style={onRowClick ? { cursor: 'pointer' } : undefined}
+            >
               {columns.map(col => (
                 <td
                   key={col.key}

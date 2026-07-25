@@ -18,8 +18,8 @@ export function CategoriesProvider({ children }) {
     try {
       const res = await CategoriesAPI.getAll();
       const catData = Array.isArray(res) ? res : (res?.data || res?.categories || []);
-      // Sort by displayOrder if present, preserving backend order
-      const sorted = [...catData].sort((a, b) => (a.displayOrder ?? a.order ?? 0) - (b.displayOrder ?? b.order ?? 0));
+      // Sort by sortOrder if present, preserving backend order
+      const sorted = [...catData].sort((a, b) => (a.sortOrder ?? a.displayOrder ?? a.order ?? 0) - (b.sortOrder ?? b.displayOrder ?? b.order ?? 0));
       setCategories(sorted);
     } catch (err) {
       console.error('Failed to load categories:', err);

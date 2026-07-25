@@ -8,6 +8,8 @@ import StatCard from '../components/StatCard';
 import StatusPill from '../components/StatusPill';
 import { TicketIcon, CheckCircleIcon, ClockIcon, GridIcon } from '../../../components/ui/Icons';
 
+import PromoCodeDetailSheet from '../components/PromoCodeDetailSheet';
+
 export default function PromoCodesSection() {
   const [promos, setPromos] = useState([]);
   const [filtered, setFiltered] = useState([]);
@@ -16,6 +18,7 @@ export default function PromoCodesSection() {
   const [modalOpen, setModalOpen] = useState(false);
   const [editing, setEditing] = useState(null);
   const [saving, setSaving] = useState(false);
+  const [selectedPromo, setSelectedPromo] = useState(null);
 
   const load = useCallback(() => {
     setLoading(true);
@@ -156,12 +159,20 @@ export default function PromoCodesSection() {
             key: 'actions', header: 'Actions', align: 'right',
             render: p => (
               <div className="admin-row-actions">
+                <button className="admin-icon-btn" onClick={() => setSelectedPromo(p)} title="View Discounted Products">👁️</button>
                 <button className="admin-icon-btn" onClick={() => openEdit(p)} title="Edit">✏️</button>
                 <button className="admin-icon-btn admin-icon-danger" onClick={() => handleDelete(p._id)} title="Delete">🗑️</button>
               </div>
             ),
           },
         ]}
+        onRowClick={(p) => setSelectedPromo(p)}
+      />
+
+      <PromoCodeDetailSheet
+        promo={selectedPromo}
+        onClose={() => setSelectedPromo(null)}
+        onUpdated={load}
       />
 
       <AdminModal open={modalOpen} onClose={() => setModalOpen(false)} title={editing ? 'Edit Promo Code' : 'Create Promo Code'}>

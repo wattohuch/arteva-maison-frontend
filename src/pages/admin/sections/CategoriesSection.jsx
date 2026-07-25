@@ -53,18 +53,24 @@ export default function CategoriesSection() {
 
   const handleMove = async (id, direction) => {
     const arr = [...categories];
-    arr.forEach((c, i) => { c.sortOrder = i; });
     const idx = arr.findIndex(c => c._id === id);
     if (idx < 0) return;
     const swapIdx = direction === 'up' ? idx - 1 : idx + 1;
     if (swapIdx < 0 || swapIdx >= arr.length) return;
-    // Swap
-    [arr[idx].sortOrder, arr[swapIdx].sortOrder] = [arr[swapIdx].sortOrder, arr[idx].sortOrder];
-    const items = arr.map(c => ({ id: c._id, sortOrder: c.sortOrder }));
+    // Swap positions
+    const temp = arr[idx];
+    arr[idx] = arr[swapIdx];
+    arr[swapIdx] = temp;
+    // Reassign sortOrder
+    arr.forEach((c, i) => { c.sortOrder = i; });
+    setCategories([...arr]);
+    setFiltered([...arr]);
+    const items = arr.map((c, i) => ({ id: c._id, sortOrder: i }));
     try {
       await AdminAPI.reorderCategories(items);
+    } catch {
       load();
-    } catch { /* toast */ }
+    }
   };
 
   const handleSubmit = async (e) => {

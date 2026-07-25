@@ -268,7 +268,7 @@ function initMap() {
 
     window.map = L.map('map').setView([defaultLat, defaultLng], 11);
 
-    L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
+    L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
         maxZoom: 20,
         attribution: '© CartoDB © OpenStreetMap'
     }).addTo(window.map);

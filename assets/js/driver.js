@@ -301,8 +301,8 @@ window.finishDelivery = async (id, proofBlob) => {
 
 // Map Init
 function initMap() {
-    // Define Layers (Copied from previous steps)
-    const cartoDB = L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
+    // Define Layers (Light theme map)
+    const cartoLight = L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
         maxZoom: 20,
         attribution: '© CartoDB © OpenStreetMap'
     });
@@ -314,10 +314,10 @@ function initMap() {
         center: [DEFAULT_LAT, DEFAULT_LNG],
         zoom: 13,
         zoomControl: false, // Cleaner UI
-        layers: [cartoDB]
+        layers: [cartoLight]
     });
 
-    L.control.layers({ "Map": cartoDB, "Satellite": googleHybrid, "Streets": esriStreets, "OSM": osm }).addTo(map);
+    L.control.layers({ "Light Map": cartoLight, "OSM": osm, "Satellite": googleHybrid, "Streets": esriStreets }).addTo(map);
 }
 
 // Init Socket — with live order assignment listener

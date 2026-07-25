@@ -9,6 +9,7 @@ import { GlobeIcon, UserIcon, EyeIcon, ClockIcon } from '../../../components/ui/
 export default function VisitorsSection() {
   const [siteVisitsData, setSiteVisitsData] = useState(null);
   const [visitorLog, setVisitorLog] = useState([]);
+  const [productAnalytics, setProductAnalytics] = useState(null);
   const [loading, setLoading] = useState(true);
   const [dateFilter, setDateFilter] = useState('');
 
@@ -17,13 +18,19 @@ export default function VisitorsSection() {
     const queryParam = dateFilter ? `?date=${dateFilter}&limit=1000` : '?limit=1000';
     try {
       const visitsRes = await AdminAPI.getSiteVisits(queryParam);
-      if (visitsRes.success) setSiteVisitsData(visitsRes.data);
+      if (visitsRes?.success) setSiteVisitsData(visitsRes.data);
     } catch { /* ignore */ }
 
     try {
       const logRes = await AdminAPI.getSiteVisitLog(queryParam);
-      if (logRes.success) setVisitorLog(logRes.data || []);
+      if (logRes?.success) setVisitorLog(logRes.data || []);
     } catch { /* ignore */ }
+
+    try {
+      const prodRes = await AdminAPI.getProductAnalytics();
+      if (prodRes?.success) setProductAnalytics(prodRes.data);
+    } catch { /* ignore */ }
+
     setLoading(false);
   }, [dateFilter]);
 
@@ -32,10 +39,17 @@ export default function VisitorsSection() {
   if (loading) return <div className="admin-loading"><Loader /></div>;
 
   const totalVisits = siteVisitsData?.totalVisits || 0;
-  const uniqueIPs = siteVisitsData?.uniqueIPs || 0;
-  const productViewsCount = siteVisitsData?.productViewsCount || 0;
-  const todayVisits = siteVisitsData?.todayVisits || 0;
-  const dailySummary = siteVisitsData?.dailySummary || [];
+  const uniqueIPs = siteVisitsData?.totalUniqueVisitors || 0;
+  const todayVisits = siteVisitsData?.todayVisitors || 0;
+  
+  let productViewsCount = 0;
+  if (Array.isArray(productAnalytics)) {
+    productViewsCount = productAnalytics.reduce((sum, p) => sum + (p.views || 0), 0);
+  } else if (productAnalytics?.totalViews) {
+    productViewsCount = productAnalytics.totalViews;
+  }
+
+  const dailySummary = siteVisitsData?.dailyBreakdown || [];
 
   const statCards = [
     { Icon: GlobeIcon, label: 'Website Visits', value: totalVisits.toLocaleString(), tone: 'blue' },
@@ -80,8 +94,7 @@ export default function VisitorsSection() {
             columns={[
               { key: 'date', header: 'Date', render: d => <strong>{d.date}</strong> },
               { key: 'totalVisits', header: 'Total Visits', render: d => (d.totalVisits || 0).toLocaleString() },
-              { key: 'uniqueIPs', header: 'Unique IPs', render: d => (d.uniqueIPs || 0).toLocaleString() },
-              { key: 'productViews', header: 'Product Views', render: d => (d.productViews || 0).toLocaleString() },
+              { key: 'uniqueIPs', header: 'Unique IPs', render: d => (d.uniqueVisitors || 0).toLocaleString() },
             ]}
           />
         </section>
@@ -95,10 +108,9 @@ export default function VisitorsSection() {
           rowKey={(v, i) => v._id || `v-${i}`}
           columns={[
             { key: 'ip', header: 'IP Address', render: v => <code style={{ fontSize: 12, fontWeight: 600 }}>{v.ip || '—'}</code> },
-            { key: 'timestamp', header: 'Time', render: v => new Date(v.timestamp || v.createdAt).toLocaleString() },
-            { key: 'page', header: 'Page / Product', render: v => v.productName || v.path || v.page || '—' },
-            { key: 'device', header: 'Device', render: v => v.device || '—' },
-            { key: 'referrer', header: 'Referrer', render: v => <span style={{ fontSize: 11, color: 'var(--text-muted)' }} title={v.referrer}>{(v.referrer || '—').substring(0, 40)}</span> },
+            { key: 'timestamp', header: 'Time', render: v => new Date(v.createdAt || v.date || Date.now()).toLocaleString() },
+            { key: 'page', header: 'Page / Product', render: v => v.productName || v.path || v.page || 'Product View' },
+            { key: 'referrer', header: 'Referrer', render: v => <span style={{ fontSize: 11, color: 'var(--text-muted)' }} title={v.referrer}>{(v.referrer || 'Direct / None').substring(0, 40)}</span> },
           ]}
         />
       </section>

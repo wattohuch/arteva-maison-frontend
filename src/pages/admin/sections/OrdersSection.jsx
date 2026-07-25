@@ -11,6 +11,7 @@ import { resolveImageUrl } from '../../../utils/imageHelpers';
 import AdminTable from '../components/AdminTable';
 import AdminToolbar from '../components/AdminToolbar';
 import AppSheet, { ConfirmSheet } from '../../../components/ui/AppSheet';
+import OrderDetailSheet from '../components/OrderDetailSheet';
 import './OrdersSection.css';
 
 const ORDER_STATUSES = [
@@ -370,6 +371,7 @@ export default function OrdersSection() {
         rows={orders}
         empty={t('admin_no_orders')}
         columns={columns}
+        onRowClick={(o) => setDetailOrder(o)}
       />
 
       {pagination.pages > 1 && (
@@ -388,39 +390,13 @@ export default function OrdersSection() {
         </nav>
       )}
 
-      {/* ── Order detail ── */}
-      <AppSheet
-        open={!!detailOrder}
+      {/* ── Order detail sheet ── */}
+      <OrderDetailSheet
+        order={detailOrder}
         onClose={() => setDetailOrder(null)}
-        title={detailOrder ? `Order #${detailOrder.orderNumber}` : ''}
-        subtitle={detailOrder ? `${detailOrder.orderSource === 'manual' ? 'Manual receipt' : 'Online order'} · ${formatDate(detailOrder.createdAt)}` : ''}
-        headerAction={canDelete && detailOrder ? (
-          <button
-            type="button"
-            className="btn btn-danger btn-sm"
-            onClick={() => setDeleteTarget(detailOrder)}
-          >
-            <TrashIcon size={15} /> Delete
-          </button>
-        ) : null}
-        footer={
-          <>
-            {detailOrder?.orderSource === 'manual' && (
-              <button
-                type="button" className="btn btn-secondary"
-                onClick={() => { setDetailOrder(null); navigate('/admin/receipt-generator'); }}
-              >
-                Edit receipt
-              </button>
-            )}
-            <button type="button" className="btn btn-primary" onClick={() => setDetailOrder(null)}>
-              Close
-            </button>
-          </>
-        }
-      >
-        {detailOrder && <OrderDetail order={detailOrder} />}
-      </AppSheet>
+        onUpdated={loadOrders}
+        drivers={drivers}
+      />
 
       {/* ── Driver map ── */}
       <AppSheet

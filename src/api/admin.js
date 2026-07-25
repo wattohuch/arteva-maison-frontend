@@ -11,9 +11,9 @@ export const AdminAPI = {
   updateProduct: (id, formData) => apiUpload(`/admin/products/${id}`, 'PUT', formData),
   deleteProduct: (id) => apiRequest(`/admin/products/${id}`, { method: 'DELETE' }),
   reorderProducts: (items) =>
-    apiRequest('/admin/products/reorder', {
+    apiRequest('/products/reorder', {
       method: 'PUT',
-      body: JSON.stringify({ items }),
+      body: JSON.stringify({ products: items }),
     }),
 
   // ── Discounts ──
@@ -118,8 +118,8 @@ export const AdminAPI = {
   getVisitorLog: () => apiRequest('/admin/analytics/visitor-log'),
 
   // ── Visitors (Site Visits) ──
-  getSiteVisits: (params = '') => apiRequest(`/admin/site-visits${params}`),
-  getSiteVisitLog: (params = '') => apiRequest(`/admin/site-visits/log${params}`),
+  getSiteVisits: (params = '') => apiRequest(`/admin/analytics/site-visits${params}`),
+  getSiteVisitLog: (params = '') => apiRequest(`/admin/analytics/visitor-log${params}`),
 
   // ── Categories Admin ──
   getCategories: () => apiRequest('/categories'),
@@ -127,9 +127,9 @@ export const AdminAPI = {
   updateCategory: (id, formData) => apiUpload(`/admin/categories/${id}`, 'PUT', formData),
   deleteCategory: (id) => apiRequest(`/admin/categories/${id}`, { method: 'DELETE' }),
   reorderCategories: (items) =>
-    apiRequest('/admin/categories/reorder', {
+    apiRequest('/categories/reorder', {
       method: 'PUT',
-      body: JSON.stringify({ items }),
+      body: JSON.stringify({ categories: items }),
     }),
 
   // ── Hero Slides ──
