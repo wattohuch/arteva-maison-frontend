@@ -105,6 +105,15 @@ export default function OrdersSection() {
 
   useEffect(() => { loadOrders(); }, [loadOrders]);
 
+  // Real-time Socket Event Listener
+  useEffect(() => {
+    const handleRealtime = () => {
+      loadOrders();
+    };
+    window.addEventListener('admin_realtime_order', handleRealtime);
+    return () => window.removeEventListener('admin_realtime_order', handleRealtime);
+  }, [loadOrders]);
+
   // Drivers change rarely — fetched once rather than alongside every order query.
   useEffect(() => {
     AdminAPI.getUsers()

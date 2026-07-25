@@ -1,7 +1,10 @@
-import { lazy, Suspense, useState, useEffect } from 'react';
+import { lazy, Suspense, useState, useEffect, useRef } from 'react';
 import { NavLink, Navigate, Route, Routes, useLocation, useNavigate } from 'react-router-dom';
+import { io } from 'socket.io-client';
 import { useAuth } from '../../contexts/AuthContext';
 import { useI18n } from '../../contexts/I18nContext';
+import { API_BASE_URL } from '../../api/client';
+import { showToast } from '../../components/ui/Toast';
 import Toast from '../../components/ui/Toast';
 import Loader from '../../components/ui/Loader';
 import {
@@ -10,15 +13,6 @@ import {
   ReceiptIcon, GlobeIcon, TicketIcon, PhoneIcon, CoinsIcon,
 } from '../../components/ui/Icons';
 import './AdminLayout.css';
-
-/**
- * Admin shell.
- *
- * Sections are real routes (/admin/orders, /admin/products, …) rather than
- * local state, so the browser back button, deep links and refreshes behave.
- * Each section is code-split — opening the dashboard no longer downloads the
- * products form and the users table with it.
- */
 
 const DashboardSection = lazy(() => import('./sections/DashboardSection'));
 const OrdersSection = lazy(() => import('./sections/OrdersSection'));
@@ -35,10 +29,33 @@ const ReceiptsSection = lazy(() => import('./sections/ReceiptsSection'));
 const VisitorsSection = lazy(() => import('./sections/VisitorsSection'));
 const PromoCodesSection = lazy(() => import('./sections/PromoCodesSection'));
 const SocialContactsSection = lazy(() => import('./sections/SocialContactsSection'));
-// The generator pulls in a canvas renderer and a QR encoder, so it stays in
-// its own chunk and is only fetched when an admin actually opens it.
 const ReceiptGenerator = lazy(() => import('./receipt/ReceiptGenerator'));
 const RevenueSection = lazy(() => import('./sections/RevenueSection'));
+
+const playAdminChime = () => {
+  try {
+    const AudioCtx = window.AudioContext || window.webkitAudioContext;
+    if (!AudioCtx) return;
+    const ctx = new AudioCtx();
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    
+    osc.type = 'sine';
+    osc.frequency.setValueAtTime(523.25, ctx.currentTime); // C5
+    osc.frequency.setValueAtTime(659.25, ctx.currentTime + 0.12); // E5
+    osc.frequency.setValueAtTime(783.99, ctx.currentTime + 0.24); // G5
+    
+    gain.gain.setValueAtTime(0.3, ctx.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.5);
+    
+    osc.connect(gain);
+    gain.connect(ctx.destination);
+    osc.start();
+    osc.stop(ctx.currentTime + 0.5);
+  } catch (e) {
+    console.warn('Audio alert error:', e);
+  }
+};
 
 export default function AdminLayout() {
   const { user, logout } = useAuth();
@@ -46,10 +63,10 @@ export default function AdminLayout() {
   const navigate = useNavigate();
   const location = useLocation();
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [socketConnected, setSocketConnected] = useState(false);
 
-  // Revenue is owner-only. The nav is hidden for other roles as a courtesy —
-  // the endpoint itself is guarded server-side by the `owner` middleware, so
-  // hiding it here is presentation, not access control.
+  const socketRef = useRef(null);
+
   const isOwner = user?.role === 'owner' || user?.role === 'superuser';
 
   const navItems = [
@@ -72,7 +89,7 @@ export default function AdminLayout() {
     { to: '/admin/social-contacts', Icon: PhoneIcon, label: 'Social Contacts' },
   ];
 
-  // Close the drawer whenever the route changes
+  // Close sidebar on route change
   useEffect(() => { setSidebarOpen(false); }, [location.pathname]);
 
   useEffect(() => {
@@ -84,6 +101,43 @@ export default function AdminLayout() {
     const onKey = (e) => { if (e.key === 'Escape') setSidebarOpen(false); };
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
+  }, []);
+
+  // Global Socket.IO Listener for Admin Dashboard
+  useEffect(() => {
+    const backendOrigin = API_BASE_URL.replace(/\/api\/?$/, '');
+    const socket = io(backendOrigin, {
+      transports: ['websocket', 'polling'],
+      reconnection: true,
+      reconnectionDelay: 1000,
+    });
+
+    socketRef.current = socket;
+
+    socket.on('connect', () => {
+      setSocketConnected(true);
+      socket.emit('join_admin_room');
+    });
+
+    socket.on('disconnect', () => {
+      setSocketConnected(false);
+    });
+
+    const handleRealtimeOrderEvent = (eventName, data) => {
+      playAdminChime();
+      showToast(`⚡ Live Socket: ${eventName} received!`, 'info');
+      // Dispatch browser custom event for child sections (OrdersSection, DashboardSection)
+      window.dispatchEvent(new CustomEvent('admin_realtime_order', { detail: { eventName, data } }));
+    };
+
+    socket.on('new_order', (data) => handleRealtimeOrderEvent('New Order Placed', data));
+    socket.on('order_status_update', (data) => handleRealtimeOrderEvent('Order Status Updated', data));
+    socket.on('driver_order_update', (data) => handleRealtimeOrderEvent('Driver Update', data));
+    socket.on('driver_new_assignment', (data) => handleRealtimeOrderEvent('Driver Assignment', data));
+
+    return () => {
+      socket.disconnect();
+    };
   }, []);
 
   const current = navItems.find(n => location.pathname.startsWith(n.to));
@@ -139,7 +193,12 @@ export default function AdminLayout() {
           >
             {sidebarOpen ? <CloseIcon size={20} /> : <MenuIcon size={20} />}
           </button>
-          <h1 className="admin-topbar-title">{current?.label || t('admin_dashboard')}</h1>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+            <h1 className="admin-topbar-title" style={{ margin: 0 }}>{current?.label || t('admin_dashboard')}</h1>
+            <span style={{ fontSize: '0.78rem', fontWeight: 600, color: socketConnected ? '#059669' : '#d97706', background: socketConnected ? '#ecfdf5' : '#fffbeb', padding: '3px 10px', borderRadius: 16, border: '1px solid currentColor' }}>
+              {socketConnected ? '🟢 Live Socket Active' : '🟡 Socket Reconnecting...'}
+            </span>
+          </div>
           <div className="admin-topbar-user">
             <span className="admin-topbar-name">{user?.name}</span>
             <span className="admin-topbar-role">{user?.role}</span>
