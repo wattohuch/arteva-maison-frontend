@@ -11,13 +11,11 @@ import Loader from '../../components/ui/Loader';
 import Toast from '../../components/ui/Toast';
 import './DriverDashboard.css';
 
-const DEFAULT_LAT = 29.3759;
-const DEFAULT_LNG = 47.9774;
 const TILE_SIZE = 256;
 
 const kwd = (n) => `${(Number(n) || 0).toFixed(3)} KWD`;
 
-/* ── Web-mercator tile helpers for light map preview ── */
+/* ── Web-mercator tile helpers ── */
 const lngToX = (lng, z) => ((lng + 180) / 360) * TILE_SIZE * 2 ** z;
 const latToY = (lat, z) => {
   const s = Math.sin((lat * Math.PI) / 180);
@@ -25,15 +23,84 @@ const latToY = (lat, z) => {
 };
 
 /**
- * Compact OpenStreetMap mini-map component for driver location pinning.
+ * OpenStreetMap mini-map component for driver location pinning.
+ * Dynamic geocoding resolves addresses when explicit coordinates are missing,
+ * avoiding fixed fallback pins.
  */
-function MiniOrderMap({ lat, lng, street, city }) {
-  const validLat = Number.isFinite(lat) && lat !== 0 ? lat : DEFAULT_LAT;
-  const validLng = Number.isFinite(lng) && lng !== 0 ? lng : DEFAULT_LNG;
-  const zoom = 15;
+function MiniOrderMap({ lat, lng, street, city, state, country }) {
+  const [coords, setCoords] = useState(null);
+  const [loading, setLoading] = useState(false);
 
-  const cx = lngToX(validLng, zoom);
-  const cy = latToY(validLat, zoom);
+  const hasExplicitCoords = Number.isFinite(lat) && Number.isFinite(lng) && lat !== 0 && lng !== 0;
+
+  useEffect(() => {
+    if (hasExplicitCoords) {
+      setCoords({ lat, lng, isPinned: true });
+      return;
+    }
+
+    // Attempt geocoding address text if no explicit pin
+    const addressQuery = [street, state, city, country || 'Kuwait'].filter(Boolean).join(', ');
+    if (!addressQuery || addressQuery.trim() === 'Kuwait') {
+      setCoords(null);
+      return;
+    }
+
+    let isMounted = true;
+    setLoading(true);
+
+    const timer = setTimeout(async () => {
+      try {
+        const url = `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(addressQuery)}&countrycodes=kw&limit=1`;
+        const res = await fetch(url, { headers: { 'Accept': 'application/json' } });
+        if (res.ok) {
+          const data = await res.json();
+          if (data && data.length > 0 && isMounted) {
+            const fetchedLat = parseFloat(data[0].lat);
+            const fetchedLng = parseFloat(data[0].lon);
+            if (Number.isFinite(fetchedLat) && Number.isFinite(fetchedLng)) {
+              setCoords({ lat: fetchedLat, lng: fetchedLng, isPinned: false });
+            }
+          }
+        }
+      } catch (err) {
+        console.warn('Geocoding error:', err.message);
+      } finally {
+        if (isMounted) setLoading(false);
+      }
+    }, 300);
+
+    return () => {
+      isMounted = false;
+      clearTimeout(timer);
+    };
+  }, [hasExplicitCoords, lat, lng, street, state, city, country]);
+
+  if (loading) {
+    return (
+      <div className="driver-mini-map-loading">
+        <span className="driver-spinner-sm" /> Resolving location pin...
+      </div>
+    );
+  }
+
+  if (!coords) {
+    return (
+      <div className="driver-no-pin-box">
+        <span style={{ fontSize: '20px' }}>📍</span>
+        <div>
+          <strong style={{ fontSize: '0.85rem', color: '#1e293b', display: 'block' }}>Delivery Location</strong>
+          <span style={{ fontSize: '0.78rem', color: '#64748b' }}>
+            {[street, state, city].filter(Boolean).join(', ') || 'Address specified'}
+          </span>
+        </div>
+      </div>
+    );
+  }
+
+  const zoom = coords.isPinned ? 16 : 14;
+  const cx = lngToX(coords.lng, zoom);
+  const cy = latToY(coords.lat, zoom);
   const width = 320;
   const height = 140;
 
@@ -81,7 +148,7 @@ function MiniOrderMap({ lat, lng, street, city }) {
         <span className="driver-pin-shadow" />
       </div>
       <div className="driver-mini-map-badge">
-        {street || city ? `${street}, ${city}` : 'Pinned Location'}
+        {coords.isPinned ? '📌 Customer Pinned Location' : '📍 ' + ([street, city].filter(Boolean).join(', ') || 'Address Area')}
       </div>
     </div>
   );
@@ -219,24 +286,25 @@ export default function DriverDashboard() {
     }
   };
 
-  // Google Maps navigation helper — exact pinned coordinates first
+  // Google Maps navigation helper — exact pinned coordinates first, or full address search
   const getGoogleMapsUrl = (order) => {
     const c = order.shippingAddress?.coordinates;
-    if (c && c.lat != null && c.lng != null && !(c.lat === 0 && c.lng === 0)) {
-      return `https://maps.google.com/?q=${c.lat},${c.lng}`;
+    if (c && Number.isFinite(c.lat) && Number.isFinite(c.lng) && !(c.lat === 0 && c.lng === 0)) {
+      return `https://www.google.com/maps/search/?api=1&query=${c.lat},${c.lng}`;
     }
     const addr = [
       order.shippingAddress?.street,
+      order.shippingAddress?.state ? `Block ${order.shippingAddress.state}` : '',
       order.shippingAddress?.city,
       order.shippingAddress?.country || 'Kuwait',
     ].filter(Boolean).join(', ');
-    return `https://maps.google.com/?q=${encodeURIComponent(addr)}`;
+    return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(addr)}`;
   };
 
   // Waze navigation helper
   const getWazeUrl = (order) => {
     const c = order.shippingAddress?.coordinates;
-    if (c && c.lat != null && c.lng != null && !(c.lat === 0 && c.lng === 0)) {
+    if (c && Number.isFinite(c.lat) && Number.isFinite(c.lng) && !(c.lat === 0 && c.lng === 0)) {
       return `https://waze.com/ul?ll=${c.lat},${c.lng}&navigate=yes`;
     }
     return getGoogleMapsUrl(order);
@@ -353,7 +421,6 @@ export default function DriverDashboard() {
         ) : displayOrders.map(order => {
           const statusColor = getStatusColor(order.orderStatus);
           const coords = order.shippingAddress?.coordinates;
-          const hasCoords = coords && Number.isFinite(coords.lat) && Number.isFinite(coords.lng) && !(coords.lat === 0 && coords.lng === 0);
           const isCod = order.paymentMethod === 'cod' || order.paymentStatus !== 'paid';
 
           return (
@@ -385,13 +452,15 @@ export default function DriverDashboard() {
                 {order.shippingAddress?.state && <span style={{ color: '#64748b' }}> • Block {order.shippingAddress.state}</span>}
               </div>
 
-              {/* Embedded Mini Map preview for pinned locations */}
+              {/* Dynamic Mini Map with Geocoding */}
               <div style={{ marginTop: 10 }}>
                 <MiniOrderMap
                   lat={coords?.lat}
                   lng={coords?.lng}
                   street={order.shippingAddress?.street}
+                  state={order.shippingAddress?.state}
                   city={order.shippingAddress?.city}
+                  country={order.shippingAddress?.country}
                 />
               </div>
 
@@ -481,7 +550,7 @@ export default function DriverDashboard() {
                 </p>
                 {activeOrder.shippingAddress?.state && (
                   <p style={{ margin: '2px 0', fontSize: '0.84rem', color: '#475569' }}>
-                    Block / State: {activeOrder.shippingAddress.state}
+                    Block / Area: {activeOrder.shippingAddress.state}
                   </p>
                 )}
 
@@ -508,7 +577,9 @@ export default function DriverDashboard() {
                     lat={activeOrder.shippingAddress?.coordinates?.lat}
                     lng={activeOrder.shippingAddress?.coordinates?.lng}
                     street={activeOrder.shippingAddress?.street}
+                    state={activeOrder.shippingAddress?.state}
                     city={activeOrder.shippingAddress?.city}
+                    country={activeOrder.shippingAddress?.country}
                   />
                 </div>
               </div>
