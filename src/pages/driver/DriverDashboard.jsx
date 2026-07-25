@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback, useRef, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { io } from 'socket.io-client';
 import { useAuth } from '../../contexts/AuthContext';
 import { useI18n } from '../../contexts/I18nContext';
 import { DriverAPI } from '../../api/driver';
@@ -23,10 +24,7 @@ const latToY = (lat, z) => {
 };
 
 /**
- * Robust coordinate extractor supporting:
- * - { lat: 29.37, lng: 47.97 } or { lat: "29.37", lng: "47.97" } (numbers or strings)
- * - { latitude: 29.37, longitude: 47.97 }
- * - Array [lng, lat] or [lat, lng]
+ * Robust coordinate extractor supporting strings, arrays, and property variants.
  */
 const parseNum = (val) => {
   if (val === null || val === undefined || val === '') return null;
@@ -65,8 +63,34 @@ const extractCoords = (addressObj) => {
 };
 
 /**
+ * Web Audio API synthesizer for real-time order arrival sound chime.
+ */
+const playOrderChime = () => {
+  try {
+    const AudioCtx = window.AudioContext || window.webkitAudioContext;
+    if (!AudioCtx) return;
+    const ctx = new AudioCtx();
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    
+    osc.type = 'triangle';
+    osc.frequency.setValueAtTime(587.33, ctx.currentTime); // D5
+    osc.frequency.setValueAtTime(880, ctx.currentTime + 0.15); // A5
+    
+    gain.gain.setValueAtTime(0.35, ctx.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.6);
+    
+    osc.connect(gain);
+    gain.connect(ctx.destination);
+    osc.start();
+    osc.stop(ctx.currentTime + 0.6);
+  } catch (e) {
+    console.warn('Audio alert error:', e);
+  }
+};
+
+/**
  * OpenStreetMap mini-map component for driver location pinning.
- * Renders exact pinned location map when coordinates exist, or clean Address Location card.
  */
 function MiniOrderMap({ rawCoords, street, city, state }) {
   const parsed = useMemo(() => extractCoords({ coordinates: rawCoords }), [rawCoords]);
@@ -154,7 +178,11 @@ export default function DriverDashboard() {
   const [showModal, setShowModal] = useState(false);
   const [updatingStatus, setUpdatingStatus] = useState(false);
   const [showItemsChecklist, setShowItemsChecklist] = useState(false);
+  const [notifPermission, setNotifPermission] = useState('default');
+  const [socketConnected, setSocketConnected] = useState(false);
+
   const fileInputRef = useRef(null);
+  const socketRef = useRef(null);
 
   // Auth guard
   useEffect(() => {
@@ -179,10 +207,126 @@ export default function DriverDashboard() {
     loadOrders();
   }, [loadOrders]);
 
-  // Auto-refresh every 20 seconds
+  // Check notification permission
   useEffect(() => {
-    const interval = setInterval(loadOrders, 20000);
-    return () => clearInterval(interval);
+    if ('Notification' in window) {
+      setNotifPermission(Notification.permission);
+    }
+  }, []);
+
+  const requestNotifPermission = async () => {
+    if (!('Notification' in window)) {
+      showToast('Notifications not supported on this browser', 'error');
+      return;
+    }
+    try {
+      const perm = await Notification.requestPermission();
+      setNotifPermission(perm);
+      if (perm === 'granted') {
+        showToast('Real-time notifications enabled! 🔔', 'success');
+        playOrderChime();
+      }
+    } catch (e) {
+      console.warn('Permission error:', e);
+    }
+  };
+
+  // Register service worker for background backgrounding
+  useEffect(() => {
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('/sw.js').catch(err => {
+        console.warn('SW registration warning:', err.message);
+      });
+    }
+  }, []);
+
+  // Real-time WebSocket connection
+  useEffect(() => {
+    if (!user?._id) return;
+
+    const backendOrigin = API_BASE_URL.replace(/\/api\/?$/, '');
+    const socket = io(backendOrigin, {
+      transports: ['websocket', 'polling'],
+      reconnection: true,
+      reconnectionDelay: 1000,
+      reconnectionDelayMax: 5000,
+      reconnectionAttempts: Infinity
+    });
+
+    socketRef.current = socket;
+
+    socket.on('connect', () => {
+      setSocketConnected(true);
+      if (user._id) socket.emit('join_pilot_room', user._id.toString());
+      if (user.role === 'admin') socket.emit('join_admin_room');
+    });
+
+    socket.on('disconnect', () => {
+      setSocketConnected(false);
+    });
+
+    // Helper for broadcasting alert
+    const triggerOrderAlert = (title, body) => {
+      loadOrders();
+      playOrderChime();
+      showToast(`${title}: ${body}`, 'info');
+
+      if ('Notification' in window && Notification.permission === 'granted') {
+        try {
+          const n = new Notification(title, {
+            body: body,
+            icon: '/favicon.ico',
+            tag: 'driver-notification-' + Date.now(),
+            renotify: true
+          });
+          n.onclick = () => {
+            window.focus();
+          };
+        } catch (e) {
+          console.warn('Background notification warning:', e);
+        }
+      }
+    };
+
+    socket.on('driver_order_update', (data) => {
+      triggerOrderAlert('📦 Delivery Update', `Order #${data.orderNumber || ''} status: ${data.status || 'updated'}`);
+    });
+
+    socket.on('driver_new_assignment', (data) => {
+      triggerOrderAlert('🚀 New Order Assigned!', `Order #${data.orderNumber || ''} total ${kwd(data.total)}`);
+    });
+
+    socket.on('new_order', (data) => {
+      triggerOrderAlert('🆕 New Order Received', `Order #${data.orderNumber || ''} total ${kwd(data.total)}`);
+    });
+
+    return () => {
+      socket.disconnect();
+    };
+  }, [user, loadOrders]);
+
+  // Tab visibility resync (handles phone lock / tab minimize unlock)
+  useEffect(() => {
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'visible') {
+        loadOrders();
+        if (socketRef.current && !socketRef.current.connected) {
+          socketRef.current.connect();
+        }
+      }
+    };
+
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    window.addEventListener('focus', handleVisibilityChange);
+
+    // Interval heartbeat fallback every 12 seconds
+    const interval = setInterval(loadOrders, 12000);
+
+    return () => {
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+      window.removeEventListener('focus', handleVisibilityChange);
+      clearInterval(interval);
+    };
   }, [loadOrders]);
 
   const activeOrders = useMemo(() => 
@@ -338,7 +482,9 @@ export default function DriverDashboard() {
           </div>
           <div>
             <h3 className="driver-name">{user?.name || 'Driver'}</h3>
-            <span className="driver-role">🟢 Online Shift • ARTÉVA Driver</span>
+            <span className="driver-role">
+              {socketConnected ? '🟢 Live Socket Active' : '🟡 Reconnecting Socket...'} • ARTÉVA Driver
+            </span>
           </div>
         </div>
         <div className="driver-header-right">
@@ -350,6 +496,16 @@ export default function DriverDashboard() {
           </button>
         </div>
       </header>
+
+      {/* Real-time Notification Banner */}
+      {notifPermission !== 'granted' && (
+        <div className="driver-notif-banner">
+          <span>🔔 Turn on sound & background alerts for new orders</span>
+          <button type="button" className="driver-notif-enable-btn" onClick={requestNotifPermission}>
+            Enable Alerts
+          </button>
+        </div>
+      )}
 
       {/* Driver Stats */}
       <div className="driver-stats">
