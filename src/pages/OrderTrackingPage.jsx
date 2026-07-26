@@ -380,7 +380,7 @@ export default function OrderTrackingPage() {
   return (
     <div className="section">
       <div className="container" style={{ maxWidth: '800px' }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 'var(--space-2)' }}>
+        <div className="tracking-page-head" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 'var(--space-2)' }}>
           <h1 style={{ margin: 0 }}>{t('order_status_title')}</h1>
           <span style={{ fontSize: '0.82rem', fontWeight: 600, color: socketConnected ? '#059669' : '#d97706', background: socketConnected ? '#ecfdf5' : '#fffbeb', padding: '4px 10px', borderRadius: 20, border: '1px solid currentColor' }}>
             {socketConnected ? '🟢 Live Socket Tracking' : '🟡 Connecting Live Socket...'}
@@ -441,7 +441,7 @@ export default function OrderTrackingPage() {
                   </div>
                 </div>
               </div>
-              <div style={{ display: 'flex', gap: 8 }}>
+              <div className="tracking-driver-actions" style={{ display: 'flex', gap: 8 }}>
                 {driverPhone && (
                   <button
                     type="button"
