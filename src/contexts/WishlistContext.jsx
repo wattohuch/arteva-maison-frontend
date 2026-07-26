@@ -1,4 +1,5 @@
 import { createContext, useContext, useState, useCallback, useMemo, useEffect } from 'react';
+import { trackAddToWishlist } from '../utils/metaPixel';
 
 /**
  * Presentation-layer wishlist.
@@ -41,6 +42,8 @@ export function WishlistProvider({ children }) {
     const id = product?._id || product?.id;
     if (!id) return false;
     const exists = items.some(i => (i._id || i.id) === id);
+    // Saving is the signal; un-saving is not an event Meta models.
+    if (!exists) trackAddToWishlist(product);
     setItems(prev => exists
       ? prev.filter(i => (i._id || i.id) !== id)
       : [...prev, product]);

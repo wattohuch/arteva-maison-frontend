@@ -2,6 +2,7 @@ import {
   createContext, useContext, useEffect, useLayoutEffect, useMemo, useRef, useState,
 } from 'react';
 import { useLocation } from 'react-router-dom';
+import { trackPageView } from '../../utils/metaPixel';
 import './RouteTransition.css';
 
 /* ============================================
@@ -105,6 +106,14 @@ export function RouteTransitionProvider({ children }) {
     lastScrollKey.current = key;
     window.scrollTo(0, 0);
   }, [displayLocation]);
+
+  /* A single-page app navigates without a document load, so the pixel's own
+     PageView fires once per session and every route after the first is
+     invisible to it. Reported here, on the swap, so the URL Meta records is
+     the page the visitor actually landed on. */
+  useEffect(() => {
+    trackPageView();
+  }, [displayLocation.pathname]);
 
   const value = useMemo(() => ({
     stage,

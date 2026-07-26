@@ -2,6 +2,7 @@ import {
   createContext, useContext, useState, useCallback, useEffect, useMemo,
 } from 'react';
 import { CartAPI } from '../api/cart';
+import { trackAddToCart } from '../utils/metaPixel';
 import { useAuth } from './AuthContext';
 
 const CartContext = createContext(null);
@@ -31,6 +32,10 @@ export function CartProvider({ children }) {
   ), [items]);
 
   const addItem = useCallback((product, quantity = 1) => {
+    // Reported here rather than in each button, so every route into the basket
+    // — card, detail page, drawer — is counted exactly once.
+    trackAddToCart(product, quantity);
+
     setItems(prev => {
       const id = product._id || product.id;
       const existing = prev.find(i => (i._id || i.id) === id);

@@ -9,6 +9,7 @@ import { PaymentsAPI } from '../api/payments';
 import { CartAPI } from '../api/cart';
 import { AuthAPI } from '../api/auth';
 import { handleImageError } from '../utils/imageHelpers';
+import { trackInitiateCheckout } from '../utils/metaPixel';
 import { showToast } from '../components/ui/Toast';
 import { AlertCircleIcon } from '../components/ui/Icons';
 import Button from '../components/ui/Button';
@@ -272,6 +273,10 @@ export default function CheckoutPage() {
     const address = collectAddress();
     if (!address) return;
     setProcessing(true);
+
+    // Reported at the point of committing to pay, before the gateway redirect
+    // takes the tab away — this is the last moment we can speak for the basket.
+    trackInitiateCheckout(items, total);
 
     try {
       await syncCartToServer();

@@ -16,6 +16,11 @@ import { WishlistProvider } from './contexts/WishlistContext';
 import { PromoProvider } from './contexts/PromoContext';
 import { SiteSettingsProvider } from './contexts/SiteSettingsContext';
 import App from './App';
+import { initMetaPixel } from './utils/metaPixel';
+
+// Opt-in: does nothing unless VITE_META_PIXEL_ID is set, so local development
+// and preview deploys never write into the client's ad data.
+initMetaPixel();
 
 // Apply the stored language/direction BEFORE the first paint. Doing this inside
 // a React effect meant Arabic rendered left-to-right for one frame and then

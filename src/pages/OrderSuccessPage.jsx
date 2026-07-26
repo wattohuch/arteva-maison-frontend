@@ -1,11 +1,33 @@
+import { useEffect, useRef } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import { useI18n } from '../contexts/I18nContext';
 import { CheckCircleIcon } from '../components/ui/Icons';
+import { OrdersAPI } from '../api/orders';
+import { trackPurchase } from '../utils/metaPixel';
 
 export default function OrderSuccessPage() {
   const { t } = useI18n();
   const [searchParams] = useSearchParams();
   const orderNumber = searchParams.get('order') || '';
+  const reported = useRef(false);
+
+  /* The Purchase event lives here, not in checkout: checkout hands off to a
+     payment gateway and the tab never comes back to it.
+     The order is re-read rather than trusted from the URL so the value Meta
+     records is the one the server settled, and the guard stops a page refresh
+     from reporting the same purchase twice. Server-side Conversions API sends
+     the same event with a matching id, and Meta keeps whichever lands first. */
+  useEffect(() => {
+    if (!orderNumber || reported.current) return;
+    reported.current = true;
+
+    OrdersAPI.trackByNumber(orderNumber)
+      .then(res => {
+        const order = res?.data || res;
+        if (order?.orderNumber) trackPurchase(order);
+      })
+      .catch(() => { /* reporting is never worth breaking the page for */ });
+  }, [orderNumber]);
 
   return (
     <div className="section">

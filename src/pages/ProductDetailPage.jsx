@@ -9,6 +9,7 @@ import {
   getProductImage, handleImageError, cloudinaryImage, cloudinarySrcSet,
 } from '../utils/imageHelpers';
 import { showToast } from '../components/ui/Toast';
+import { trackViewContent } from '../utils/metaPixel';
 import { LuxuryLoader } from '../components/ui/loading';
 import Button from '../components/ui/Button';
 import { HeartIcon, PlusIcon, MinusIcon, TruckIcon, ShieldIcon, HomeIcon } from '../components/ui/Icons';
@@ -42,6 +43,13 @@ export default function ProductDetailPage() {
   useEffect(() => {
     if (product?._id) ProductsAPI.incrementView(product._id).catch(() => {});
   }, [product?._id]);
+
+  // ViewContent is what Meta builds product-level retargeting audiences from.
+  // Keyed on the id so opening a second product from a related-items rail
+  // reports again, rather than only on first mount.
+  useEffect(() => {
+    if (product?._id) trackViewContent(product);
+  }, [product?._id]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const handleAddToCart = useCallback(() => {
     addItem(product, quantity);
