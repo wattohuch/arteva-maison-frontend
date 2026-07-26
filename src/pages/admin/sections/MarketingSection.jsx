@@ -4,6 +4,7 @@ import { AdminAPI } from '../../../api/admin';
 export default function MarketingSection() {
   const [sending, setSending] = useState(false);
   const [previews, setPreviews] = useState([]);
+  const [result, setResult] = useState(null);
   const fileRef = useRef(null);
 
   const handleImageChange = (e) => {
@@ -15,6 +16,7 @@ export default function MarketingSection() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setSending(true);
+    setResult(null);
     const form = e.target;
 
     try {
@@ -30,12 +32,19 @@ export default function MarketingSection() {
         }
       }
 
-      await AdminAPI.sendEmailWithImages(formData);
-      alert('Campaign emails sent!');
+      const res = await AdminAPI.sendEmailWithImages(formData);
+      // The endpoint answers 202 the moment the campaign is accepted, not when
+      // the last email lands — saying "sent" here was reporting a delivery
+      // nobody had confirmed. Per-recipient results land in the server log and
+      // on the admin socket as `email_campaign_complete`.
+      setResult({
+        ok: true,
+        text: res?.message || 'Campaign queued. Emails are going out now.',
+      });
       form.reset();
       setPreviews([]);
-    } catch {
-      alert('Failed to send emails');
+    } catch (err) {
+      setResult({ ok: false, text: err?.message || 'Failed to queue the campaign.' });
     } finally {
       setSending(false);
     }
@@ -90,6 +99,20 @@ export default function MarketingSection() {
             {sending ? 'Sending...' : '📧 Send Campaign'}
           </button>
         </div>
+
+        {result && (
+          <p style={{
+            marginTop: 16,
+            padding: '10px 14px',
+            borderRadius: 8,
+            fontSize: '0.86rem',
+            background: result.ok ? '#ecfdf5' : '#fef2f2',
+            color: result.ok ? '#166534' : '#991b1b',
+            border: `1px solid ${result.ok ? '#bbf7d0' : '#fecaca'}`,
+          }}>
+            {result.text}
+          </p>
+        )}
       </form>
     </div>
   );

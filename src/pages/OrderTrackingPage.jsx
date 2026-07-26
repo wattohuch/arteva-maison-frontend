@@ -5,6 +5,8 @@ import { useI18n } from '../contexts/I18nContext';
 import { useCurrency } from '../contexts/CurrencyContext';
 import { OrdersAPI } from '../api/orders';
 import { formatDate, getStatusColor } from '../utils/formatters';
+import { TruckIcon } from '../components/ui/Icons';
+import { PinMark } from '../components/ui/PaymentMarks';
 import { API_BASE_URL } from '../api/client';
 import { LuxuryLoader } from '../components/ui/loading';
 import { showToast } from '../components/ui/Toast';
@@ -74,6 +76,117 @@ const getItemSku = (item, index) => {
   if (item._id) return `ART-${String(item._id).slice(-6).toUpperCase()}`;
   return `ART-${String((index || 0) + 1).padStart(3, '0')}`;
 };
+
+/** Widest zoom (16) down to (10) that still fits both points in the viewport. */
+function fitZoom(a, b, width, height) {
+  for (let z = 16; z >= 10; z--) {
+    const dx = Math.abs(lngToX(a.lng, z) - lngToX(b.lng, z));
+    const dy = Math.abs(latToY(a.lat, z) - latToY(b.lat, z));
+    if (dx < width * 0.66 && dy < height * 0.66) return z;
+  }
+  return 10;
+}
+
+/** Straight-line distance in km — enough for "how far away is he". */
+function haversineKm(a, b) {
+  const R = 6371;
+  const dLat = ((b.lat - a.lat) * Math.PI) / 180;
+  const dLng = ((b.lng - a.lng) * Math.PI) / 180;
+  const s = Math.sin(dLat / 2) ** 2
+    + Math.cos((a.lat * Math.PI) / 180) * Math.cos((b.lat * Math.PI) / 180) * Math.sin(dLng / 2) ** 2;
+  return R * 2 * Math.atan2(Math.sqrt(s), Math.sqrt(1 - s));
+}
+
+/**
+ * OpenStreetMap tiles with up to two markers on them: where the order is
+ * going, and where the driver is right now. The tile maths is the same
+ * projection the admin map uses; drawing it by hand avoids pulling Leaflet
+ * (and its CSS) into the storefront bundle for one card.
+ */
+function TrackingMap({ destination, driver, height = 240 }) {
+  const boxRef = useRef(null);
+  const [width, setWidth] = useState(340);
+
+  // The marker offsets are computed in pixels, so the map has to know how wide
+  // it actually is — a hardcoded width drifts on every screen but one.
+  useEffect(() => {
+    const el = boxRef.current;
+    if (!el || typeof ResizeObserver === 'undefined') return undefined;
+    const ro = new ResizeObserver(([entry]) => {
+      const w = Math.round(entry.contentRect.width);
+      if (w > 0) setWidth(w);
+    });
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, []);
+
+  const points = [destination, driver].filter(Boolean);
+  const zoom = points.length === 2 ? fitZoom(destination, driver, width, height) : 15;
+
+  const projected = points.map(p => ({ x: lngToX(p.lng, zoom), y: latToY(p.lat, zoom) }));
+  const cx = projected.reduce((sum, p) => sum + p.x, 0) / projected.length;
+  const cy = projected.reduce((sum, p) => sum + p.y, 0) / projected.length;
+
+  const originX = cx - width / 2;
+  const originY = cy - height / 2;
+  const startCol = Math.floor(originX / TILE_SIZE);
+  const startRow = Math.floor(originY / TILE_SIZE);
+  const cols = Math.ceil(width / TILE_SIZE) + 2;
+  const rows = Math.ceil(height / TILE_SIZE) + 2;
+  const max = 2 ** zoom;
+
+  const tiles = [];
+  for (let r = 0; r < rows; r++) {
+    for (let c = 0; c < cols; c++) {
+      const col = startCol + c;
+      const row = startRow + r;
+      if (row < 0 || row >= max) continue;
+      const wrapped = ((col % max) + max) % max;
+      tiles.push({
+        key: `${zoom}/${wrapped}/${row}`,
+        src: `https://tile.openstreetmap.org/${zoom}/${wrapped}/${row}.png`,
+        left: col * TILE_SIZE - originX,
+        top: row * TILE_SIZE - originY,
+      });
+    }
+  }
+
+  const at = (p) => ({
+    left: lngToX(p.lng, zoom) - originX,
+    top: latToY(p.lat, zoom) - originY,
+  });
+
+  return (
+    <div ref={boxRef} className="tracking-map" style={{ height }}>
+      <div className="tracking-map-tiles">
+        {tiles.map(tile => (
+          <img
+            key={tile.key}
+            src={tile.src}
+            alt=""
+            width={TILE_SIZE}
+            height={TILE_SIZE}
+            loading="lazy"
+            style={{ transform: `translate3d(${tile.left}px, ${tile.top}px, 0)` }}
+          />
+        ))}
+      </div>
+
+      {destination && (
+        <span className="tracking-marker tracking-marker-dest" style={at(destination)}>
+          <span className="tracking-marker-badge"><PinMark width="18" height="18" /></span>
+        </span>
+      )}
+
+      {driver && (
+        <span className="tracking-marker tracking-marker-driver" style={at(driver)}>
+          <span className="tracking-marker-pulse" />
+          <span className="tracking-marker-badge"><TruckIcon width="18" height="18" /></span>
+        </span>
+      )}
+    </div>
+  );
+}
 
 function MiniTrackingMap({ order }) {
   const parsed = useMemo(() => extractCoords(order), [order]);
@@ -159,6 +272,8 @@ export default function OrderTrackingPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [socketConnected, setSocketConnected] = useState(false);
+  const [driverPos, setDriverPos] = useState(null);
+  const [trackingOpen, setTrackingOpen] = useState(false);
 
   const socketRef = useRef(null);
 
@@ -211,10 +326,27 @@ export default function OrderTrackingPage() {
     socket.on('order_status_update', handleOrderUpdate);
     socket.on('order_updated', handleOrderUpdate);
 
+    // The driver's app pushes its position into the order room every few
+    // seconds. Moving the marker is all this needs — refetching the order on
+    // each ping would hammer the API for a value the event already carries.
+    socket.on('delivery_location_update', (data) => {
+      const lat = parseNum(data?.lat);
+      const lng = parseNum(data?.lng);
+      if (lat !== null && lng !== null) setDriverPos({ lat, lng });
+    });
+
     return () => {
       socket.disconnect();
     };
   }, [id, order?.orderNumber, loadOrderData]);
+
+  // Last known position, so the map is not empty between two live pings.
+  useEffect(() => {
+    if (driverPos) return;
+    const stored = extractCoords(order?.deliveryLocation)
+      || extractCoords(order?.deliveryPilot?.currentLocation);
+    if (stored) setDriverPos(stored);
+  }, [order, driverPos]);
 
   if (loading) {
     return (
@@ -232,6 +364,9 @@ export default function OrderTrackingPage() {
   const statusColor = getStatusColor(currentStatus);
 
   const driver = order.deliveryPilot;
+  // Plain call rather than useMemo — the early returns above mean a hook here
+  // would not run on every render.
+  const destination = extractCoords(order);
   const driverName = driver?.name || 'Assigned Driver';
   const driverPhone = driver?.phone || order.shippingAddress?.phone || '';
 
@@ -325,6 +460,38 @@ export default function OrderTrackingPage() {
                 </button>
               </div>
             </div>
+
+            {/* Live tracking. Collapsed by default — the map is only worth its
+                tiles once the order is actually moving. */}
+            <button
+              type="button"
+              className={`track-driver-btn ${trackingOpen ? 'is-open' : ''}`}
+              onClick={() => setTrackingOpen(open => !open)}
+              aria-expanded={trackingOpen}
+            >
+              <TruckIcon width="18" height="18" />
+              {trackingOpen ? t('hide_driver_tracking') : t('track_driver')}
+              {driverPos && destination && (
+                <span className="track-driver-distance">
+                  {haversineKm(driverPos, destination).toFixed(1)} km
+                </span>
+              )}
+            </button>
+
+            {trackingOpen && (
+              driverPos || destination ? (
+                <div className="track-driver-panel">
+                  <TrackingMap destination={destination} driver={driverPos} />
+                  <div className="tracking-legend">
+                    <span><i className="tracking-legend-dot is-driver" />{t('driver')}</span>
+                    <span><i className="tracking-legend-dot is-dest" />{t('shipping_address')}</span>
+                    {!driverPos && <span className="tracking-legend-note">{t('driver_location_pending')}</span>}
+                  </div>
+                </div>
+              ) : (
+                <p className="tracking-legend-note">{t('driver_location_pending')}</p>
+              )
+            )}
           </div>
         )}
 

@@ -27,7 +27,14 @@ export default function ContactPage() {
     if (!form.name || !form.email || !form.message) { showToast(t('fill_required_fields'), 'error'); return; }
     setLoading(true);
     try {
-      await ContactAPI.submit(form);
+      // The form asks for one name; /api/contact requires it split, and rejects
+      // the request outright if lastName is missing.
+      const [firstName, ...rest] = form.name.trim().split(/\s+/);
+      await ContactAPI.sendMessage({
+        ...form,
+        firstName,
+        lastName: rest.join(' ') || '-',
+      });
       setSubmitted(true);
       showToast(t('message_sent'), 'success');
     } catch (err) {

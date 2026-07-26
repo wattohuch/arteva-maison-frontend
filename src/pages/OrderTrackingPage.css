@@ -101,3 +101,132 @@
   .tracking-step-label { margin-top: 0; max-width: none; text-align: start; }
   .tracking-step-line { display: none; }
 }
+
+/* ── Live driver tracking ─────────────────────
+   Hand-drawn OSM tiles rather than Leaflet: the storefront would otherwise
+   carry a mapping library and its stylesheet for one collapsed card. */
+
+.track-driver-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  margin-top: var(--space-4);
+  padding: 10px 16px;
+  border: 1px solid #bbf7d0;
+  border-radius: var(--radius-pill);
+  background: #FFFFFF;
+  color: #166534;
+  font-size: var(--fs-sm);
+  font-weight: var(--fw-semibold);
+  cursor: pointer;
+  transition: background var(--transition-fast), border-color var(--transition-fast);
+}
+
+.track-driver-btn:hover { background: #f0fdf4; border-color: #86efac; }
+.track-driver-btn.is-open { background: #166534; border-color: #166534; color: #FFFFFF; }
+
+.track-driver-distance {
+  margin-inline-start: var(--space-2);
+  padding: 2px 8px;
+  border-radius: var(--radius-pill);
+  background: rgba(22, 101, 52, 0.12);
+  font-size: var(--fs-xs);
+  font-variant-numeric: tabular-nums;
+}
+.track-driver-btn.is-open .track-driver-distance { background: rgba(255, 255, 255, 0.18); }
+
+.track-driver-panel {
+  margin-top: var(--space-4);
+  animation: trackPanelOpen 320ms var(--ease-out-luxe) backwards;
+}
+
+@keyframes trackPanelOpen {
+  from { opacity: 0; transform: translate3d(0, -6px, 0); }
+  to   { opacity: 1; transform: none; }
+}
+
+.tracking-map {
+  position: relative;
+  width: 100%;
+  overflow: hidden;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border-light);
+  background: var(--bg-sand);
+}
+
+.tracking-map-tiles { position: absolute; inset: 0; overflow: hidden; }
+.tracking-map-tiles img { position: absolute; top: 0; left: 0; max-width: none; }
+
+/* Markers are placed by their pixel offset, then pulled back so the point of
+   the badge — not its corner — sits on the coordinate. */
+.tracking-marker {
+  position: absolute;
+  z-index: 5;
+  transform: translate(-50%, -50%);
+}
+
+.tracking-marker-badge {
+  position: relative;
+  z-index: 2;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 34px;
+  height: 34px;
+  border-radius: var(--radius-full);
+  border: 2px solid #FFFFFF;
+  box-shadow: var(--shadow-md);
+}
+
+.tracking-marker-dest .tracking-marker-badge { background: var(--color-espresso); color: #FFFFFF; }
+.tracking-marker-driver .tracking-marker-badge { background: #166534; color: #FFFFFF; }
+
+/* Only the driver pulses — it is the one thing on the map that is moving. */
+.tracking-marker-pulse {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 34px;
+  height: 34px;
+  margin: -17px 0 0 -17px;
+  border-radius: var(--radius-full);
+  background: rgba(22, 101, 52, 0.35);
+  animation: trackPulse 2s ease-out infinite;
+}
+
+@keyframes trackPulse {
+  0%   { transform: scale(0.8); opacity: 0.7; }
+  100% { transform: scale(2.4); opacity: 0; }
+}
+
+.tracking-legend {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: var(--space-4);
+  margin-top: var(--space-3);
+  font-size: var(--fs-xs);
+  color: var(--text-muted);
+}
+
+.tracking-legend span { display: inline-flex; align-items: center; gap: 6px; }
+
+.tracking-legend-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: var(--radius-full);
+}
+.tracking-legend-dot.is-driver { background: #166534; }
+.tracking-legend-dot.is-dest { background: var(--color-espresso); }
+
+.tracking-legend-note {
+  margin-top: var(--space-3);
+  font-size: var(--fs-xs);
+  color: var(--text-muted);
+  font-style: italic;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .tracking-marker-pulse { animation: none; opacity: 0.35; }
+  .track-driver-panel { animation: none; }
+}
