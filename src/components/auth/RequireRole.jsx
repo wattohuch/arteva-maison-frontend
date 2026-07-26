@@ -1,6 +1,6 @@
 import { Navigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
-import Loader from '../ui/Loader';
+import { LuxuryLoader } from '../ui/loading';
 
 /**
  * Route guard for role-restricted areas.
@@ -17,7 +17,7 @@ export default function RequireRole({ roles, children, redirectTo = '/account' }
   if (!authChecked) {
     return (
       <div className="page-loading">
-        <Loader />
+        <LuxuryLoader size="inline" />
       </div>
     );
   }

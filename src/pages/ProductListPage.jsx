@@ -3,7 +3,7 @@ import { useSearchParams } from 'react-router-dom';
 import { useI18n } from '../contexts/I18nContext';
 import { ProductsAPI } from '../api/products';
 import ProductCard from '../components/product/ProductCard';
-import Loader from '../components/ui/Loader';
+import { LuxuryLoader } from '../components/ui/loading';
 import './ProductListPage.css';
 
 export default function ProductListPage() {
@@ -72,7 +72,9 @@ export default function ProductListPage() {
         </div>
 
         {loading ? (
-          <div className="page-loading"><Loader text={t('loading')} /></div>
+          <div className="page-loading">
+            <LuxuryLoader size="inline" title={t('loading')} subtitle={t('please_wait')} />
+          </div>
         ) : sorted.length === 0 ? (
           <div className="empty-state"><p>{t('no_products')}</p></div>
         ) : (

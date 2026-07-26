@@ -8,7 +8,7 @@ import { OrdersAPI } from '../api/orders';
 import { formatDate, getStatusColor } from '../utils/formatters';
 import { buildRefundMessage, canRequestRefund, refundDaysLeft } from '../utils/refundRequest';
 import { cloudinaryImage } from '../utils/imageHelpers';
-import Loader from '../components/ui/Loader';
+import { LuxuryLoader } from '../components/ui/loading';
 import './OrdersPage.css';
 
 export default function OrdersPage() {
@@ -32,7 +32,13 @@ export default function OrdersPage() {
     });
   }, [isLoggedIn, navigate, t]);
 
-  if (loading) return <div className="section" style={{ display: 'flex', justifyContent: 'center', padding: '100px 0' }}><Loader text={t('loading_orders')} /></div>;
+  if (loading) {
+    return (
+      <div className="page-loading">
+        <LuxuryLoader size="inline" title={t('loading_orders')} subtitle={t('please_wait')} />
+      </div>
+    );
+  }
 
   return (
     <div className="section">

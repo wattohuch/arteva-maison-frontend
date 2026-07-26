@@ -6,7 +6,7 @@ import { AuthAPI } from '../api/auth';
 import { showToast } from '../components/ui/Toast';
 import Button from '../components/ui/Button';
 import { Input } from '../components/ui/Field';
-import Loader from '../components/ui/Loader';
+import { LuxuryLoader } from '../components/ui/loading';
 import LocationPicker from '../components/checkout/LocationPicker';
 import './AddressesPage.css';
 
@@ -103,7 +103,13 @@ export default function AddressesPage() {
     }
   };
 
-  if (loading) return <div className="section" style={{ display: 'flex', justifyContent: 'center', padding: '100px 0' }}><Loader /></div>;
+  if (loading) {
+    return (
+      <div className="page-loading">
+        <LuxuryLoader size="inline" title={t('loading')} subtitle={t('please_wait')} />
+      </div>
+    );
+  }
 
   return (
     <div className="section">

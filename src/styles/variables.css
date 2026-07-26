@@ -189,6 +189,7 @@
   --z-modal-backdrop: 1200;
   --z-modal: 1300;
   --z-toast: 1500;
+  --z-loading-screen: 1700;  /* covers everything, including toasts */
 }
 
 @media (max-width: 768px) {

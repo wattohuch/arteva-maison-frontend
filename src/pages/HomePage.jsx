@@ -6,7 +6,7 @@ import { ProductsAPI } from '../api/products';
 import { HeroAPI } from '../api/hero';
 import ProductCard from '../components/product/ProductCard';
 import CollectionCard from '../components/product/CollectionCard';
-import Loader from '../components/ui/Loader';
+import { LuxuryLoader } from '../components/ui/loading';
 import { cloudinaryImage, cloudinarySrcSet } from '../utils/imageHelpers';
 import {
   ArrowRightIcon, ChevronRightIcon,
@@ -73,7 +73,7 @@ export default function HomePage() {
   if (loading) {
     return (
       <div className="page-loading">
-        <Loader text={t('loading')} />
+        <LuxuryLoader size="inline" title={t('loading')} subtitle={t('please_wait')} />
       </div>
     );
   }

@@ -281,7 +281,7 @@ export const translations = {
 
     // UI chrome — navbar, drawers, dialogs
     menu: "Menu", search: "Search", close: "Close", next: "Next",
-    loading: "Loading…", items_unit: "items",
+    loading: "Loading…", please_wait: "Please wait", items_unit: "items",
     categories_unavailable: "Categories are unavailable right now.",
     decrease_quantity: "Decrease quantity", increase_quantity: "Increase quantity",
 
@@ -646,7 +646,7 @@ export const translations = {
 
     // UI chrome — navbar, drawers, dialogs
     menu: "القائمة", search: "بحث", close: "إغلاق", next: "التالي",
-    loading: "جارٍ التحميل…", items_unit: "قطعة",
+    loading: "جارٍ التحميل…", please_wait: "يرجى الانتظار", items_unit: "قطعة",
     categories_unavailable: "الأقسام غير متاحة حالياً.",
     decrease_quantity: "تقليل الكمية", increase_quantity: "زيادة الكمية",
 

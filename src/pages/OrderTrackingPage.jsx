@@ -6,7 +6,7 @@ import { useCurrency } from '../contexts/CurrencyContext';
 import { OrdersAPI } from '../api/orders';
 import { formatDate, getStatusColor } from '../utils/formatters';
 import { API_BASE_URL } from '../api/client';
-import Loader from '../components/ui/Loader';
+import { LuxuryLoader } from '../components/ui/loading';
 import { showToast } from '../components/ui/Toast';
 import Toast from '../components/ui/Toast';
 import './OrderTrackingPage.css';
@@ -216,7 +216,13 @@ export default function OrderTrackingPage() {
     };
   }, [id, order?.orderNumber, loadOrderData]);
 
-  if (loading) return <div className="section" style={{ display: 'flex', justifyContent: 'center', padding: '100px 0' }}><Loader text={t('loading_tracking')} /></div>;
+  if (loading) {
+    return (
+      <div className="page-loading">
+        <LuxuryLoader size="inline" title={t('loading_tracking')} subtitle={t('please_wait')} />
+      </div>
+    );
+  }
   if (error) return <div className="section container" style={{ textAlign: 'center', padding: '80px 0' }}><p style={{ color: '#CD5C5C' }}>{error}</p></div>;
   if (!order) return null;
 

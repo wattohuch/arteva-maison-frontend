@@ -2,7 +2,10 @@ import { lazy, Suspense } from 'react';
 import { Routes, Route } from 'react-router-dom';
 import PageLayout from './components/layout/PageLayout';
 import RequireRole from './components/auth/RequireRole';
-import Loader from './components/ui/Loader';
+import PageTransition, {
+  RouteTransitionProvider, useRouteTransition,
+} from './components/transitions/RouteTransition';
+import { GlobalLoadingScreen, SuspenseLoader } from './components/ui/loading';
 
 // Home is the landing route for nearly every visit, so it stays eager —
 // lazy-loading it would only add a round trip before the hero can paint.
@@ -37,14 +40,26 @@ const PaymentPendingPage = lazy(() => import('./pages/PaymentPendingPage'));
 const AdminLayout = lazy(() => import('./pages/admin/AdminLayout'));
 const DriverDashboard = lazy(() => import('./pages/driver/DriverDashboard'));
 
-function LazyFallback() {
-  return <div style={{ display: 'flex', justifyContent: 'center', padding: '80px 0' }}><Loader /></div>;
-}
-
 export default function App() {
   return (
-    <Suspense fallback={<LazyFallback />}>
-      <Routes>
+    <RouteTransitionProvider>
+      {/* Outside the router: the waiting state must never be unmounted by the
+          navigation it is covering. */}
+      <GlobalLoadingScreen />
+      <AppRoutes />
+    </RouteTransitionProvider>
+  );
+}
+
+function AppRoutes() {
+  // Routes are matched against the *displayed* location, which trails the URL
+  // by one exit animation. Without this the router would swap the page out
+  // from under the animation that is playing on it.
+  const { displayLocation } = useRouteTransition();
+
+  return (
+    <Suspense fallback={<SuspenseLoader />}>
+      <Routes location={displayLocation}>
         {/* Main layout routes */}
         <Route element={<PageLayout />}>
           <Route index element={<HomePage />} />
@@ -75,7 +90,11 @@ export default function App() {
           path="admin/*"
           element={
             <RequireRole roles={['admin', 'owner', 'superuser']}>
-              <AdminLayout />
+              {/* `view` motion: these panels carry fixed sidebars and toolbars,
+                  which a transform on the wrapper would re-anchor. */}
+              <PageTransition motion="view">
+                <AdminLayout />
+              </PageTransition>
             </RequireRole>
           }
         />
@@ -85,7 +104,9 @@ export default function App() {
           path="driver"
           element={
             <RequireRole roles={['driver', 'admin', 'owner', 'superuser']}>
-              <DriverDashboard />
+              <PageTransition motion="view">
+                <DriverDashboard />
+              </PageTransition>
             </RequireRole>
           }
         />

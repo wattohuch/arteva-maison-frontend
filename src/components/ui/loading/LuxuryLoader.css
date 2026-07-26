@@ -1,0 +1,346 @@
+/* ============================================
+   ARTÉVA Maison — Luxury loader
+
+   Composition:
+     orbit  — the ring's coordinate space; everything is placed from its centre
+     rotor  — arc + lit head + trailing dots, turning as one rigid body
+     halo   — the light the mark sits in, blooming in time with it
+     mark   — the house monogram, breathing, with light passing across it
+
+   The rotor (3.4s) and the breath (4.4s) never come back into phase, so the
+   loader never looks like a short clip on repeat.
+   ============================================ */
+
+.lux-loader {
+  --lux-ring: 200px;          /* orbit diameter */
+  --lux-ring-w: 2px;          /* arc thickness */
+  --lux-gold: #B58C4A;
+  --lux-gold-soft: #D9BC8A;
+  --lux-gold-deep: #8C672C;
+
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+}
+
+.lux-loader--inline {
+  --lux-ring: 116px;
+  --lux-ring-w: 1.5px;
+}
+
+/* ── Orbit ─────────────────────────────────── */
+.lux-loader__orbit {
+  position: relative;
+  width: var(--lux-ring);
+  height: var(--lux-ring);
+  display: grid;
+  place-items: center;
+  animation: luxRise 900ms var(--ease-out-luxe, cubic-bezier(0.16, 1, 0.3, 1)) backwards;
+}
+
+/* Barely there — just enough to imply the path the light is travelling. */
+.lux-loader__track {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  border: var(--lux-ring-w) solid rgba(181, 140, 74, 0.07);
+}
+
+/* The arc. A conic gradient masked to a hairline ring: the fade from nothing
+   to full gold is what reads as light travelling, rather than a bar spinning. */
+.lux-loader__arc {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  background: conic-gradient(
+    from 0deg,
+    rgba(181, 140, 74, 0) 0deg,
+    rgba(181, 140, 74, 0.08) 26deg,
+    rgba(181, 140, 74, 0.34) 118deg,
+    rgba(196, 158, 96, 0.72) 186deg,
+    var(--lux-gold-soft) 228deg,
+    #E4C88F 246deg,
+    rgba(181, 140, 74, 0) 250deg
+  );
+  -webkit-mask: radial-gradient(
+    farthest-side,
+    transparent calc(100% - var(--lux-ring-w)),
+    #000 calc(100% - var(--lux-ring-w))
+  );
+  mask: radial-gradient(
+    farthest-side,
+    transparent calc(100% - var(--lux-ring-w)),
+    #000 calc(100% - var(--lux-ring-w))
+  );
+}
+
+/* The lit head of the arc, sitting exactly where the gradient peaks. */
+.lux-loader__head {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 5px;
+  height: 5px;
+  margin: -2.5px 0 0 -2.5px;
+  border-radius: 50%;
+  background: #FFFDF8;
+  box-shadow:
+    0 0 6px 1.5px rgba(255, 255, 255, 0.95),
+    0 0 18px 6px rgba(226, 199, 150, 0.7),
+    0 0 34px 12px rgba(181, 140, 74, 0.28);
+  transform: rotate(247deg) translateY(calc(var(--lux-ring) / -2));
+}
+
+/* ── Trailing dots ─────────────────────────────
+   Each `i` is a zero-size anchor that only carries the rotation; the dot
+   itself is drawn on ::after so the chase can scale without disturbing the
+   placement transform. */
+.lux-loader__trail i {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 0;
+  height: 0;
+  transform:
+    rotate(calc(257deg + var(--i) * 12.2deg))
+    translateY(calc(var(--lux-ring) / -2));
+}
+
+.lux-loader__trail i::after {
+  --d: calc(4.6px - var(--i) * 0.4px);
+
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: var(--d);
+  height: var(--d);
+  margin: calc(var(--d) / -2) 0 0 calc(var(--d) / -2);
+  border-radius: 50%;
+  background: var(--lux-gold);
+  /* Nearest the head the dots are still lit; they cool as they fall behind. */
+  opacity: calc(0.88 - var(--i) * 0.085);
+  animation: luxTrailPulse 2.2s ease-in-out infinite;
+  animation-delay: calc(var(--i) * -0.12s);
+}
+
+.lux-loader__rotor {
+  position: absolute;
+  inset: 0;
+  animation: luxSpin 3.4s linear infinite;
+  will-change: transform;
+}
+
+@keyframes luxSpin {
+  to { transform: rotate(360deg); }
+}
+
+@keyframes luxTrailPulse {
+  0%, 100% { transform: scale(0.7); }
+  45%      { transform: scale(1.14); }
+}
+
+/* ── The light the mark sits in ── */
+.lux-loader__halo {
+  position: absolute;
+  inset: 14%;
+  border-radius: 50%;
+  background: radial-gradient(
+    circle,
+    rgba(255, 255, 255, 0.95) 0%,
+    rgba(250, 242, 228, 0.6) 42%,
+    rgba(247, 238, 222, 0) 72%
+  );
+  animation: luxHalo 4.4s ease-in-out infinite;
+}
+
+@keyframes luxHalo {
+  0%, 100% { transform: scale(0.9);  opacity: 0.5; }
+  50%      { transform: scale(1.07); opacity: 0.95; }
+}
+
+/* ── The mark ──────────────────────────────── */
+.lux-loader__mark {
+  position: relative;
+  width: 46%;
+  height: 46%;
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+  /* Breathes with the halo — one gesture, not two components animating. */
+  animation: luxBreathe 4.4s cubic-bezier(0.45, 0, 0.25, 1) infinite;
+}
+
+@keyframes luxBreathe {
+  0%, 100% { transform: scale(0.955); }
+  50%      { transform: scale(1.035); }
+}
+
+.lux-mark {
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+}
+
+.lux-mark__frame {
+  fill: rgba(255, 255, 255, 0.55);
+  stroke: rgba(255, 255, 255, 0.85);
+  stroke-width: 1;
+}
+
+.lux-mark__petals path {
+  fill: none;
+  stroke: var(--lux-gold);
+  stroke-width: 2;
+  stroke-linejoin: round;
+}
+
+.lux-mark__core {
+  fill: none;
+  stroke: var(--lux-gold);
+  stroke-width: 1.6;
+}
+
+/* Light passing across the monogram. The mark is its own stacking context
+   (it is transformed), so the blend stays on the strokes and never touches
+   the page behind it. */
+.lux-loader__shimmer {
+  position: absolute;
+  inset: -20%;
+  background: linear-gradient(
+    104deg,
+    rgba(255, 255, 255, 0) 38%,
+    rgba(255, 255, 255, 0.9) 48%,
+    rgba(255, 246, 229, 0.45) 56%,
+    rgba(255, 255, 255, 0) 66%
+  );
+  mix-blend-mode: soft-light;
+  animation: luxShimmer 5.6s ease-in-out infinite;
+}
+
+@keyframes luxShimmer {
+  0%       { transform: translate3d(-140%, 0, 0); opacity: 0; }
+  14%      { opacity: 1; }
+  46%      { opacity: 1; }
+  60%      { transform: translate3d(140%, 0, 0); opacity: 0; }
+  100%     { transform: translate3d(140%, 0, 0); opacity: 0; }
+}
+
+/* ── Type ──────────────────────────────────── */
+.lux-loader__title {
+  margin-top: clamp(1.75rem, 1rem + 2vw, 2.75rem);
+  font-family: var(--font-display, Georgia, serif);
+  font-size: clamp(1.9rem, 1.15rem + 2.4vw, 2.8rem);
+  font-weight: 500;
+  line-height: 1.1;
+  letter-spacing: 0.005em;
+  color: var(--lux-gold-deep);
+  text-shadow: 0 1px 0 rgba(255, 255, 255, 0.6);
+  animation: luxRise 900ms var(--ease-out-luxe, cubic-bezier(0.16, 1, 0.3, 1)) 110ms backwards;
+}
+
+.lux-loader__subtitle {
+  margin-top: 0.7rem;
+  font-family: var(--font-primary, system-ui, sans-serif);
+  font-size: 0.8125rem;
+  font-weight: 400;
+  letter-spacing: 0.26em;
+  text-indent: 0.26em;   /* re-centres text that letter-spacing pushed left */
+  color: #8A7862;
+  animation: luxRise 900ms var(--ease-out-luxe, cubic-bezier(0.16, 1, 0.3, 1)) 190ms backwards;
+}
+
+.lux-loader--inline .lux-loader__title { font-size: 1.35rem; margin-top: 1.35rem; }
+.lux-loader--inline .lux-loader__subtitle { font-size: 0.6875rem; letter-spacing: 0.2em; text-indent: 0.2em; }
+
+/* Arabic loses its ligatures when letters are spaced apart. */
+[dir='rtl'] .lux-loader__subtitle {
+  letter-spacing: 0.06em;
+  text-indent: 0;
+}
+
+/* ── Progress hairline ─────────────────────── */
+.lux-loader__progress {
+  position: relative;
+  width: min(330px, 62vw);
+  height: 1px;
+  margin-top: clamp(1.75rem, 1rem + 2vw, 2.5rem);
+  background: linear-gradient(
+    90deg,
+    rgba(181, 140, 74, 0) 0%,
+    rgba(181, 140, 74, 0.2) 16%,
+    rgba(181, 140, 74, 0.2) 84%,
+    rgba(181, 140, 74, 0) 100%
+  );
+  animation: luxRise 900ms var(--ease-out-luxe, cubic-bezier(0.16, 1, 0.3, 1)) 270ms backwards;
+}
+
+.lux-loader__progress span {
+  position: absolute;
+  top: 50%;
+  left: 0;
+  width: 38%;
+  height: 2px;
+  margin-top: -1px;
+  border-radius: var(--radius-pill, 999px);
+  background: linear-gradient(
+    90deg,
+    rgba(181, 140, 74, 0) 0%,
+    var(--lux-gold-soft) 34%,
+    #F2DEB4 50%,
+    var(--lux-gold-soft) 66%,
+    rgba(181, 140, 74, 0) 100%
+  );
+  box-shadow: 0 0 14px rgba(181, 140, 74, 0.5);
+  animation: luxProgress 2.6s cubic-bezier(0.6, 0, 0.35, 1) infinite;
+  will-change: transform;
+}
+
+@keyframes luxProgress {
+  0%   { transform: translate3d(-110%, 0, 0); }
+  100% { transform: translate3d(272%, 0, 0); }
+}
+
+.lux-loader--inline .lux-loader__progress { width: min(200px, 46vw); margin-top: 1.4rem; }
+
+/* Shared entrance for the stacked elements. */
+@keyframes luxRise {
+  from { opacity: 0; transform: translate3d(0, 12px, 0); }
+  to   { opacity: 1; transform: none; }
+}
+
+@media (max-width: 480px) {
+  .lux-loader { --lux-ring: 168px; }
+}
+
+/* ── Reduced motion ────────────────────────────
+   The composition still reads as a loader standing still: arc, dots, mark and
+   a static highlight on the rail. Nothing moves. */
+@media (prefers-reduced-motion: reduce) {
+  .lux-loader__rotor,
+  .lux-loader__halo,
+  .lux-loader__mark,
+  .lux-loader__shimmer,
+  .lux-loader__trail i::after,
+  .lux-loader__progress span,
+  .lux-loader__orbit,
+  .lux-loader__title,
+  .lux-loader__subtitle,
+  .lux-loader__progress {
+    animation: none !important;
+    opacity: 1;
+    transform: none;
+  }
+
+  .lux-loader__shimmer { opacity: 0; }
+  .lux-loader__halo { opacity: 0.7; }
+  .lux-loader__trail i::after { opacity: calc(0.88 - var(--i) * 0.085); }
+  .lux-loader__trail i {
+    transform:
+      rotate(calc(257deg + var(--i) * 12.2deg))
+      translateY(calc(var(--lux-ring) / -2));
+  }
+  .lux-loader__head { transform: rotate(247deg) translateY(calc(var(--lux-ring) / -2)); }
+  .lux-loader__progress span { transform: translate3d(80%, 0, 0); }
+}

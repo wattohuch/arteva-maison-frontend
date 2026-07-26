@@ -209,13 +209,9 @@
   color: var(--text-on-dark-muted);
 }
 
-/* ══ Shared page loading state ══ */
-.page-loading {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  min-height: 60svh;
-}
+/* `.page-loading` used to live here. It is shared by every page — including
+   the admin/driver gate, which never loads this file — so it moved to
+   PageLayout.css, which is always present. */
 
 /* ══ Responsive ═════════════════════════════ */
 /* Fewer cards in view as the viewport narrows — the tile never grows

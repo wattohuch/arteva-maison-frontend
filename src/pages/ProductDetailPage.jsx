@@ -9,7 +9,7 @@ import {
   getProductImage, handleImageError, cloudinaryImage, cloudinarySrcSet,
 } from '../utils/imageHelpers';
 import { showToast } from '../components/ui/Toast';
-import Loader from '../components/ui/Loader';
+import { LuxuryLoader } from '../components/ui/loading';
 import Button from '../components/ui/Button';
 import { HeartIcon, PlusIcon, MinusIcon, TruckIcon, ShieldIcon, HomeIcon } from '../components/ui/Icons';
 import './ProductDetailPage.css';
@@ -53,7 +53,13 @@ export default function ProductDetailPage() {
     showToast(added ? t('added_wishlist') : t('removed_wishlist'), 'info');
   }, [toggle, product, t]);
 
-  if (loading) return <div className="page-loading"><Loader text={t('loading')} /></div>;
+  if (loading) {
+    return (
+      <div className="page-loading">
+        <LuxuryLoader size="inline" title={t('loading')} subtitle={t('please_wait')} />
+      </div>
+    );
+  }
 
   if (!product) {
     return (

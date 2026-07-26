@@ -1,0 +1,95 @@
+/* ============================================
+   ARTÉVA Maison — Loading screen surface
+
+   Warm ivory light falling from the top, a fold of silk in the lower corner,
+   and the loader centred in it. It arrives with a breath in and leaves by
+   opening outwards, so the page is revealed rather than switched to.
+   ============================================ */
+
+.lux-screen {
+  position: fixed;
+  inset: 0;
+  z-index: var(--z-loading-screen, 1700);
+  display: grid;
+  place-items: center;
+  padding: var(--gutter, 1.5rem);
+  overflow: hidden;
+
+  /* Light source above the loader, warming as it falls — the same beige family
+     as the storefront, so the hand-off to the page is a fade, not a change. */
+  background:
+    radial-gradient(120% 92% at 50% 4%, #FCF8F2 0%, #F7F0E4 44%, #F0E5D3 100%);
+
+  animation: luxScreenIn 420ms var(--ease-out-luxe, cubic-bezier(0.16, 1, 0.3, 1)) both;
+}
+
+.lux-screen[data-phase='leaving'] {
+  pointer-events: none;
+  animation: luxScreenOut 520ms var(--ease-in-out-luxe, cubic-bezier(0.65, 0, 0.35, 1)) both;
+}
+
+@keyframes luxScreenIn {
+  from { opacity: 0; transform: scale(1.015); }
+  to   { opacity: 1; transform: none; }
+}
+
+/* Opens outwards very slightly as it fades — the page beneath appears to come
+   forward instead of the overlay being switched off. */
+@keyframes luxScreenOut {
+  from { opacity: 1; transform: none; }
+  to   { opacity: 0; transform: scale(1.03); }
+}
+
+/* ── The fold of silk in the lower corner ──────
+   Two soft blurred bands, static: a blur that never animates costs one
+   rasterisation and nothing after that. */
+.lux-screen__silk {
+  position: absolute;
+  inset: auto auto -12% -14%;
+  width: min(58vw, 620px);
+  height: min(46vh, 420px);
+  pointer-events: none;
+}
+
+.lux-screen__silk::before,
+.lux-screen__silk::after {
+  content: '';
+  position: absolute;
+  inset: -30%;
+  background: linear-gradient(
+    112deg,
+    rgba(255, 255, 255, 0) 26%,
+    rgba(255, 255, 255, 0.85) 44%,
+    rgba(255, 255, 255, 0.25) 52%,
+    rgba(255, 255, 255, 0) 68%
+  );
+  filter: blur(14px);
+  transform: rotate(-16deg);
+}
+
+.lux-screen__silk::after {
+  background: linear-gradient(
+    104deg,
+    rgba(255, 255, 255, 0) 34%,
+    rgba(255, 255, 255, 0.55) 47%,
+    rgba(255, 255, 255, 0) 60%
+  );
+  filter: blur(22px);
+  transform: rotate(-27deg) translate3d(-6%, 9%, 0);
+}
+
+/* Mirrors with the interface — in Arabic the fold falls in the other corner. */
+[dir='rtl'] .lux-screen__silk {
+  inset: auto -14% -12% auto;
+  transform: scaleX(-1);
+}
+
+/* Reduced motion: the global rule in animations.css collapses both animations
+   to their end state, so the screen appears and clears without the breath.
+   Only the fixed decoration needs neutralising here. */
+@media (prefers-reduced-motion: reduce) {
+  .lux-screen,
+  .lux-screen[data-phase='leaving'] {
+    transform: none;
+  }
+}

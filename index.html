@@ -38,51 +38,146 @@
   </script>
 
   <style>
-    /* Instant branded loader — visible before React hydrates */
+    /* ── Instant loading screen — painted before the app bundle arrives ──
+       A hand-written copy of src/components/ui/loading/LuxuryLoader: same
+       geometry, same timings, same palette. It has to live here, inlined and
+       without variables, because it is on screen before any stylesheet is.
+       Keep the two in step if either changes. */
     #initialLoader {
       position: fixed; inset: 0; z-index: 99999;
-      background: #F7F3EE;
-      display: flex; align-items: center; justify-content: center; flex-direction: column;
-      transition: opacity 0.5s ease, visibility 0.5s ease;
+      display: grid; place-items: center; overflow: hidden;
+      background: radial-gradient(120% 92% at 50% 4%, #FCF8F2 0%, #F7F0E4 44%, #F0E5D3 100%);
+      transition: opacity 520ms cubic-bezier(0.65, 0, 0.35, 1), transform 520ms cubic-bezier(0.65, 0, 0.35, 1);
     }
-    #initialLoader .brand { font-family: 'Playfair Display', Georgia, serif; font-size: 26px; font-weight: 600; color: #1A1512; letter-spacing: 4px; text-indent: 4px; }
-    #initialLoader .sub { font-family: 'Inter', system-ui, sans-serif; font-size: 9px; font-weight: 500; color: #A8844A; letter-spacing: 7px; text-indent: 7px; text-transform: uppercase; margin-top: 6px; }
-    /* Same gesture as the in-app Loader, so the splash hands over to the app
-       without the motion changing character mid-load. */
-    #initialLoader .ring {
-      position: relative; width: 46px; height: 46px; margin: 26px auto 0;
-      border-radius: 50%; border: 2px solid #F4EADC;
+    /* The fold of silk in the lower corner. */
+    #initialLoader .silk {
+      position: absolute; inset: auto auto -12% -14%;
+      width: min(58vw, 620px); height: min(46vh, 420px); pointer-events: none;
     }
-    #initialLoader .ring::after {
-      content: ''; position: absolute; inset: -2px; border-radius: 50%;
-      background: conic-gradient(from 0deg, transparent 0deg, rgba(168,132,74,0.06) 90deg, rgba(168,132,74,0.38) 210deg, #A8844A 320deg, transparent 360deg);
+    #initialLoader .silk::before, #initialLoader .silk::after {
+      content: ''; position: absolute; inset: -30%;
+      background: linear-gradient(112deg, rgba(255,255,255,0) 26%, rgba(255,255,255,0.85) 44%, rgba(255,255,255,0.25) 52%, rgba(255,255,255,0) 68%);
+      filter: blur(14px); transform: rotate(-16deg);
+    }
+    #initialLoader .silk::after {
+      background: linear-gradient(104deg, rgba(255,255,255,0) 34%, rgba(255,255,255,0.55) 47%, rgba(255,255,255,0) 60%);
+      filter: blur(22px); transform: rotate(-27deg) translate3d(-6%, 9%, 0);
+    }
+    #initialLoader .stage { text-align: center; }
+    #initialLoader .orbit {
+      --r: 200px;
+      position: relative; width: var(--r); height: var(--r); margin: 0 auto;
+      display: grid; place-items: center;
+    }
+    #initialLoader .track { position: absolute; inset: 0; border-radius: 50%; border: 2px solid rgba(181,140,74,0.07); }
+    #initialLoader .halo {
+      position: absolute; inset: 14%; border-radius: 50%;
+      background: radial-gradient(circle, rgba(255,255,255,0.95) 0%, rgba(250,242,228,0.6) 42%, rgba(247,238,222,0) 72%);
+      animation: luxHalo 4.4s ease-in-out infinite;
+    }
+    #initialLoader .rotor { position: absolute; inset: 0; animation: luxSpin 3.4s linear infinite; }
+    #initialLoader .arc {
+      position: absolute; inset: 0; border-radius: 50%;
+      background: conic-gradient(from 0deg, rgba(181,140,74,0) 0deg, rgba(181,140,74,0.08) 26deg, rgba(181,140,74,0.34) 118deg, rgba(196,158,96,0.72) 186deg, #D9BC8A 228deg, #E4C88F 246deg, rgba(181,140,74,0) 250deg);
       -webkit-mask: radial-gradient(farthest-side, transparent calc(100% - 2px), #000 calc(100% - 2px));
       mask: radial-gradient(farthest-side, transparent calc(100% - 2px), #000 calc(100% - 2px));
-      animation: loaderSweep 1.9s cubic-bezier(0.62, 0.03, 0.35, 0.98) infinite;
     }
-    #initialLoader .ring .core {
-      position: absolute; top: 50%; left: 50%; width: 6px; height: 6px; margin: -3px 0 0 -3px;
-      border-radius: 50%; background: #A8844A;
-      animation: loaderBreathe 2.6s cubic-bezier(0.45, 0, 0.25, 1) infinite;
+    #initialLoader .head {
+      position: absolute; top: 50%; left: 50%; width: 5px; height: 5px; margin: -2.5px 0 0 -2.5px;
+      border-radius: 50%; background: #FFFDF8;
+      box-shadow: 0 0 6px 1.5px rgba(255,255,255,0.95), 0 0 18px 6px rgba(226,199,150,0.7), 0 0 34px 12px rgba(181,140,74,0.28);
+      transform: rotate(247deg) translateY(calc(var(--r) / -2));
     }
-    @keyframes loaderSweep { to { transform: rotate(360deg); } }
-    @keyframes loaderBreathe {
-      0%, 100% { transform: scale(0.62); opacity: 0.35; }
-      50%      { transform: scale(1);    opacity: 1; }
+    #initialLoader .trail i {
+      position: absolute; top: 50%; left: 50%; width: 0; height: 0;
+      transform: rotate(calc(257deg + var(--i) * 12.2deg)) translateY(calc(var(--r) / -2));
     }
+    #initialLoader .trail i::after {
+      --d: calc(4.6px - var(--i) * 0.4px);
+      content: ''; position: absolute; top: 50%; left: 50%;
+      width: var(--d); height: var(--d); margin: calc(var(--d) / -2) 0 0 calc(var(--d) / -2);
+      border-radius: 50%; background: #B58C4A; opacity: calc(0.88 - var(--i) * 0.085);
+      animation: luxTrailPulse 2.2s ease-in-out infinite;
+      animation-delay: calc(var(--i) * -0.12s);
+    }
+    #initialLoader .mark {
+      position: relative; width: 46%; height: 46%; display: grid; place-items: center;
+      animation: luxBreathe 4.4s cubic-bezier(0.45, 0, 0.25, 1) infinite;
+    }
+    #initialLoader .mark svg { width: 100%; height: 100%; overflow: visible; }
+    #initialLoader .frame { fill: rgba(255,255,255,0.55); stroke: rgba(255,255,255,0.85); stroke-width: 1; }
+    #initialLoader .petals path { fill: none; stroke: #B58C4A; stroke-width: 2; stroke-linejoin: round; }
+    #initialLoader .core { fill: none; stroke: #B58C4A; stroke-width: 1.6; }
+    #initialLoader .title {
+      margin-top: clamp(1.75rem, 1rem + 2vw, 2.75rem);
+      font-family: 'Playfair Display', Georgia, serif;
+      font-size: clamp(1.9rem, 1.15rem + 2.4vw, 2.8rem); font-weight: 500; line-height: 1.1;
+      color: #8C672C; text-shadow: 0 1px 0 rgba(255,255,255,0.6);
+    }
+    #initialLoader .sub {
+      margin-top: 0.7rem; font-family: 'Inter', system-ui, sans-serif;
+      font-size: 13px; letter-spacing: 0.26em; text-indent: 0.26em; color: #8A7862;
+    }
+    #initialLoader .rail {
+      position: relative; width: min(330px, 62vw); height: 1px;
+      margin: clamp(1.75rem, 1rem + 2vw, 2.5rem) auto 0;
+      background: linear-gradient(90deg, rgba(181,140,74,0) 0%, rgba(181,140,74,0.2) 16%, rgba(181,140,74,0.2) 84%, rgba(181,140,74,0) 100%);
+    }
+    #initialLoader .rail span {
+      position: absolute; top: 50%; left: 0; width: 38%; height: 2px; margin-top: -1px; border-radius: 999px;
+      background: linear-gradient(90deg, rgba(181,140,74,0) 0%, #D9BC8A 34%, #F2DEB4 50%, #D9BC8A 66%, rgba(181,140,74,0) 100%);
+      box-shadow: 0 0 14px rgba(181,140,74,0.5);
+      animation: luxProgress 2.6s cubic-bezier(0.6, 0, 0.35, 1) infinite;
+    }
+    @keyframes luxSpin { to { transform: rotate(360deg); } }
+    @keyframes luxTrailPulse { 0%, 100% { transform: scale(0.7); } 45% { transform: scale(1.14); } }
+    @keyframes luxHalo { 0%, 100% { transform: scale(0.9); opacity: 0.5; } 50% { transform: scale(1.07); opacity: 0.95; } }
+    @keyframes luxBreathe { 0%, 100% { transform: scale(0.955); } 50% { transform: scale(1.035); } }
+    @keyframes luxProgress { 0% { transform: translate3d(-110%, 0, 0); } 100% { transform: translate3d(272%, 0, 0); } }
+    @media (max-width: 480px) { #initialLoader .orbit { --r: 168px; } }
     @media (prefers-reduced-motion: reduce) {
-      #initialLoader .ring::after, #initialLoader .ring .core { animation: none; }
+      #initialLoader .rotor, #initialLoader .halo, #initialLoader .mark,
+      #initialLoader .trail i::after, #initialLoader .rail span { animation: none; }
+      #initialLoader .rail span { transform: translate3d(80%, 0, 0); }
     }
-    #initialLoader.fade-out { opacity: 0; visibility: hidden; pointer-events: none; }
+    /* Leaves the way the in-app screen does: opens outwards as it fades, so
+       the storefront appears to come forward rather than being switched to. */
+    #initialLoader.fade-out { opacity: 0; transform: scale(1.03); pointer-events: none; }
   </style>
 </head>
 <body>
-  <!-- Brand loading screen -->
-  <div id="initialLoader">
-    <div style="text-align:center;">
-      <div class="brand">ARTÉVA</div>
-      <div class="sub">MAISON</div>
-      <div class="ring"><span class="core"></span></div>
+  <!-- Loading screen — replaced by the React one the moment the app mounts -->
+  <div id="initialLoader" role="status" aria-live="polite">
+    <div class="silk" aria-hidden="true"></div>
+    <div class="stage">
+      <div class="orbit">
+        <span class="track"></span>
+        <span class="halo"></span>
+        <span class="rotor">
+          <span class="arc"></span>
+          <span class="head"></span>
+          <span class="trail">
+            <i style="--i:0"></i><i style="--i:1"></i><i style="--i:2"></i>
+            <i style="--i:3"></i><i style="--i:4"></i><i style="--i:5"></i>
+            <i style="--i:6"></i><i style="--i:7"></i><i style="--i:8"></i>
+          </span>
+        </span>
+        <span class="mark">
+          <svg viewBox="-60 -60 120 120" aria-hidden="true" focusable="false">
+            <path class="frame" d="M0,-50 C13,-33 27,-27 40,-19 C48,-13 48,13 40,19 C27,27 13,33 0,50 C-13,33 -27,27 -40,19 C-48,13 -48,-13 -40,-19 C-27,-27 -13,-33 0,-50 Z" />
+            <g class="petals">
+              <path d="M0,0 C8.5,-9 8.5,-21 0,-29 C-8.5,-21 -8.5,-9 0,0 Z" />
+              <path d="M0,0 C8.5,-9 8.5,-21 0,-29 C-8.5,-21 -8.5,-9 0,0 Z" transform="rotate(90)" />
+              <path d="M0,0 C8.5,-9 8.5,-21 0,-29 C-8.5,-21 -8.5,-9 0,0 Z" transform="rotate(180)" />
+              <path d="M0,0 C8.5,-9 8.5,-21 0,-29 C-8.5,-21 -8.5,-9 0,0 Z" transform="rotate(270)" />
+            </g>
+            <path class="core" d="M0,-7 L7,0 L0,7 L-7,0 Z" />
+          </svg>
+        </span>
+      </div>
+      <div class="title">Loading…</div>
+      <div class="sub">Please wait</div>
+      <div class="rail"><span></span></div>
     </div>
   </div>
 

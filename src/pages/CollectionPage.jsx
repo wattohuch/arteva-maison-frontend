@@ -4,7 +4,7 @@ import { useI18n } from '../contexts/I18nContext';
 import { ProductsAPI } from '../api/products';
 import { CategoriesAPI } from '../api/categories';
 import ProductCard from '../components/product/ProductCard';
-import Loader from '../components/ui/Loader';
+import { LuxuryLoader } from '../components/ui/loading';
 import './ProductListPage.css'; // shared listing toolbar
 
 export default function CollectionPage() {
@@ -42,7 +42,13 @@ export default function CollectionPage() {
 
   const catName = category ? (lang === 'ar' && category.nameAr ? category.nameAr : category.name) : slug;
 
-  if (loading) return <div className="page-loading"><Loader text={t('loading')} /></div>;
+  if (loading) {
+    return (
+      <div className="page-loading">
+        <LuxuryLoader size="inline" title={t('loading')} subtitle={t('please_wait')} />
+      </div>
+    );
+  }
 
   return (
     <div className="section">

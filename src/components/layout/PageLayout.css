@@ -6,17 +6,22 @@
   /* Reserve the fixed header. HomePage's hero deliberately pulls back up
      under the floating navbar via a negative margin. */
   padding-top: var(--header-height);
+  /* Holds the document height through the hand-off, so the scrollbar never
+     disappears between two pages and nothing under it shifts. */
   min-height: calc(100svh - var(--header-height));
-  /* `backwards`, not `both`: a retained transform would turn <main> into a
-     containing block and break any position:fixed inside a page. */
-  animation: pageEnter 420ms var(--ease-out-luxe) backwards;
+  /* The enter/exit motion itself lives in RouteTransition.css — this element
+     is the animated slot, and every routed page inherits it. */
 }
 
-/* Short, low-travel page transition — enough to feel deliberate,
-   not enough to delay the content. */
-@keyframes pageEnter {
-  from { opacity: 0; transform: translate3d(0, 8px, 0); }
-  to   { opacity: 1; transform: translate3d(0, 0, 0); }
+/* ── Shared page-level waiting state ──────────
+   The slot a page occupies while it is fetching its own data. Sized so the
+   loader lands where the content will, and so the page does not collapse and
+   push the footer up mid-load. */
+.page-loading {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 60svh;
 }
 
 /* ── Shared empty state (wishlist, empty cart, no results) ── */

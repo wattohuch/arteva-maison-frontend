@@ -6,7 +6,7 @@ import { useCurrency } from '../contexts/CurrencyContext';
 import { PackageIcon } from '../components/ui/Icons';
 import { OrdersAPI } from '../api/orders';
 import { formatDate, getStatusColor } from '../utils/formatters';
-import Loader from '../components/ui/Loader';
+import { LuxuryLoader } from '../components/ui/loading';
 import './TrackOrderPage.css';
 
 /**
@@ -59,7 +59,7 @@ export default function TrackOrderPage() {
   if (loading) {
     return (
       <div className="section" style={{ display: 'flex', justifyContent: 'center', padding: '100px 0' }}>
-        <Loader text={t('track_loading_orders')} />
+        <LuxuryLoader size="inline" title={t('track_loading_orders')} subtitle={t('please_wait')} />
       </div>
     );
   }

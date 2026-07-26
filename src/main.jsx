@@ -30,11 +30,13 @@ import App from './App';
   } catch { /* storage blocked — default LTR from index.html stands */ }
 })();
 
-// Remove the branded loader once React mounts
+// Hand the pre-React loading screen over to the app. It fades and opens
+// outwards rather than being switched off, and is removed only once that has
+// finished — the 560ms matches the 520ms transition in index.html.
 const loader = document.getElementById('initialLoader');
 if (loader) {
   loader.classList.add('fade-out');
-  setTimeout(() => loader.remove(), 600);
+  setTimeout(() => loader.remove(), 560);
 }
 
 createRoot(document.getElementById('root')).render(

@@ -1,0 +1,74 @@
+/* ============================================
+   ARTÉVA Maison — Route transition
+
+   Two states, both driven by compositor-only properties (opacity, transform):
+
+     entrance — plays on mount, when the slot is remounted on the new route
+     exiting  — an attribute flip on the slot that is already on screen
+
+   `animation-fill-mode: backwards` (never `both`) is deliberate. A retained
+   transform would turn the page slot into a containing block and re-anchor any
+   position:fixed inside it, which is why the exit of a full-screen panel is
+   opacity-only.
+   ============================================ */
+
+.route-transition {
+  animation: routeEnter var(--route-enter-duration, 380ms) var(--ease-out-luxe) backwards;
+}
+
+@keyframes routeEnter {
+  from { opacity: 0; transform: translate3d(0, 14px, 0) scale(0.986); }
+  to   { opacity: 1; transform: none; }
+}
+
+/* ── Exit ──────────────────────────────────────
+   Faster and flatter than the entrance: leaving should read as the page
+   stepping aside, not as the interface hesitating. The ease is front-loaded
+   (opacity falls early) so the gap between the two pages is never seen as a
+   blank frame — the incoming page is already rising by the time it lands. */
+.route-transition[data-stage='exiting'] {
+  animation: none;
+  opacity: 0;
+  transition:
+    opacity 170ms cubic-bezier(0.4, 0.0, 1, 1),
+    transform 170ms cubic-bezier(0.4, 0.0, 1, 1);
+  /* Clicks during the hand-off would land on content that is already gone. */
+  pointer-events: none;
+}
+
+.route-transition--page[data-stage='exiting'] {
+  transform: translate3d(0, -6px, 0) scale(0.994);
+}
+
+/* Panels (admin, driver) carry fixed sidebars and toolbars, which a transform
+   on this wrapper would re-anchor to it. Opacity only, and a touch quicker —
+   there is no travel to read. */
+.route-transition--view {
+  --route-enter-duration: 300ms;
+
+  animation-name: routeViewEnter;
+}
+
+@keyframes routeViewEnter {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+/* Placeholder the suspense fallback leaves behind so the document keeps its
+   height while a route chunk is in flight — without it the scrollbar
+   disappears and the page under the loading screen shifts. */
+.route-suspense-spacer {
+  min-height: 60svh;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  /* The provider already swaps routes without an exit; this makes sure no
+     entrance keyframe can leave content stranded at opacity 0. */
+  .route-transition,
+  .route-transition[data-stage='exiting'] {
+    animation: none;
+    transition: none;
+    opacity: 1;
+    transform: none;
+  }
+}

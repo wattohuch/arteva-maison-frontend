@@ -1,6 +1,6 @@
 import { useI18n } from '../contexts/I18nContext';
 import { useCategories } from '../contexts/CategoriesContext';
-import Loader from '../components/ui/Loader';
+import { LuxuryLoader } from '../components/ui/loading';
 import CollectionCard from '../components/product/CollectionCard';
 import { GridIcon } from '../components/ui/Icons';
 
@@ -9,7 +9,11 @@ export default function CollectionsPage() {
   const { categories, loading, error } = useCategories();
 
   if (loading) {
-    return <div className="page-loading"><Loader text={t('loading')} /></div>;
+    return (
+      <div className="page-loading">
+        <LuxuryLoader size="inline" title={t('loading')} subtitle={t('please_wait')} />
+      </div>
+    );
   }
 
   if (error && categories.length === 0) {
