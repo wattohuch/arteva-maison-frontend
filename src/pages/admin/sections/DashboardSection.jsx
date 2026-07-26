@@ -46,7 +46,11 @@ export default function DashboardSection() {
     { Icon: BagIcon, label: t('total_orders'), value: stats?.totalOrders || 0, tone: 'blue', path: '/admin/orders' },
     { Icon: GridIcon, label: t('total_products'), value: stats?.totalProducts || 0, tone: 'gold', path: '/admin/products' },
     { Icon: UserIcon, label: t('total_users'), value: stats?.totalUsers || 0, tone: 'green', path: '/admin/users' },
-    { Icon: SparkleIcon, label: t('total_revenue'), value: `${(stats?.totalRevenue || 0).toFixed(3)} KWD`, tone: 'amber', path: '/admin/orders' },
+    // Only the owner is served a revenue figure at all; for anyone else the
+    // card is absent rather than showing 0.000 KWD.
+    ...(stats?.canSeeRevenue
+      ? [{ Icon: SparkleIcon, label: t('total_revenue'), value: `${(stats?.totalRevenue || 0).toFixed(3)} KWD`, tone: 'amber', path: '/admin/revenue' }]
+      : []),
     { Icon: GlobeIcon, label: 'Visitors (30d)', value: stats?.totalVisitors || 0, tone: 'blue', path: '/admin/visitors' },
   ];
 

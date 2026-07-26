@@ -56,14 +56,23 @@ export default function RevenueSection() {
       });
       setData(res.data);
     } catch (err) {
-      // 403 here means the account is an admin, not an owner — say so plainly
-      // rather than showing an empty dashboard.
-      setError(
-        err.status === 403
-          ? 'Revenue is restricted to owner accounts.'
-          : (err.message || 'Could not load revenue')
-      );
-      showToast(err.message || 'Could not load revenue', 'error');
+      // Three distinct 403s, and conflating them leaves the owner staring at an
+      // empty dashboard with no idea what to do: the unlock has expired mid-
+      // session, or the account simply is not the owner.
+      if (err.code === 'REVENUE_LOCKED') {
+        // Send the gate back to the password prompt rather than leaving a dead
+        // view behind — the unlock is timed, so this happens in normal use.
+        window.dispatchEvent(new CustomEvent('revenue_locked'));
+      }
+
+      const message =
+        err.code === 'REVENUE_LOCKED'
+          ? 'Your revenue session has expired. Reopen Revenue to enter your password again.'
+          : err.status === 403
+            ? 'Revenue is restricted to the owner account.'
+            : (err.message || 'Could not load revenue');
+      setError(message);
+      showToast(message, 'error');
     } finally {
       setLoading(false);
     }

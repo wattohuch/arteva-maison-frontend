@@ -1,0 +1,79 @@
+/* ============================================
+   ARTÉVA Maison — Revenue password gate
+   ============================================ */
+
+.revgate {
+  max-width: 420px;
+  margin: clamp(1.5rem, 4vw, 3rem) auto;
+  padding: clamp(1.5rem, 1rem + 2vw, 2.5rem);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: var(--space-3);
+  background: var(--bg-surface, #fff);
+  border: 1px solid var(--border-hairline, #e5e0d8);
+  border-radius: var(--radius-lg, 14px);
+  box-shadow: var(--shadow-md, 0 8px 24px rgba(0, 0, 0, 0.06));
+}
+
+.revgate-icon {
+  display: grid;
+  place-items: center;
+  width: 46px;
+  height: 46px;
+  border-radius: 50%;
+  background: var(--color-champagne, #f3ece1);
+  color: var(--color-bronze, #8b7355);
+}
+
+.revgate h3 { margin: 0; }
+
+.revgate p {
+  margin: 0;
+  font-size: var(--fs-sm);
+  color: var(--text-muted);
+  max-width: 40ch;
+  line-height: 1.6;
+}
+
+.revgate-field {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  text-align: start;
+  margin-top: var(--space-2);
+}
+
+.revgate-field span {
+  font-size: var(--fs-xs);
+  font-weight: var(--fw-semibold);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
+.revgate-error {
+  color: #CD5C5C !important;
+  font-weight: var(--fw-medium);
+}
+
+.revgate .btn { margin-top: var(--space-3); width: 100%; }
+
+.revgate--denied p { color: var(--text-muted); }
+
+/* Persistent reminder that the books are open, with the way to close them. */
+.revgate-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  flex-wrap: wrap;
+  padding: var(--space-2) var(--space-4);
+  margin-bottom: var(--space-4);
+  font-size: var(--fs-sm);
+  color: var(--color-bronze, #8b7355);
+  background: var(--color-champagne, #f3ece1);
+  border-radius: var(--radius-md, 10px);
+}

@@ -141,6 +141,14 @@ export const translations = {
     track_your_order: "Track Your Order",
     track_order_desc: "Enter your order number to see real-time delivery status",
     track_btn: "Track", loading_tracking: "Loading order details...",
+    track_pick_order: "Choose an order to follow in real time",
+    track_no_active: "You have no orders in transit right now.",
+    track_no_active_hint: "Delivered and cancelled orders can't be tracked — you'll find them in your order history.",
+    track_sign_in: "Sign in to track your orders",
+    track_sign_in_hint: "Your active orders will be listed here once you're signed in.",
+    track_view_history: "View order history",
+    track_this_order: "Track this order",
+    track_loading_orders: "Finding your active orders...",
     no_order_found: "No Order Found",
     no_order_msg: "Please enter a valid order number to track your delivery.",
     order_status_title: "Order Status", live_status: "Live",
@@ -346,6 +354,9 @@ export const translations = {
 
     // Refunds — requested over WhatsApp and settled by an admin, not by an API
     request_refund: "Request refund",
+    refund_days_left: "{days} days left",
+    pin_required: "Please drop a pin on the map so the driver can find you.",
+    pin_saved: "Pinned location saved",
   },
 
   ar: {
@@ -497,6 +508,14 @@ export const translations = {
     track_your_order: "تتبع طلبك",
     track_order_desc: "أدخل رقم الطلب لمعرفة حالة التوصيل في الوقت الفعلي",
     track_btn: "تتبع", loading_tracking: "جاري تحميل تفاصيل الطلب...",
+    track_pick_order: "اختر طلباً لمتابعته مباشرة",
+    track_no_active: "لا توجد لديك طلبات قيد التوصيل حالياً.",
+    track_no_active_hint: "لا يمكن تتبع الطلبات المسلّمة أو الملغاة — ستجدها في سجل طلباتك.",
+    track_sign_in: "سجّل الدخول لتتبع طلباتك",
+    track_sign_in_hint: "ستظهر طلباتك النشطة هنا بعد تسجيل الدخول.",
+    track_view_history: "عرض سجل الطلبات",
+    track_this_order: "تتبع هذا الطلب",
+    track_loading_orders: "جاري البحث عن طلباتك النشطة...",
     no_order_found: "لم يتم العثور على طلب",
     no_order_msg: "يرجى إدخال رقم طلب صحيح لتتبع شحنتك.",
     order_status_title: "حالة الطلب", live_status: "مباشر",
@@ -701,5 +720,8 @@ export const translations = {
 
     // Refunds — requested over WhatsApp and settled by an admin, not by an API
     request_refund: "طلب استرجاع",
+    refund_days_left: "متبقٍ {days} يوم",
+    pin_required: "يرجى تحديد موقعك على الخريطة ليتمكن السائق من الوصول إليك.",
+    pin_saved: "تم حفظ الموقع المحدد",
   },
 };

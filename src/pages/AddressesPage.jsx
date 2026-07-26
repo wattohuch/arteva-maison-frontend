@@ -7,7 +7,13 @@ import { showToast } from '../components/ui/Toast';
 import Button from '../components/ui/Button';
 import { Input } from '../components/ui/Field';
 import Loader from '../components/ui/Loader';
+import LocationPicker from '../components/checkout/LocationPicker';
 import './AddressesPage.css';
+
+const EMPTY_FORM = {
+  label: '', street: '', city: '', state: '', zipCode: '', phone: '',
+  isDefault: false, lat: 0, lng: 0,
+};
 
 export default function AddressesPage() {
   const { isLoggedIn } = useAuth();
@@ -17,7 +23,7 @@ export default function AddressesPage() {
   const [loading, setLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
   const [saving, setSaving] = useState(false);
-  const [form, setForm] = useState({ label: '', street: '', city: '', zipCode: '', phone: '', isDefault: false });
+  const [form, setForm] = useState(EMPTY_FORM);
 
   // Declared before the effect that calls it, and wrapped in useCallback so it
   // can be a real dependency instead of being referenced out of scope.
@@ -39,15 +45,37 @@ export default function AddressesPage() {
     setForm(prev => ({ ...prev, [name]: type === 'checkbox' ? checked : value }));
   };
 
+  /* Dropping the pin is what actually matters; the text fields are filled in
+     from the reverse geocode so the customer rarely has to type an address. */
+  const handlePinChange = useCallback(({ lat, lng }) => {
+    setForm(prev => ({ ...prev, lat, lng }));
+  }, []);
+
+  const handleAddressResolved = useCallback((resolved) => {
+    setForm(prev => ({
+      ...prev,
+      // Never overwrite something the customer typed themselves — geocoding is
+      // a shortcut, not an authority on where they live.
+      street: prev.street || resolved.street || '',
+      city: prev.city || resolved.city || '',
+      state: prev.state || resolved.state || '',
+      zipCode: prev.zipCode || resolved.zipCode || '',
+    }));
+  }, []);
+
   const handleSave = async (e) => {
     e.preventDefault();
     if (!form.street || !form.city || !form.phone) { showToast(t('fill_required_fields'), 'error'); return; }
+    if (!form.lat || !form.lng) { showToast(t('pin_required'), 'error'); return; }
     setSaving(true);
     try {
-      await AuthAPI.addAddress(form);
+      const { lat, lng, ...rest } = form;
+      // Stored alongside the address so checkout can reuse the pin instead of
+      // asking for it again on every order.
+      await AuthAPI.addAddress({ ...rest, coordinates: { lat, lng } });
       showToast(t('save_address'), 'success');
       setShowForm(false);
-      setForm({ label: '', street: '', city: '', zipCode: '', phone: '', isDefault: false });
+      setForm(EMPTY_FORM);
       loadAddresses();
     } catch (err) {
       showToast(err.message || 'Failed to save', 'error');
@@ -106,6 +134,14 @@ export default function AddressesPage() {
                 placeholder={t('phone_placeholder')}
                 value={form.phone} onChange={handleChange} autoComplete="tel" />
             </div>
+            <div className="address-form-map">
+              <LocationPicker
+                value={{ lat: form.lat, lng: form.lng }}
+                onChange={handlePinChange}
+                onAddressResolved={handleAddressResolved}
+              />
+            </div>
+
             <label className="field-check address-default-check">
               <input type="checkbox" name="isDefault" checked={form.isDefault} onChange={handleChange} />
               {t('set_default_address')}
@@ -131,6 +167,14 @@ export default function AddressesPage() {
                 <p>{addr.city}{addr.state ? `, ${addr.state}` : ''}</p>
                 {addr.zipCode && <p>{addr.zipCode}</p>}
                 <p>{addr.phone}</p>
+                {/* Confirms the pin was kept, so the customer knows checkout
+                    will not ask them to drop it again. */}
+                {addr.coordinates?.lat && addr.coordinates?.lng && (
+                  <p className="address-pin">
+                    📍 {t('pin_saved')}
+                    <span>{Number(addr.coordinates.lat).toFixed(5)}, {Number(addr.coordinates.lng).toFixed(5)}</span>
+                  </p>
+                )}
                 <div className="address-card-actions">
                   {!addr.isDefault && (
                     <button className="btn btn-ghost btn-sm" onClick={() => handleSetDefault(addr._id)}>

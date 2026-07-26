@@ -31,6 +31,7 @@ const PromoCodesSection = lazy(() => import('./sections/PromoCodesSection'));
 const SocialContactsSection = lazy(() => import('./sections/SocialContactsSection'));
 const ReceiptGenerator = lazy(() => import('./receipt/ReceiptGenerator'));
 const RevenueSection = lazy(() => import('./sections/RevenueSection'));
+const RevenueGate = lazy(() => import('./sections/RevenueGate'));
 
 const playAdminChime = () => {
   try {
@@ -67,7 +68,10 @@ export default function AdminLayout() {
 
   const socketRef = useRef(null);
 
-  const isOwner = user?.role === 'owner' || user?.role === 'superuser';
+  // Revenue belongs to the shop owner. `superuser` is the developer account —
+  // it administers everything else but is deliberately kept out of the takings,
+  // so it does NOT count as an owner here.
+  const isOwner = user?.role === 'owner';
 
   const navItems = [
     { to: '/admin/dashboard', Icon: SparkleIcon, label: t('dashboard') },
@@ -222,7 +226,9 @@ export default function AdminLayout() {
               <Route path="discounts" element={<DiscountsSection />} />
               <Route path="receipts" element={<ReceiptsSection />} />
               <Route path="receipt-generator" element={<ReceiptGenerator />} />
-              <Route path="revenue" element={<RevenueSection />} />
+              {/* The gate refuses non-owners and demands the revenue password
+                  before RevenueSection is ever mounted. */}
+              <Route path="revenue" element={<RevenueGate><RevenueSection /></RevenueGate>} />
               <Route path="visitors" element={<VisitorsSection />} />
               <Route path="promo-codes" element={<PromoCodesSection />} />
               <Route path="social-contacts" element={<SocialContactsSection />} />

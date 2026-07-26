@@ -89,6 +89,23 @@
 
 .order-actions { display: flex; gap: var(--space-2); flex-wrap: wrap; }
 
+/* The refund window is short, so the button carries its own countdown rather
+   than leaving the customer to work out whether they are still in time. */
+.order-refund-btn {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  line-height: 1.25;
+}
+
+.order-refund-btn small {
+  font-size: var(--fs-xs);
+  font-weight: var(--fw-regular);
+  color: var(--text-muted);
+  text-transform: none;
+  letter-spacing: 0;
+}
+
 @media (max-width: 600px) {
   .order-card-header,
   .order-card-footer {

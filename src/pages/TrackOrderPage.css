@@ -1,0 +1,147 @@
+/* ============================================
+   ARTÉVA Maison — Track Order
+   ============================================ */
+
+.trackpage { max-width: 760px; }
+
+.trackpage-head {
+  text-align: center;
+  margin-bottom: var(--space-8);
+}
+
+.trackpage-head h1 { margin: var(--space-3) 0 var(--space-2); }
+.trackpage-head p { color: var(--text-muted); margin: 0; }
+
+.trackpage-error {
+  color: #CD5C5C;
+  text-align: center;
+  margin-bottom: var(--space-4);
+}
+
+.trackpage-empty {
+  padding: var(--space-10) var(--space-6);
+  text-align: center;
+}
+
+.trackpage-empty h3 { margin-bottom: var(--space-2); }
+.trackpage-empty p {
+  color: var(--text-muted);
+  font-size: var(--fs-sm);
+  max-width: 42ch;
+  margin: 0 auto var(--space-6);
+}
+
+.trackpage-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+.trackpage-card {
+  display: block;
+  padding: clamp(1.125rem, 0.9rem + 1vw, 1.5rem);
+  text-decoration: none;
+  color: inherit;
+  transition: transform var(--dur-md, 260ms) var(--ease-out, ease),
+              box-shadow var(--dur-md, 260ms) var(--ease-out, ease);
+}
+
+.trackpage-card:hover,
+.trackpage-card:focus-visible {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-lg, 0 12px 32px rgba(0, 0, 0, 0.1));
+}
+
+.trackpage-card-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  flex-wrap: wrap;
+  padding-bottom: var(--space-3);
+  border-bottom: 1px solid var(--border-hairline);
+}
+
+.trackpage-number {
+  font-weight: var(--fw-semibold);
+  margin-inline-end: var(--space-3);
+  font-variant-numeric: tabular-nums;
+}
+
+.trackpage-date { font-size: var(--fs-sm); color: var(--text-muted); }
+
+.trackpage-status {
+  font-size: 9.5px;
+  font-weight: var(--fw-semibold);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  padding: 5px 12px;
+  border-radius: var(--radius-pill);
+  border: 1px solid;
+  white-space: nowrap;
+}
+
+.trackpage-thumbs {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-4) 0;
+}
+
+.trackpage-thumbs img {
+  width: 46px;
+  height: 46px;
+  object-fit: cover;
+  border-radius: var(--radius-sm);
+  background: var(--color-champagne);
+}
+
+.trackpage-thumbs-more {
+  font-size: var(--fs-sm);
+  color: var(--text-muted);
+}
+
+.trackpage-card-foot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  flex-wrap: wrap;
+  padding-top: var(--space-3);
+  border-top: 1px solid var(--border-hairline);
+}
+
+.trackpage-total {
+  font-family: var(--font-display);
+  font-size: 1.15rem;
+  font-weight: var(--fw-medium);
+  font-variant-numeric: tabular-nums;
+}
+
+.trackpage-cta {
+  font-size: var(--fs-sm);
+  font-weight: var(--fw-semibold);
+  color: var(--color-gold);
+}
+
+/* The arrow points the way the language reads. */
+[dir="rtl"] .trackpage-cta { transform: scaleX(-1); display: inline-block; }
+
+@media (max-width: 600px) {
+  .trackpage-card-head,
+  .trackpage-card-foot {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--space-2);
+  }
+  [dir="rtl"] .trackpage-card-head,
+  [dir="rtl"] .trackpage-card-foot { align-items: flex-end; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .trackpage-card { transition: none; }
+  .trackpage-card:hover { transform: none; }
+}

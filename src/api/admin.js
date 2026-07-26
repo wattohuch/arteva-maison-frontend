@@ -1,4 +1,10 @@
-import { apiRequest, apiUpload, apiText } from './client';
+import { apiRequest, apiUpload, apiText, getRevenueToken, setRevenueToken } from './client';
+
+/** Header carrying the revenue unlock token, when one has been obtained. */
+const revenueHeaders = () => {
+  const token = getRevenueToken();
+  return token ? { 'X-Revenue-Token': token } : {};
+};
 
 /** AdminAPI — all admin endpoints matching vanilla admin.js */
 export const AdminAPI = {
@@ -66,11 +72,13 @@ export const AdminAPI = {
   deleteOrder: (id) => apiRequest(`/admin/orders/${id}`, { method: 'DELETE' }),
 
   // ── Revenue ──
+  // Every read here also carries the unlock token from the revenue password
+  // prompt; without it the server answers 403 REVENUE_LOCKED.
   getRevenueOverview: (params = {}) => {
     const qs = new URLSearchParams(
       Object.entries(params).filter(([, v]) => v !== undefined && v !== null && v !== '')
     ).toString();
-    return apiRequest(`/admin/revenue/overview${qs ? `?${qs}` : ''}`);
+    return apiRequest(`/admin/revenue/overview${qs ? `?${qs}` : ''}`, { headers: revenueHeaders() });
   },
 
   // ── Users ──
@@ -92,16 +100,31 @@ export const AdminAPI = {
 
   // ── Revenue / Auth ──
   checkSuperuser: () => apiRequest('/admin/check-superuser'),
+
+  /** Whether this account can open revenue, and whether a password exists yet. */
+  getRevenueAccessStatus: () => apiRequest('/admin/revenue/status'),
+
   setRevenuePassword: (revenuePassword) =>
     apiRequest('/admin/set-revenue-password', {
       method: 'POST',
       body: JSON.stringify({ revenuePassword }),
     }),
-  authenticateRevenueAccess: (revenuePassword) =>
-    apiRequest('/admin/revenue-auth', {
+
+  /**
+   * Exchange the revenue password for a short-lived unlock token, and hold on
+   * to it so subsequent revenue reads can present it.
+   */
+  authenticateRevenueAccess: async (revenuePassword) => {
+    const res = await apiRequest('/admin/revenue-auth', {
       method: 'POST',
       body: JSON.stringify({ revenuePassword }),
-    }),
+    });
+    if (res?.revenueToken) setRevenueToken(res.revenueToken);
+    return res;
+  },
+
+  /** Drops the unlock token — the next revenue read will require the password. */
+  lockRevenue: () => setRevenueToken(null),
   requestRevenueOTP: () =>
     apiRequest('/admin/revenue-otp/request', { method: 'POST' }),
   verifyRevenueOTP: (otp) =>
@@ -109,8 +132,8 @@ export const AdminAPI = {
       method: 'POST',
       body: JSON.stringify({ otp }),
     }),
-  getRevenueHistory: () => apiRequest('/admin/revenue-history'),
-  getRevenueAnalytics: () => apiRequest('/admin/revenue-analytics'),
+  getRevenueHistory: () => apiRequest('/admin/revenue-history', { headers: revenueHeaders() }),
+  getRevenueAnalytics: () => apiRequest('/admin/revenue-analytics', { headers: revenueHeaders() }),
   getReceipt: (orderId) => apiText(`/admin/receipt/${orderId}`),
 
   // ── Analytics ──

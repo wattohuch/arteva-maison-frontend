@@ -23,6 +23,30 @@ export function setAuthToken(token) {
   }
 }
 
+/**
+ * Revenue unlock token.
+ *
+ * Kept in sessionStorage rather than localStorage so it dies with the tab: the
+ * point of the revenue password is that walking away closes the books, and a
+ * token that survives a browser restart would defeat that.
+ */
+const REVENUE_TOKEN_KEY = 'arteva_revenue_token';
+
+export function getRevenueToken() {
+  try {
+    return sessionStorage.getItem(REVENUE_TOKEN_KEY);
+  } catch {
+    return null; // private mode with storage blocked
+  }
+}
+
+export function setRevenueToken(token) {
+  try {
+    if (token) sessionStorage.setItem(REVENUE_TOKEN_KEY, token);
+    else sessionStorage.removeItem(REVENUE_TOKEN_KEY);
+  } catch { /* the owner just re-enters the password */ }
+}
+
 /** Default per-request timeout. */
 const DEFAULT_TIMEOUT_MS = 20000;
 

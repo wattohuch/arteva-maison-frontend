@@ -47,8 +47,32 @@
     }
     #initialLoader .brand { font-family: 'Playfair Display', Georgia, serif; font-size: 26px; font-weight: 600; color: #1A1512; letter-spacing: 4px; text-indent: 4px; }
     #initialLoader .sub { font-family: 'Inter', system-ui, sans-serif; font-size: 9px; font-weight: 500; color: #A8844A; letter-spacing: 7px; text-indent: 7px; text-transform: uppercase; margin-top: 6px; }
-    #initialLoader .bar { width: 40px; height: 2px; background: #A8844A; margin: 22px auto 0; animation: loaderPulse 1.2s ease-in-out infinite; }
-    @keyframes loaderPulse { 0%, 100% { width: 20px; opacity: 0.4; } 50% { width: 50px; opacity: 1; } }
+    /* Same gesture as the in-app Loader, so the splash hands over to the app
+       without the motion changing character mid-load. */
+    #initialLoader .ring {
+      position: relative; width: 46px; height: 46px; margin: 26px auto 0;
+      border-radius: 50%; border: 2px solid #F4EADC;
+    }
+    #initialLoader .ring::after {
+      content: ''; position: absolute; inset: -2px; border-radius: 50%;
+      background: conic-gradient(from 0deg, transparent 0deg, rgba(168,132,74,0.06) 90deg, rgba(168,132,74,0.38) 210deg, #A8844A 320deg, transparent 360deg);
+      -webkit-mask: radial-gradient(farthest-side, transparent calc(100% - 2px), #000 calc(100% - 2px));
+      mask: radial-gradient(farthest-side, transparent calc(100% - 2px), #000 calc(100% - 2px));
+      animation: loaderSweep 1.9s cubic-bezier(0.62, 0.03, 0.35, 0.98) infinite;
+    }
+    #initialLoader .ring .core {
+      position: absolute; top: 50%; left: 50%; width: 6px; height: 6px; margin: -3px 0 0 -3px;
+      border-radius: 50%; background: #A8844A;
+      animation: loaderBreathe 2.6s cubic-bezier(0.45, 0, 0.25, 1) infinite;
+    }
+    @keyframes loaderSweep { to { transform: rotate(360deg); } }
+    @keyframes loaderBreathe {
+      0%, 100% { transform: scale(0.62); opacity: 0.35; }
+      50%      { transform: scale(1);    opacity: 1; }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      #initialLoader .ring::after, #initialLoader .ring .core { animation: none; }
+    }
     #initialLoader.fade-out { opacity: 0; visibility: hidden; pointer-events: none; }
   </style>
 </head>
@@ -58,7 +82,7 @@
     <div style="text-align:center;">
       <div class="brand">ARTÉVA</div>
       <div class="sub">MAISON</div>
-      <div class="bar"></div>
+      <div class="ring"><span class="core"></span></div>
     </div>
   </div>
 

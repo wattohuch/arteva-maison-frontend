@@ -23,6 +23,8 @@
   margin-bottom: var(--space-4);
 }
 
+.address-form-map { margin-bottom: var(--space-5); }
+
 .address-default-check {
   display: flex;
   align-items: center;
@@ -69,6 +71,21 @@
   border-radius: var(--radius-pill);
   background: var(--color-champagne);
   color: var(--color-bronze);
+}
+
+.address-pin {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: var(--space-2);
+  margin-top: var(--space-2);
+  font-size: var(--fs-xs) !important;
+  color: var(--color-bronze) !important;
+}
+
+.address-pin span {
+  font-family: var(--font-mono, monospace);
+  color: var(--text-muted);
 }
 
 .address-card-actions {
