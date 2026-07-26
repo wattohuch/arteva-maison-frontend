@@ -1,0 +1,121 @@
+/* ============================================
+   ARTÉVA Maison — Blurred revenue tile
+   ============================================ */
+
+.revstat {
+  position: relative;
+  flex-wrap: wrap;
+}
+
+/* The blur itself. Applied to a placeholder, never to the real figure — see
+   the note in RevenueStatCard.jsx. `user-select: none` stops the dots being
+   dragged out as text, which would look like a leak even though it is not. */
+.revstat-value.is-blurred {
+  filter: blur(7px);
+  opacity: 0.55;
+  user-select: none;
+  pointer-events: none;
+  letter-spacing: 0.02em;
+}
+
+/* Reveal eases in, so the number arrives rather than snapping into place. */
+.revstat-value {
+  transition: filter 420ms cubic-bezier(0.2, 0.7, 0.3, 1),
+              opacity 420ms cubic-bezier(0.2, 0.7, 0.3, 1);
+}
+
+.revstat.is-revealed {
+  border-color: var(--color-gold-soft, #D2B47F);
+}
+
+/* ── Locked state ── */
+.revstat-lock { margin-inline-start: auto; }
+
+.revstat-unlock {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 11px;
+  font-size: var(--fs-xs);
+  font-weight: var(--fw-semibold);
+  color: var(--color-bronze, #805F30);
+  background: var(--color-champagne, #F4EADC);
+  border: 1px solid transparent;
+  border-radius: var(--radius-pill, 999px);
+  cursor: pointer;
+  transition: background 200ms ease, border-color 200ms ease;
+}
+
+.revstat-unlock:hover,
+.revstat-unlock:focus-visible {
+  background: transparent;
+  border-color: var(--color-gold, #B58C4A);
+}
+
+.revstat-denied {
+  margin-inline-start: auto;
+  font-size: var(--fs-xs);
+  font-weight: var(--fw-semibold);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  white-space: nowrap;
+}
+
+/* ── Password prompt ── */
+.revstat-form {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  width: 100%;
+  margin-top: var(--space-3);
+}
+
+.revstat-input {
+  width: 100%;
+  font-size: var(--fs-sm);
+  padding: 7px 10px;
+}
+
+.revstat-form-actions {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.revstat-link {
+  background: none;
+  border: none;
+  padding: 0;
+  font-size: var(--fs-xs);
+  color: var(--text-muted);
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+.revstat-link:hover { color: var(--color-gold-text, #8C672C); }
+
+.revstat-error {
+  font-size: var(--fs-xs);
+  color: #CD5C5C;
+}
+
+/* ── Revealed state ── */
+.revstat-timer {
+  margin-inline-start: auto;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 2px;
+}
+
+.revstat-countdown {
+  font-size: var(--fs-xs);
+  font-weight: var(--fw-semibold);
+  font-variant-numeric: tabular-nums;
+  color: var(--color-bronze, #805F30);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .revstat-value { transition: none; }
+}

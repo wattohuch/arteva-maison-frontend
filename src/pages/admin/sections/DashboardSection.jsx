@@ -6,9 +6,10 @@ import { timeAgo } from '../../../utils/formatters';
 import Loader from '../../../components/ui/Loader';
 import AdminTable from '../components/AdminTable';
 import StatCard from '../components/StatCard';
+import RevenueStatCard from '../components/RevenueStatCard';
 import StatusPill from '../components/StatusPill';
 import OrderDetailSheet from '../components/OrderDetailSheet';
-import { BagIcon, GridIcon, UserIcon, SparkleIcon, GlobeIcon, TicketIcon, TagIcon, ReceiptIcon } from '../../../components/ui/Icons';
+import { BagIcon, GridIcon, UserIcon, GlobeIcon, TicketIcon, TagIcon, ReceiptIcon } from '../../../components/ui/Icons';
 
 export default function DashboardSection() {
   const { t } = useI18n();
@@ -46,11 +47,6 @@ export default function DashboardSection() {
     { Icon: BagIcon, label: t('total_orders'), value: stats?.totalOrders || 0, tone: 'blue', path: '/admin/orders' },
     { Icon: GridIcon, label: t('total_products'), value: stats?.totalProducts || 0, tone: 'gold', path: '/admin/products' },
     { Icon: UserIcon, label: t('total_users'), value: stats?.totalUsers || 0, tone: 'green', path: '/admin/users' },
-    // Only the owner is served a revenue figure at all; for anyone else the
-    // card is absent rather than showing 0.000 KWD.
-    ...(stats?.canSeeRevenue
-      ? [{ Icon: SparkleIcon, label: t('total_revenue'), value: `${(stats?.totalRevenue || 0).toFixed(3)} KWD`, tone: 'amber', path: '/admin/revenue' }]
-      : []),
     { Icon: GlobeIcon, label: 'Visitors (30d)', value: stats?.totalVisitors || 0, tone: 'blue', path: '/admin/visitors' },
   ];
 
@@ -70,6 +66,10 @@ export default function DashboardSection() {
             <StatCard {...c} />
           </div>
         ))}
+        {/* Blurred for every admin. Not wrapped in the navigate-on-click
+            handler above: the tile has its own controls, and a stray click
+            while typing a password should not throw you onto another page. */}
+        <RevenueStatCard label={t('total_revenue')} canUnlock={!!stats?.canSeeRevenue} />
       </div>
 
       <section className="admin-section" style={{ marginTop: 24 }}>

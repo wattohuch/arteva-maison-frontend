@@ -111,17 +111,27 @@ export const AdminAPI = {
     }),
 
   /**
-   * Exchange the revenue password for a short-lived unlock token, and hold on
-   * to it so subsequent revenue reads can present it.
+   * Exchange the revenue password for a short-lived unlock token.
+   *
+   * `persist: false` returns the token without storing it, for the dashboard
+   * tile: holding it in component state alone means the reveal cannot outlive
+   * the component's own timer, so the password is genuinely required again
+   * once the tile re-blurs.
    */
-  authenticateRevenueAccess: async (revenuePassword) => {
+  authenticateRevenueAccess: async (revenuePassword, { persist = true } = {}) => {
     const res = await apiRequest('/admin/revenue-auth', {
       method: 'POST',
       body: JSON.stringify({ revenuePassword }),
     });
-    if (res?.revenueToken) setRevenueToken(res.revenueToken);
+    if (persist && res?.revenueToken) setRevenueToken(res.revenueToken);
     return res;
   },
+
+  /** Headline revenue total. Needs an explicit unlock token. */
+  getRevenueTotal: (token) =>
+    apiRequest('/admin/revenue/total', {
+      headers: token ? { 'X-Revenue-Token': token } : revenueHeaders(),
+    }),
 
   /** Drops the unlock token — the next revenue read will require the password. */
   lockRevenue: () => setRevenueToken(null),
