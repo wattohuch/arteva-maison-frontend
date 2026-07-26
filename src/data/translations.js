@@ -67,7 +67,9 @@ export const translations = {
     proceed_to_checkout: "Proceed to Checkout", we_accept: "We accept",
     checkout: "Checkout", shipping_address: "Shipping Address",
     street_address: "Street Address *", city: "City *", state_area: "State/Area",
-    country: "Country", postal_code: "Postal Code", phone_number: "Phone Number *",
+    // No asterisk baked into the label — every caller marks required itself,
+    // which was rendering "Phone Number **" on the address form.
+    country: "Country", postal_code: "Postal Code", phone_number: "Phone Number",
     use_current_location: "Use Current Location",
     drag_pin_hint: "Drag the pin to your exact delivery location.",
     saved_addresses: "Saved Addresses", payment_method: "Payment Method",
@@ -83,18 +85,28 @@ export const translations = {
     added_to_cart: "Added to cart", removed_from_cart: "Removed from cart",
     remove: "Remove", processing: "Processing...",
     select_payment_method: "Please select a payment method",
-    fill_required_fields: "Please fill in all required address fields",
+    fill_required_fields: "Please fill in all required fields",
     payment_failed: "Payment failed", login_required: "Please login to checkout",
     knet_unavailable: "KNET payment is currently unavailable. Please choose another method.",
 
     // Contact Page
     get_in_touch: "Get in Touch", contact_desc: "We'd love to hear from you!",
+    contact_subtitle: "Tell us what you are looking for and we will reply within one working day.",
     address: "Address", phone: "Phone", email: "Email", hours: "Hours",
     send_message: "Send a Message", first_name: "First Name", last_name: "Last Name",
     subject: "Subject", message: "Message", send_btn: "Send Message",
     contact_success: "Thank you! We will get back to you shortly.",
     business_hours: "Business Hours", business_hours_value: "Sat-Thu: 10AM-10PM",
     your_name: "Your Name", your_email: "Your Email",
+    our_location: "Our Location", email_us: "Email Us", call_us: "Call Us",
+    working_hours: "Working Hours",
+    working_hours_value: "Sat – Thu · 10 AM to 10 PM",
+    working_hours_friday: "Friday · 2 PM to 12 AM",
+    message_sent: "Message sent",
+    message_failed: "Your message could not be sent. Please try again.",
+    message_sent_title: "Thank you",
+    message_sent_desc: "Your message is with us — we will reply within one working day.",
+    send_another: "Send another message",
 
     // Account Page
     login: "Login", register: "Register", welcome_back: "Welcome Back",
@@ -428,7 +440,7 @@ export const translations = {
     checkout: "الدفع", shipping_address: "عنوان الشحن",
     street_address: "العنوان *", city: "المدينة *",
     state_area: "المنطقة / المحافظة", country: "الدولة",
-    postal_code: "الرمز البريدي", phone_number: "رقم الهاتف *",
+    postal_code: "الرمز البريدي", phone_number: "رقم الهاتف",
     use_current_location: "استخدم موقعي الحالي",
     drag_pin_hint: "اسحب الدبوس إلى موقع التوصيل الدقيق.",
     saved_addresses: "العناوين المحفوظة", payment_method: "طريقة الدفع",
@@ -451,6 +463,7 @@ export const translations = {
 
     // Contact Page
     get_in_touch: "تواصل معنا", contact_desc: "يسعدنا سماع رأيك. أرسل لنا رسالة وسنرد في أقرب وقت.",
+    contact_subtitle: "أخبرنا بما تبحث عنه وسنرد عليك خلال يوم عمل واحد.",
     address: "العنوان", phone: "الهاتف", email: "البريد الإلكتروني",
     hours: "ساعات العمل", send_message: "إرسال الرسالة",
     first_name: "الاسم الأول", last_name: "اسم العائلة",
@@ -460,6 +473,15 @@ export const translations = {
     business_hours: "ساعات العمل",
     business_hours_value: "السبت-الخميس: 10 صباحًا - 10 مساءً",
     your_name: "الاسم", your_email: "البريد الإلكتروني",
+    our_location: "موقعنا", email_us: "راسلنا", call_us: "اتصل بنا",
+    working_hours: "ساعات العمل",
+    working_hours_value: "السبت – الخميس · من 10 صباحاً حتى 10 مساءً",
+    working_hours_friday: "الجمعة · من 2 ظهراً حتى 12 منتصف الليل",
+    message_sent: "تم إرسال الرسالة",
+    message_failed: "تعذّر إرسال رسالتك. يرجى المحاولة مرة أخرى.",
+    message_sent_title: "شكراً لك",
+    message_sent_desc: "وصلتنا رسالتك — سنرد عليك خلال يوم عمل واحد.",
+    send_another: "إرسال رسالة أخرى",
 
     // Account Page
     login: "تسجيل الدخول", register: "تسجيل جديد",
