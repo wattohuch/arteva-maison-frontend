@@ -5,7 +5,22 @@ export default function MarketingSection() {
   const [sending, setSending] = useState(false);
   const [previews, setPreviews] = useState([]);
   const [result, setResult] = useState(null);
+  const [diag, setDiag] = useState(null);
+  const [checking, setChecking] = useState(false);
   const fileRef = useRef(null);
+
+  const checkDelivery = async () => {
+    setChecking(true);
+    setDiag(null);
+    try {
+      const res = await AdminAPI.getEmailDiagnostics();
+      setDiag(res?.data || res);
+    } catch (err) {
+      setDiag({ error: err?.message || 'Could not reach Mailgun.' });
+    } finally {
+      setChecking(false);
+    }
+  };
 
   const handleImageChange = (e) => {
     const files = Array.from(e.target.files);
@@ -53,6 +68,59 @@ export default function MarketingSection() {
   return (
     <div className="admin-view">
       <h2 className="admin-view-title">Email Marketing</h2>
+
+      {/* Delivery is the thing that silently fails: a sandbox Mailgun domain
+          accepts every send and only delivers to authorised addresses, so
+          campaigns look successful and arrive nowhere. This asks Mailgun. */}
+      <div style={{ marginBottom: 20 }}>
+        <button type="button" className="btn btn--ghost btn--sm" onClick={checkDelivery} disabled={checking}>
+          {checking ? 'Checking…' : '🔍 Check email delivery'}
+        </button>
+
+        {diag && (
+          <div style={{
+            marginTop: 12, padding: '12px 14px', borderRadius: 8, fontSize: '0.82rem',
+            background: '#f8fafc', border: '1px solid #e2e8f0', lineHeight: 1.6,
+          }}>
+            {diag.error ? (
+              <span style={{ color: '#991b1b' }}>{diag.error}</span>
+            ) : (
+              <>
+                <div><strong>Domain:</strong> {diag.domain} {diag.state ? `(${diag.state})` : ''}</div>
+                {diag.isSandbox && (
+                  <div style={{ color: '#991b1b', marginTop: 6 }}>
+                    <strong>This is a Mailgun sandbox domain.</strong> It can only deliver to
+                    addresses you have explicitly authorised in Mailgun — campaigns to real
+                    customers are accepted and then dropped. Verify a real domain in Mailgun
+                    (add its DNS records) to send to anyone.
+                  </div>
+                )}
+                {!diag.isSandbox && diag.verified === false && (
+                  <div style={{ color: '#991b1b', marginTop: 6 }}>
+                    Domain is <strong>not verified</strong> — its DNS records are incomplete,
+                    so Mailgun will not deliver.
+                  </div>
+                )}
+                {diag.rejected?.length > 0 && (
+                  <div style={{ marginTop: 8 }}>
+                    <strong>Recent failures:</strong>
+                    <ul style={{ margin: '4px 0 0 18px' }}>
+                      {diag.rejected.slice(0, 5).map((e, i) => (
+                        <li key={i}>{e.recipient} — {e.reason || e.event}</li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+                {diag.rejected?.length === 0 && diag.recentEvents?.length > 0 && (
+                  <div style={{ color: '#166534', marginTop: 6 }}>
+                    No rejections in the last {diag.recentEvents.length} events.
+                  </div>
+                )}
+              </>
+            )}
+          </div>
+        )}
+      </div>
 
       <form onSubmit={handleSubmit} className="admin-form" style={{ maxWidth: 700 }}>
         <label className="admin-form-label">

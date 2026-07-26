@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect } from 'react';
 import { useCurrency } from '../../contexts/CurrencyContext';
+import Flag from '../ui/Flags';
 import './FloatingCurrencySelector.css';
 
 export default function FloatingCurrencySelector() {
@@ -32,7 +33,7 @@ export default function FloatingCurrencySelector() {
                 setIsOpen(false);
               }}
             >
-              <span className={`fi fi-${flags[code]} currency-flag-icon`} />
+              <Flag code={flags[code]} className="currency-flag-icon" />
               <span className="currency-code">{code}</span>
               <span className="currency-name">{names[code]}</span>
             </button>
@@ -45,7 +46,7 @@ export default function FloatingCurrencySelector() {
         onClick={() => setIsOpen(!isOpen)}
         aria-label="Currency Selector"
       >
-        <span className={`fi fi-${flags[currency]} currency-flag-icon`} />
+        <Flag code={flags[currency]} className="currency-flag-icon" />
         <span className="currency-btn-code">{currency}</span>
         <svg
           className={`currency-chevron ${isOpen ? 'open' : ''}`}

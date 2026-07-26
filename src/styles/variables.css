@@ -94,8 +94,10 @@
   --border-warm: rgba(74, 59, 44, 0.12);
 
   /* ── Typography ── */
-  --font-display: 'Playfair Display', 'Cormorant Garamond', Georgia, 'Times New Roman', serif;
-  --font-serif-alt: 'Cormorant Garamond', 'Playfair Display', Georgia, serif;
+  --font-display: 'Playfair Display', Georgia, 'Times New Roman', serif;
+  /* Kept as an alias so any existing rule still resolves; Cormorant is no
+     longer downloaded, so this now renders as Playfair. */
+  --font-serif-alt: 'Playfair Display', Georgia, serif;
   --font-primary: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   --font-arabic: 'Noto Sans Arabic', 'Segoe UI', sans-serif;
 

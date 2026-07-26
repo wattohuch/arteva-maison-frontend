@@ -98,6 +98,9 @@ export const AdminAPI = {
     }),
   sendEmailWithImages: (formData) => apiUpload('/admin/send-email', 'POST', formData),
 
+  /** What Mailgun itself reports: domain state, and why recent sends failed. */
+  getEmailDiagnostics: () => apiRequest('/admin/email-diagnostics'),
+
   // ── Revenue / Auth ──
   checkSuperuser: () => apiRequest('/admin/check-superuser'),
 
