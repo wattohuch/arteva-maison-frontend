@@ -5,7 +5,7 @@ import RequireRole from './components/auth/RequireRole';
 import PageTransition, {
   RouteTransitionProvider, useRouteTransition,
 } from './components/transitions/RouteTransition';
-import { GlobalLoadingScreen, SuspenseLoader } from './components/ui/loading';
+import { RouteFallback } from './components/ui/loading';
 
 // Home is the landing route for nearly every visit, so it stays eager —
 // lazy-loading it would only add a round trip before the hero can paint.
@@ -43,9 +43,6 @@ const DriverDashboard = lazy(() => import('./pages/driver/DriverDashboard'));
 export default function App() {
   return (
     <RouteTransitionProvider>
-      {/* Outside the router: the waiting state must never be unmounted by the
-          navigation it is covering. */}
-      <GlobalLoadingScreen />
       <AppRoutes />
     </RouteTransitionProvider>
   );
@@ -58,7 +55,7 @@ function AppRoutes() {
   const { displayLocation } = useRouteTransition();
 
   return (
-    <Suspense fallback={<SuspenseLoader />}>
+    <Suspense fallback={<RouteFallback />}>
       <Routes location={displayLocation}>
         {/* Main layout routes */}
         <Route element={<PageLayout />}>

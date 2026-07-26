@@ -7,7 +7,7 @@ import Toast from '../ui/Toast';
 import FloatingCurrencySelector from './FloatingCurrencySelector';
 import FloatingActions from './FloatingActions';
 import PageTransition from '../transitions/RouteTransition';
-import { SuspenseLoader } from '../ui/loading';
+import { RouteFallback } from '../ui/loading';
 import './PageLayout.css';
 
 /**
@@ -28,7 +28,7 @@ export default function PageLayout() {
     <>
       <Header />
       <PageTransition as="main" className="page-main">
-        <Suspense fallback={<SuspenseLoader />}>
+        <Suspense fallback={<RouteFallback />}>
           <Outlet />
         </Suspense>
       </PageTransition>

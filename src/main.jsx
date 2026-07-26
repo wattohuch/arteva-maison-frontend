@@ -1,4 +1,4 @@
-import './styles/global.css';
+﻿import './styles/global.css';
 // Form control system — loaded globally so legacy `.form-input` markup and the
 // <Input>/<Select>/<Textarea> components always share the same rules.
 import './components/ui/Field.css';
@@ -30,13 +30,11 @@ import App from './App';
   } catch { /* storage blocked — default LTR from index.html stands */ }
 })();
 
-// Hand the pre-React loading screen over to the app. It fades and opens
-// outwards rather than being switched off, and is removed only once that has
-// finished — the 560ms matches the 520ms transition in index.html.
+// Remove the branded loader once React mounts
 const loader = document.getElementById('initialLoader');
 if (loader) {
   loader.classList.add('fade-out');
-  setTimeout(() => loader.remove(), 560);
+  setTimeout(() => loader.remove(), 600);
 }
 
 createRoot(document.getElementById('root')).render(

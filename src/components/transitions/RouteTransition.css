@@ -54,10 +54,13 @@
   to   { opacity: 1; }
 }
 
-/* Placeholder the suspense fallback leaves behind so the document keeps its
-   height while a route chunk is in flight — without it the scrollbar
-   disappears and the page under the loading screen shifts. */
-.route-suspense-spacer {
+/* The slot a route occupies while its chunk is in flight. It holds the
+   document height — without it the page collapses, the scrollbar vanishes and
+   the footer jumps up for a frame. Usually it holds nothing else. */
+.route-fallback {
+  display: flex;
+  align-items: center;
+  justify-content: center;
   min-height: 60svh;
 }
 
