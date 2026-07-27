@@ -1,5 +1,5 @@
 import { lazy, Suspense, useState, useEffect, useRef } from 'react';
-import { NavLink, Navigate, Route, Routes, useLocation, useNavigate } from 'react-router-dom';
+import { Link, NavLink, Navigate, Route, Routes, useLocation, useNavigate } from 'react-router-dom';
 import { io } from 'socket.io-client';
 import { useAuth } from '../../contexts/AuthContext';
 import { useI18n } from '../../contexts/I18nContext';
@@ -157,10 +157,13 @@ export default function AdminLayout() {
       />
 
       <aside className={`admin-sidebar ${sidebarOpen ? 'is-open' : ''}`} aria-label="Admin navigation">
-        <div className="admin-sidebar-logo">
+        {/* The wordmark is the way back to the storefront, which is where
+            people instinctively click first — the footer link stays for
+            anyone who looks for it there instead. */}
+        <Link to="/" className="admin-sidebar-logo" title={t('back_to_store')}>
           <span>ARTÉVA</span>
           <small>{t('admin_dashboard')}</small>
-        </div>
+        </Link>
 
         <nav className="admin-sidebar-nav">
           {navItems.map(({ to, Icon, label }) => (
