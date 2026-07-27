@@ -15,6 +15,15 @@
   flex-direction: column;
   align-items: flex-end;
   gap: var(--space-3);
+  /* `right` alone isn't enough: `align-items: flex-end` is still a logical
+     (direction-relative) value, so under dir="rtl" it was hugging the LEFT
+     edge of this box instead — and since the collapsed menu occupies
+     invisible layout space (visibility: hidden, not display: none) rather
+     than collapsing to zero, that box is as wide as the expanded menu, so
+     the visible trigger button landed well inward from the true right
+     corner. Pinning this subtree to ltr makes "flex-end" mean the right
+     edge unconditionally, matching the physical corner it's positioned in. */
+  direction: ltr;
 }
 
 /* ── Trigger ── */
