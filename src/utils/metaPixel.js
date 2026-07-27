@@ -123,6 +123,19 @@ export function trackSearch(query) {
 }
 
 /**
+ * Someone reached out through the contact form.
+ *
+ * `Contact` and `Lead` are separate standard events and both are worth having:
+ * Contact is the human action, Lead is the one Meta's ad optimisation can be
+ * pointed at as a conversion objective. For a store where a large share of
+ * enquiries turn into bespoke orders, that objective is the point.
+ */
+export function trackContact() {
+  track('Contact');
+  track('Lead');
+}
+
+/**
  * The one event that pays for the rest.
  *
  * Fired from the order-success page, since checkout hands off to a payment

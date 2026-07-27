@@ -7,6 +7,7 @@ import { ContactAPI } from '../api/contact';
 import { showToast } from '../components/ui/Toast';
 import Button from '../components/ui/Button';
 import { Input, Textarea, FieldRow } from '../components/ui/Field';
+import { trackContact } from '../utils/metaPixel';
 import './ContactPage.css';
 
 /** Reachable by email as well as WhatsApp; the number itself comes from site
@@ -35,6 +36,9 @@ export default function ContactPage() {
         firstName,
         lastName: rest.join(' ') || '-',
       });
+      // Reported only after the server accepted it — a failed send is not a
+      // lead, and counting it as one would train ad delivery on nothing.
+      trackContact();
       setSubmitted(true);
       showToast(t('message_sent'), 'success');
     } catch (err) {
