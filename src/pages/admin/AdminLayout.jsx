@@ -10,7 +10,7 @@ import Loader from '../../components/ui/Loader';
 import {
   GridIcon, BagIcon, UserIcon, HomeIcon, MenuIcon, CloseIcon, SparkleIcon,
   ImageIcon, FolderIcon, CarIcon, SendIcon, ChartIcon, TagIcon,
-  ReceiptIcon, GlobeIcon, TicketIcon, PhoneIcon, CoinsIcon,
+  ReceiptIcon, GlobeIcon, TicketIcon, PhoneIcon, CoinsIcon, PackageIcon,
 } from '../../components/ui/Icons';
 import './AdminLayout.css';
 
@@ -27,6 +27,7 @@ const AnalyticsSection = lazy(() => import('./sections/AnalyticsSection'));
 const DiscountsSection = lazy(() => import('./sections/DiscountsSection'));
 const ReceiptsSection = lazy(() => import('./sections/ReceiptsSection'));
 const VisitorsSection = lazy(() => import('./sections/VisitorsSection'));
+const CartsSection = lazy(() => import('./sections/CartsSection'));
 const PromoCodesSection = lazy(() => import('./sections/PromoCodesSection'));
 const SocialContactsSection = lazy(() => import('./sections/SocialContactsSection'));
 const ReceiptGenerator = lazy(() => import('./receipt/ReceiptGenerator'));
@@ -80,6 +81,7 @@ export default function AdminLayout() {
     { to: '/admin/browse-collections', Icon: GridIcon, label: 'Browse Collections' },
     { to: '/admin/categories', Icon: FolderIcon, label: 'Categories' },
     { to: '/admin/orders', Icon: BagIcon, label: t('orders') },
+    { to: '/admin/carts', Icon: PackageIcon, label: 'Carts' },
     { to: '/admin/receipt-generator', Icon: ReceiptIcon, label: 'Receipt Generator' },
     ...(isOwner ? [{ to: '/admin/revenue', Icon: CoinsIcon, label: 'Revenue' }] : []),
     { to: '/admin/users', Icon: UserIcon, label: t('users') },
@@ -222,6 +224,7 @@ export default function AdminLayout() {
               <Route path="browse-collections" element={<BrowseCollectionsSection />} />
               <Route path="categories" element={<CategoriesSection />} />
               <Route path="orders" element={<OrdersSection />} />
+              <Route path="carts" element={<CartsSection />} />
               <Route path="users" element={<UsersSection />} />
               <Route path="drivers" element={<DriversSection />} />
               <Route path="marketing" element={<MarketingSection />} />

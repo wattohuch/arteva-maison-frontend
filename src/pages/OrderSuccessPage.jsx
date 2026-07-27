@@ -4,12 +4,22 @@ import { useI18n } from '../contexts/I18nContext';
 import { CheckCircleIcon } from '../components/ui/Icons';
 import { OrdersAPI } from '../api/orders';
 import { trackPurchase } from '../utils/metaPixel';
+import { useCart } from '../contexts/CartContext';
 
 export default function OrderSuccessPage() {
   const { t } = useI18n();
   const [searchParams] = useSearchParams();
   const orderNumber = searchParams.get('order') || '';
   const reported = useRef(false);
+  const { clearCart } = useCart();
+
+  // The basket that was just paid for is still sitting in localStorage —
+  // checkout only ever pushes it to the server cart, it never empties the
+  // local one. Landing here means the order is placed, so the basket is done.
+  useEffect(() => {
+    clearCart();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   /* The Purchase event lives here, not in checkout: checkout hands off to a
      payment gateway and the tab never comes back to it.

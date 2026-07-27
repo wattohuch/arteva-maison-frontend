@@ -1,4 +1,4 @@
-import { lazy, Suspense } from 'react';
+import { lazy, Suspense, useEffect } from 'react';
 import { Routes, Route } from 'react-router-dom';
 import PageLayout from './components/layout/PageLayout';
 import RequireRole from './components/auth/RequireRole';
@@ -6,6 +6,7 @@ import PageTransition, {
   RouteTransitionProvider, useRouteTransition,
 } from './components/transitions/RouteTransition';
 import { RouteFallback } from './components/ui/loading';
+import { trackSiteVisit } from './utils/siteVisit';
 
 // Home is the landing route for nearly every visit, so it stays eager —
 // lazy-loading it would only add a round trip before the hero can paint.
@@ -45,6 +46,8 @@ const AdminLayout = lazy(() => import('./pages/admin/AdminLayout'));
 const DriverDashboard = lazy(() => import('./pages/driver/DriverDashboard'));
 
 export default function App() {
+  useEffect(() => { trackSiteVisit(); }, []);
+
   return (
     <RouteTransitionProvider>
       <AppRoutes />

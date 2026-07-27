@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import { useNavigate, Navigate, Link } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { useI18n } from '../contexts/I18nContext';
 import { showToast } from '../components/ui/Toast';
@@ -17,7 +17,10 @@ export default function AccountPage() {
   const [form, setForm] = useState({ name: '', email: '', password: '', confirmPassword: '', phone: '' });
   const [loading, setLoading] = useState(false);
 
-  if (isLoggedIn) { navigate('/profile', { replace: true }); return null; }
+  // A <Navigate> element, not an imperative navigate() call: firing navigate()
+  // straight from the render body updates the router while this component is
+  // still rendering, which is what was crashing with React error #185.
+  if (isLoggedIn) return <Navigate to="/profile" replace />;
 
   const handleChange = (e) => setForm(prev => ({ ...prev, [e.target.name]: e.target.value }));
 

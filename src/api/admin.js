@@ -160,6 +160,9 @@ export const AdminAPI = {
   getSiteVisits: (params = '') => apiRequest(`/admin/analytics/site-visits${params}`),
   getSiteVisitLog: (params = '') => apiRequest(`/admin/analytics/visitor-log${params}`),
 
+  // ── Carts (what shoppers currently have in their basket) ──
+  getCarts: () => apiRequest('/admin/carts'),
+
   // ── Categories Admin ──
   getCategories: () => apiRequest('/categories'),
   createCategory: (formData) => apiUpload('/admin/categories', 'POST', formData),

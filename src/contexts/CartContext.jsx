@@ -7,8 +7,13 @@ import { useAuth } from './AuthContext';
 
 const CartContext = createContext(null);
 
+/** Whose cart is currently sitting in localStorage — set on every login-time
+ *  sync so a later login can tell "my own cart, still here" apart from
+ *  "someone else's leftovers on this device". */
+const CART_OWNER_KEY = 'arteva_cart_owner';
+
 export function CartProvider({ children }) {
-  const { isLoggedIn } = useAuth();
+  const { isLoggedIn, user } = useAuth();
 
   const [items, setItems] = useState(() => {
     try { return JSON.parse(localStorage.getItem('arteva_cart') || '[]'); }
@@ -36,8 +41,12 @@ export function CartProvider({ children }) {
     // — card, detail page, drawer — is counted exactly once.
     trackAddToCart(product, quantity);
 
+    const id = product._id || product.id;
+    // Fire-and-forget: so the admin cart view (and any other device the same
+    // account is logged into) sees this without waiting on checkout.
+    if (isLoggedIn) CartAPI.add(id, quantity).catch(() => {});
+
     setItems(prev => {
-      const id = product._id || product.id;
       const existing = prev.find(i => (i._id || i.id) === id);
       let next;
       if (existing) {
@@ -61,9 +70,14 @@ export function CartProvider({ children }) {
       localStorage.setItem('arteva_cart', JSON.stringify(next));
       return next;
     });
-  }, []);
+  }, [isLoggedIn]);
 
   const updateQuantity = useCallback((id, quantity) => {
+    if (isLoggedIn) {
+      if (quantity <= 0) CartAPI.remove(id).catch(() => {});
+      else CartAPI.update(id, quantity).catch(() => {});
+    }
+
     if (quantity <= 0) {
       setItems(prev => {
         const next = prev.filter(i => (i._id || i.id) !== id);
@@ -77,50 +91,71 @@ export function CartProvider({ children }) {
         return next;
       });
     }
-  }, []);
+  }, [isLoggedIn]);
 
   const removeItem = useCallback((id) => {
+    if (isLoggedIn) CartAPI.remove(id).catch(() => {});
+
     setItems(prev => {
       const next = prev.filter(i => (i._id || i.id) !== id);
       localStorage.setItem('arteva_cart', JSON.stringify(next));
       return next;
     });
-  }, []);
+  }, [isLoggedIn]);
 
   const clearCart = useCallback(() => {
+    if (isLoggedIn) CartAPI.clear().catch(() => {});
     persist([]);
-  }, [persist]);
+  }, [persist, isLoggedIn]);
 
-  // Sync with server when logged in
+  const uid = user?._id || user?.id || null;
+
+  // Sync with server when logged in.
   useEffect(() => {
-    if (isLoggedIn) {
-      CartAPI.get().then(res => {
-        if (res.success && res.data?.items?.length) {
-          const normalized = res.data.items.map(item => {
-            const prod = item.product || {};
-            const id = prod._id || prod.id || item._id || item.id;
-            const image = prod.images?.length
-              ? (prod.images.find(img => img.isPrimary) || prod.images[0]).url
-              : prod.image || item.image || '';
-            const name = prod.name || item.name || 'Product';
-            const nameAr = prod.nameAr || item.nameAr || '';
-            const price = Number(prod.price ?? item.price ?? 0);
-            const quantity = Number(item.quantity || 1);
-            return {
-              id,
-              _id: id,
-              name,
-              nameAr,
-              price,
-              image,
-              quantity,
-            };
-          });
-          persist(normalized);
+    if (!isLoggedIn) return;
+
+    CartAPI.get().then(res => {
+      if (!res.success) return;
+      const serverItems = res.data?.items || [];
+
+      if (serverItems.length) {
+        const normalized = serverItems.map(item => {
+          const prod = item.product || {};
+          const id = prod._id || prod.id || item._id || item.id;
+          const image = prod.images?.length
+            ? (prod.images.find(img => img.isPrimary) || prod.images[0]).url
+            : prod.image || item.image || '';
+          const name = prod.name || item.name || 'Product';
+          const nameAr = prod.nameAr || item.nameAr || '';
+          const price = Number(prod.price ?? item.price ?? 0);
+          const quantity = Number(item.quantity || 1);
+          return {
+            id,
+            _id: id,
+            name,
+            nameAr,
+            price,
+            image,
+            quantity,
+          };
+        });
+        persist(normalized);
+      } else {
+        // Server cart is empty. That's expected the first time a guest logs
+        // in mid-checkout — their about-to-buy local cart is real and should
+        // survive. But if this device's local cart was stamped by a
+        // *different* account (a shared/public computer, or a session that
+        // expired without an explicit logout), it isn't this user's to see —
+        // drop it rather than handing over whatever the previous person had.
+        const lastOwner = localStorage.getItem(CART_OWNER_KEY);
+        if (lastOwner && uid && lastOwner !== uid) {
+          persist([]);
         }
-      }).catch(() => {});
-    }
-  }, [isLoggedIn]); // eslint-disable-line react-hooks/exhaustive-deps
+      }
+
+      if (uid) localStorage.setItem(CART_OWNER_KEY, uid);
+    }).catch(() => {});
+  }, [isLoggedIn, uid]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // A fresh object literal here would give every consumer a new context value
   // on every provider render — the header badge, each product card and the
