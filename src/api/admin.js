@@ -101,6 +101,9 @@ export const AdminAPI = {
   /** What Mailgun itself reports: domain state, and why recent sends failed. */
   getEmailDiagnostics: () => apiRequest('/admin/email-diagnostics'),
 
+  /** Which Meta integrations the server has credentials for. */
+  getMetaStatus: () => apiRequest('/meta/status'),
+
   // ── Revenue / Auth ──
   checkSuperuser: () => apiRequest('/admin/check-superuser'),
 

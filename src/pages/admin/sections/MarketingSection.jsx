@@ -1,4 +1,4 @@
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { AdminAPI } from '../../../api/admin';
 
 export default function MarketingSection() {
@@ -7,7 +7,18 @@ export default function MarketingSection() {
   const [result, setResult] = useState(null);
   const [diag, setDiag] = useState(null);
   const [checking, setChecking] = useState(false);
+  const [meta, setMeta] = useState(null);
   const fileRef = useRef(null);
+
+  /* Meta's own setup can only be checked from a signed-in admin session: the
+     endpoint is guarded, and the token lives in localStorage and travels as an
+     Authorization header, so opening the URL in a browser tab is always
+     "no token". Reading it here is the only way to see it without devtools. */
+  useEffect(() => {
+    AdminAPI.getMetaStatus()
+      .then(res => setMeta(res?.data || res))
+      .catch(err => setMeta({ error: err?.message || 'Could not read Meta status' }));
+  }, []);
 
   const checkDelivery = async () => {
     setChecking(true);
@@ -65,9 +76,68 @@ export default function MarketingSection() {
     }
   };
 
+  const metaRows = meta && !meta.error ? [
+    {
+      label: 'Meta Pixel + Conversions API',
+      ok: meta.conversionsApi?.enabled,
+      detail: meta.conversionsApi?.enabled
+        ? `Pixel ${meta.conversionsApi.pixelId}${meta.conversionsApi.testMode ? ' · TEST MODE ON' : ''}`
+        : 'Set META_PIXEL_ID and META_CAPI_ACCESS_TOKEN on the server',
+      warn: meta.conversionsApi?.testMode,
+    },
+    {
+      label: 'Catalogue feed',
+      ok: (meta.catalogProducts || 0) > 0,
+      detail: `${meta.catalogProducts || 0} products would publish`,
+    },
+    {
+      label: 'WhatsApp Cloud API',
+      ok: meta.whatsapp?.configured,
+      detail: meta.whatsapp?.configured
+        ? `Webhook ${meta.whatsapp.webhookVerifyTokenSet ? 'ready' : 'token missing'}`
+          + `${meta.whatsapp.signatureCheckEnabled ? ' · signed' : ' · UNSIGNED'}`
+        : 'Set WHATSAPP_ACCESS_TOKEN and WHATSAPP_PHONE_NUMBER_ID',
+      warn: meta.whatsapp?.configured && !meta.whatsapp?.signatureCheckEnabled,
+    },
+    {
+      label: 'Facebook Login',
+      ok: meta.facebookLogin?.configured,
+      detail: meta.facebookLogin?.configured
+        ? 'App credentials present'
+        : 'Set FACEBOOK_APP_ID and FACEBOOK_APP_SECRET',
+    },
+  ] : [];
+
   return (
     <div className="admin-view">
       <h2 className="admin-view-title">Email Marketing</h2>
+
+      {/* Meta setup, read from the server. The /api/meta/status endpoint is
+          admin-guarded, so opening it in a browser tab always answers "no
+          token" — this is the signed-in view of the same thing. */}
+      {meta && (
+        <div style={{ marginBottom: 24, padding: '14px 16px', borderRadius: 10, background: '#f8fafc', border: '1px solid #e2e8f0' }}>
+          <strong style={{ fontSize: '0.82rem', letterSpacing: '0.06em', textTransform: 'uppercase', color: 'var(--text-muted)' }}>
+            Meta integration status
+          </strong>
+
+          {meta.error ? (
+            <p style={{ marginTop: 8, fontSize: '0.84rem', color: '#991b1b' }}>{meta.error}</p>
+          ) : (
+            <ul style={{ listStyle: 'none', margin: '10px 0 0', padding: 0, display: 'grid', gap: 8 }}>
+              {metaRows.map(row => (
+                <li key={row.label} style={{ display: 'flex', gap: 10, alignItems: 'flex-start', fontSize: '0.84rem' }}>
+                  <span aria-hidden="true">{row.ok ? (row.warn ? '⚠️' : '✅') : '⭕'}</span>
+                  <span>
+                    <strong>{row.label}</strong>
+                    <span style={{ color: 'var(--text-muted)' }}> — {row.detail}</span>
+                  </span>
+                </li>
+              ))}
+            </ul>
+          )}
+        </div>
+      )}
 
       {/* Delivery is the thing that silently fails: a sandbox Mailgun domain
           accepts every send and only delivers to authorised addresses, so
