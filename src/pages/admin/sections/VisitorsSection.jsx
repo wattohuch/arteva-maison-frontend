@@ -35,6 +35,41 @@ export default function VisitorsSection() {
   const [view, setView] = useState('byIp'); // byIp | log
   const [hideBots, setHideBots] = useState(true);
 
+  /* Expanded dates in the daily summary. Each one's visitors are fetched the
+     first time it is opened and then kept — the log for a single day is a
+     small request, but re-fetching it every time a row is toggled would make
+     the accordion feel slower the more it is used. */
+  const [openDates, setOpenDates] = useState(() => new Set());
+  const [dayVisitors, setDayVisitors] = useState({});   // date -> rows
+  const [loadingDates, setLoadingDates] = useState(() => new Set());
+
+  const toggleDate = useCallback(async (date) => {
+    setOpenDates(prev => {
+      const next = new Set(prev);
+      if (next.has(date)) next.delete(date); else next.add(date);
+      return next;
+    });
+
+    // Already have it, or already asking for it.
+    if (dayVisitors[date] || loadingDates.has(date)) return;
+
+    setLoadingDates(prev => new Set(prev).add(date));
+    try {
+      const res = await AdminAPI.getSiteVisitLog(`?date=${date}&limit=1000`);
+      const payload = res?.data;
+      const rows = Array.isArray(payload) ? payload : (payload?.log || []);
+      setDayVisitors(prev => ({ ...prev, [date]: rows }));
+    } catch {
+      setDayVisitors(prev => ({ ...prev, [date]: [] }));
+    } finally {
+      setLoadingDates(prev => {
+        const next = new Set(prev);
+        next.delete(date);
+        return next;
+      });
+    }
+  }, [dayVisitors, loadingDates]);
+
   const load = useCallback(async () => {
     setLoading(true);
     const params = new URLSearchParams({ limit: '1000' });
@@ -85,7 +120,16 @@ export default function VisitorsSection() {
 
   const totalVisits = siteVisitsData?.totalVisits || 0;
   const uniqueIPs = siteVisitsData?.totalUniqueVisitors || 0;
-  const todayVisits = siteVisitsData?.todayVisitors || 0;
+  const dailySummary = siteVisitsData?.dailyBreakdown || [];
+
+  /* Read today's figure out of the same breakdown the table renders whenever
+     it is there. The card showed 0 while the row directly beneath it showed 3
+     for the same date — deriving both from one source means they cannot
+     disagree, whichever version of the backend is answering. */
+  const todayKey = new Date().toISOString().split('T')[0];
+  const todayVisits = dailySummary.find(d => d.date === todayKey)?.totalVisits
+    ?? siteVisitsData?.todayVisitors
+    ?? 0;
 
   let productViewsCount = 0;
   if (Array.isArray(productAnalytics)) {
@@ -94,7 +138,6 @@ export default function VisitorsSection() {
     productViewsCount = productAnalytics.totalViews;
   }
 
-  const dailySummary = siteVisitsData?.dailyBreakdown || [];
   const botCount = visitors.totals?.bots || 0;
 
   const statCards = [
@@ -230,15 +273,86 @@ export default function VisitorsSection() {
       {dailySummary.length > 0 && (
         <section className="admin-section">
           <h3 className="admin-section-title">Daily Visitor Summary</h3>
-          <AdminTable
-            rows={dailySummary}
-            rowKey={d => d.date}
-            columns={[
-              { key: 'date', header: 'Date', render: d => <strong>{d.date}</strong> },
-              { key: 'totalVisits', header: 'Total Visits', render: d => (d.totalVisits || 0).toLocaleString() },
-              { key: 'uniqueIPs', header: 'Unique IPs', render: d => (d.uniqueVisitors || 0).toLocaleString() },
-            ]}
-          />
+          <p className="admin-hint">Click any date to see which IPs visited and when.</p>
+
+          <div className="visitor-days">
+            {dailySummary.map(day => {
+              const isOpen = openDates.has(day.date);
+              const isLoading = loadingDates.has(day.date);
+              const rowsForDay = dayVisitors[day.date];
+
+              return (
+                <div key={day.date} className={`visitor-day ${isOpen ? 'is-open' : ''}`}>
+                  <button
+                    type="button"
+                    className="visitor-day-head"
+                    onClick={() => toggleDate(day.date)}
+                    aria-expanded={isOpen}
+                    aria-controls={`day-${day.date}`}
+                  >
+                    <span className="visitor-day-chevron" aria-hidden="true">▶</span>
+                    <span className="visitor-day-date">{day.date}</span>
+                    <span className="visitor-day-meta">
+                      <strong>{(day.totalVisits || 0).toLocaleString()}</strong> visits
+                      {' · '}
+                      <strong>{(day.uniqueVisitors || 0).toLocaleString()}</strong> unique IP
+                      {day.uniqueVisitors === 1 ? '' : 's'}
+                    </span>
+                  </button>
+
+                  {isOpen && (
+                    <div className="visitor-day-body" id={`day-${day.date}`}>
+                      {isLoading && <div className="admin-loading"><Loader size="sm" /></div>}
+
+                      {!isLoading && rowsForDay?.length === 0 && (
+                        <div className="admin-empty">No individual records kept for this date.</div>
+                      )}
+
+                      {!isLoading && rowsForDay?.length > 0 && (
+                        <table className="admin-table visitor-day-table">
+                          <thead>
+                            <tr>
+                              <th scope="col">IP Address</th>
+                              <th scope="col">Time</th>
+                              <th scope="col">Device</th>
+                              <th scope="col">Page</th>
+                              <th scope="col">Came From</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {rowsForDay
+                              .filter(v => !(hideBots && v.isBot))
+                              .map((v, i) => (
+                                <tr key={`${v.ip}-${i}`}>
+                                  <td data-label="IP Address">
+                                    <code>{v.ip || '—'}</code>
+                                    {v.isBot && <span className="visitor-bot-tag">BOT</span>}
+                                  </td>
+                                  <td data-label="Time">
+                                    {v.createdAt
+                                      ? new Date(v.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' })
+                                      : '—'}
+                                  </td>
+                                  <td data-label="Device">
+                                    {DEVICE_ICON[v.device] || ''} {v.browser || 'Unknown'} · {v.os || 'Unknown'}
+                                  </td>
+                                  <td data-label="Page">{v.page || '/'}</td>
+                                  <td data-label="Came From">
+                                    <span title={v.referrer}>
+                                      {v.referrer ? v.referrer.replace(/^https?:\/\//, '').slice(0, 30) : 'Direct'}
+                                    </span>
+                                  </td>
+                                </tr>
+                              ))}
+                          </tbody>
+                        </table>
+                      )}
+                    </div>
+                  )}
+                </div>
+              );
+            })}
+          </div>
         </section>
       )}
 

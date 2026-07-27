@@ -19,6 +19,15 @@ import './FacebookLoginButton.css';
 const APP_ID = import.meta.env.VITE_FACEBOOK_APP_ID || '';
 const SDK_ID = 'facebook-jssdk';
 
+/**
+ * Whether Facebook sign-in is configured at all.
+ *
+ * Exported so callers can drop the surrounding chrome too. The account page
+ * was rendering its "or" divider unconditionally while the button rendered
+ * only when an app id existed, which left a divider with nothing under it.
+ */
+export const facebookLoginEnabled = Boolean(APP_ID);
+
 function loadSdk() {
   return new Promise((resolve, reject) => {
     if (window.FB) return resolve(window.FB);

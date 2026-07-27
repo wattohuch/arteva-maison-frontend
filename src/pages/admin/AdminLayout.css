@@ -741,3 +741,98 @@
   }
   .admin-row-actions { justify-content: flex-end; }
 }
+
+/* ── Visitors: expandable day rows ─────────────
+   The daily summary is an accordion rather than a flat table: the question
+   an owner asks of it is "who came on this day", and that answer is a list
+   per date. Each day's visitors are fetched when it is first opened. */
+
+.admin-hint {
+  margin: -4px 0 var(--space-3);
+  font-size: var(--fs-xs);
+  color: var(--text-muted);
+}
+
+.visitor-days {
+  border: 1px solid var(--border-light);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  background: var(--color-ivory);
+}
+
+.visitor-day + .visitor-day { border-top: 1px solid var(--border-hairline); }
+
+.visitor-day-head {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  width: 100%;
+  padding: var(--space-4) var(--space-5);
+  border: 0;
+  background: transparent;
+  text-align: start;
+  font-family: inherit;
+  font-size: var(--fs-sm);
+  color: var(--text-primary);
+  cursor: pointer;
+  transition: background var(--transition-fast);
+}
+
+.visitor-day-head:hover { background: var(--color-champagne); }
+
+.visitor-day-head:focus-visible {
+  outline: 2px solid var(--color-gold);
+  outline-offset: -2px;
+}
+
+.visitor-day-chevron {
+  flex-shrink: 0;
+  width: 14px;
+  font-size: 10px;
+  color: var(--color-gold);
+  transition: transform var(--transition-fast);
+}
+.visitor-day.is-open .visitor-day-chevron { transform: rotate(90deg); }
+[dir="rtl"] .visitor-day-chevron { transform: scaleX(-1); }
+[dir="rtl"] .visitor-day.is-open .visitor-day-chevron { transform: scaleX(-1) rotate(90deg); }
+
+.visitor-day-date {
+  font-weight: var(--fw-semibold);
+  font-variant-numeric: tabular-nums;
+}
+
+.visitor-day-meta {
+  margin-inline-start: auto;
+  font-size: var(--fs-xs);
+  color: var(--text-muted);
+}
+.visitor-day-meta strong { color: var(--text-secondary); }
+
+.visitor-day-body {
+  padding: 0 var(--space-4) var(--space-4);
+  background: var(--bg-warm);
+  animation: visitorDayOpen 240ms var(--ease-out-luxe) backwards;
+}
+
+@keyframes visitorDayOpen {
+  from { opacity: 0; transform: translate3d(0, -4px, 0); }
+  to   { opacity: 1; transform: none; }
+}
+
+.visitor-day-table { font-size: var(--fs-xs); }
+.visitor-day-table code { font-size: 12px; font-weight: var(--fw-semibold); }
+
+.visitor-bot-tag {
+  margin-inline-start: 6px;
+  padding: 1px 6px;
+  border-radius: 4px;
+  background: #FEF3C7;
+  color: #92400E;
+  font-size: 10px;
+  font-weight: var(--fw-bold);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .visitor-day-body { animation: none; }
+  .visitor-day-chevron { transition: none; }
+}
