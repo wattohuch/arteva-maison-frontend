@@ -6,6 +6,7 @@ import MobileTabBar from './MobileTabBar';
 import Toast from '../ui/Toast';
 import FloatingCurrencySelector from './FloatingCurrencySelector';
 import FloatingActions from './FloatingActions';
+import CookieNotice from './CookieNotice';
 import PageTransition from '../transitions/RouteTransition';
 import { RouteFallback } from '../ui/loading';
 import './PageLayout.css';
@@ -37,6 +38,7 @@ export default function PageLayout() {
       <Toast />
       <FloatingCurrencySelector />
       <FloatingActions />
+      <CookieNotice />
     </>
   );
 }

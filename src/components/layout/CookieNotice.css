@@ -1,0 +1,60 @@
+/* ============================================
+   ARTÉVA Maison — Cookie notice
+
+   Sits above the tab bar and clear of the floating actions, so it never traps
+   the cart or the support button underneath it.
+   ============================================ */
+
+.cookie-notice {
+  position: fixed;
+  inset-inline: var(--gutter);
+  bottom: calc(var(--tabbar-height) + var(--space-4));
+  z-index: var(--z-toast);
+
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+  flex-wrap: wrap;
+  max-width: 40rem;
+  margin-inline: auto;
+  padding: var(--space-4) var(--space-5);
+
+  border-radius: var(--radius-lg);
+  background: var(--glass-light-bg-strong);
+  -webkit-backdrop-filter: var(--glass-blur);
+  backdrop-filter: var(--glass-blur);
+  border: 1px solid var(--glass-light-border);
+  box-shadow: var(--shadow-lg), var(--glass-inset-light);
+
+  animation: cookieRise 460ms var(--ease-out-luxe) backwards;
+}
+
+@keyframes cookieRise {
+  from { opacity: 0; transform: translate3d(0, 16px, 0); }
+  to   { opacity: 1; transform: none; }
+}
+
+.cookie-notice-text {
+  flex: 1;
+  min-width: 14rem;
+  font-size: var(--fs-sm);
+  line-height: 1.55;
+  color: var(--text-secondary);
+}
+
+.cookie-notice-text a {
+  color: var(--color-gold-text);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.cookie-notice .btn { flex-shrink: 0; }
+
+@media (max-width: 520px) {
+  .cookie-notice { gap: var(--space-3); }
+  .cookie-notice .btn { width: 100%; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cookie-notice { animation: none; }
+}

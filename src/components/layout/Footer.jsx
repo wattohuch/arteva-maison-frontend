@@ -1,3 +1,4 @@
+import { Link } from 'react-router-dom';
 import { useI18n } from '../../contexts/I18nContext';
 import { useSiteSettings } from '../../contexts/SiteSettingsContext';
 import './Footer.css';
@@ -66,6 +67,16 @@ export default function Footer() {
             <span className="footer-social-label">{whatsappDisplay}</span>
           </a>
         </div>
+
+        {/* Meta checks for these when reviewing a Shop or a Live login app,
+            and the Business Tools Terms require the privacy policy to be
+            reachable while the pixel is running. */}
+        <nav className="footer-legal" aria-label={t('legal')}>
+          <Link to="/privacy">{t('privacy_policy')}</Link>
+          <Link to="/returns">{t('returns_refunds')}</Link>
+          <Link to="/terms">{t('terms_of_service')}</Link>
+          <Link to="/data-deletion">{t('delete_my_data')}</Link>
+        </nav>
 
         <p className="footer-copyright">{t('footer_copyright')}</p>
       </div>

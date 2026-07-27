@@ -107,3 +107,24 @@
 @media (prefers-reduced-motion: reduce) {
   .footer-social-link { transition: none; }
 }
+
+/* ── Policy links ──────────────────────────────
+   Required rather than decorative: Meta checks for the privacy and data
+   deletion URLs before a login app goes Live, and for a published returns
+   policy before reviewing a Shop. */
+.footer-legal {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: var(--space-2) var(--space-5);
+  margin-bottom: var(--space-4);
+}
+
+.footer-legal a {
+  font-size: var(--fs-xs);
+  letter-spacing: 0.06em;
+  color: var(--text-muted);
+  transition: color var(--transition-fast);
+}
+
+.footer-legal a:hover { color: var(--color-gold-text); }

@@ -200,6 +200,8 @@ export const translations = {
     // Cookie
     cookie_text: "We use cookies to provide the best experience on our website.",
     privacy_policy: "Privacy Policy", accept: "Accept",
+    legal: "Legal", returns_refunds: "Returns & Refunds",
+    terms_of_service: "Terms of Service", delete_my_data: "Delete My Data",
 
     // Cart Drawer
     your_cart: "Your Cart", cart_empty: "Your cart is empty",
@@ -580,6 +582,8 @@ export const translations = {
     // Cookie
     cookie_text: "نستخدم ملفات تعريف الارتباط لتوفير أفضل تجربة على موقعنا.",
     privacy_policy: "سياسة الخصوصية", accept: "موافق",
+    legal: "معلومات قانونية", returns_refunds: "الإرجاع والاسترداد",
+    terms_of_service: "شروط الخدمة", delete_my_data: "حذف بياناتي",
 
     // Cart Drawer
     your_cart: "سلة التسوق", cart_empty: "سلة التسوق فارغة",

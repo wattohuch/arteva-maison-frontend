@@ -33,6 +33,10 @@ const OrderTrackingPage = lazy(() => import('./pages/OrderTrackingPage'));
 const TrackOrderPage = lazy(() => import('./pages/TrackOrderPage'));
 const ContactPage = lazy(() => import('./pages/ContactPage'));
 const ForgotPasswordPage = lazy(() => import('./pages/ForgotPasswordPage'));
+// Privacy, returns, terms and data deletion — one component, four documents.
+// Meta requires the privacy and data-deletion URLs before Facebook Login can
+// go live, and a published returns policy before a Shop is reviewed.
+const LegalPage = lazy(() => import('./pages/LegalPage'));
 const PaymentErrorPage = lazy(() => import('./pages/PaymentErrorPage'));
 const PaymentPendingPage = lazy(() => import('./pages/PaymentPendingPage'));
 
@@ -75,6 +79,10 @@ function AppRoutes() {
           <Route path="order/:id/tracking" element={<OrderTrackingPage />} />
           <Route path="track-order" element={<TrackOrderPage />} />
           <Route path="contact" element={<ContactPage />} />
+          <Route path="privacy" element={<LegalPage slug="privacy" />} />
+          <Route path="terms" element={<LegalPage slug="terms" />} />
+          <Route path="returns" element={<LegalPage slug="returns" />} />
+          <Route path="data-deletion" element={<LegalPage slug="data-deletion" />} />
           <Route path="forgot-password" element={<ForgotPasswordPage />} />
           <Route path="payment-error" element={<PaymentErrorPage />} />
           <Route path="payment-pending" element={<PaymentPendingPage />} />

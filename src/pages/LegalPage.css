@@ -1,0 +1,64 @@
+/* ============================================
+   ARTÉVA Maison — Policy pages
+
+   Set for reading, not for scanning: one column at a measure that keeps a line
+   comfortably readable, generous leading, and headings that separate without
+   shouting.
+   ============================================ */
+
+.legal-page {
+  max-width: 44rem;
+}
+
+.legal-head {
+  margin-bottom: clamp(2rem, 1.4rem + 2vw, 3rem);
+  padding-bottom: var(--space-6);
+  border-bottom: 1px solid var(--border-light);
+}
+
+.legal-head h1 {
+  font-size: var(--fs-3xl);
+  margin-bottom: var(--space-3);
+}
+
+.legal-updated {
+  font-size: var(--fs-xs);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+[dir="rtl"] .legal-updated { letter-spacing: 0; text-transform: none; }
+
+.legal-section + .legal-section { margin-top: var(--space-8); }
+
+.legal-section h2 {
+  font-family: var(--font-display);
+  font-size: var(--fs-lg);
+  font-weight: var(--fw-medium);
+  color: var(--text-primary);
+  margin-bottom: var(--space-3);
+}
+[dir="rtl"] .legal-section h2 { font-family: var(--font-arabic); }
+
+.legal-section p {
+  font-size: var(--fs-base);
+  line-height: 1.75;
+  color: var(--text-secondary);
+}
+.legal-section p + p { margin-top: var(--space-3); }
+
+.legal-section ul {
+  margin-top: var(--space-3);
+  padding-inline-start: var(--space-5);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.legal-section li {
+  font-size: var(--fs-base);
+  line-height: 1.7;
+  color: var(--text-secondary);
+}
+
+.legal-section li::marker { color: var(--color-gold); }
