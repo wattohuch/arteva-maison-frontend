@@ -5,7 +5,10 @@
 .floating-currency-wrap {
   position: fixed;
   z-index: var(--z-floating);
-  inset-inline-start: var(--gutter);
+  /* Physical left, not inset-inline-start: this stays in the same corner in
+     both languages rather than swapping sides with the support bubble when
+     the page flips to RTL. */
+  left: var(--gutter);
   /* Lifts above the mobile tab bar instead of sitting behind it */
   bottom: calc(var(--space-5) + var(--tabbar-height) + env(safe-area-inset-bottom, 0px));
 }
@@ -55,7 +58,11 @@
 .floating-currency-menu {
   position: absolute;
   bottom: calc(100% + 10px);
-  inset-inline-start: 0;
+  /* Physical left, matching the wrapper: the button sits in the screen's
+     left corner in both languages, so the menu must open rightward into the
+     screen in both too — inset-inline-start would open it off-screen to the
+     left once RTL flipped which edge "start" means. */
+  left: 0;
   min-width: 214px;
   padding: var(--space-2);
   border-radius: var(--radius-lg);

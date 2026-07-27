@@ -5,7 +5,10 @@
 .floating-actions {
   position: fixed;
   z-index: var(--z-floating);
-  inset-inline-end: var(--gutter);
+  /* Physical right, not inset-inline-end: this stays in the same corner in
+     both languages rather than swapping sides with the currency pill when
+     the page flips to RTL. */
+  right: var(--gutter);
   /* Sits above the mobile tab bar, mirroring the currency pill on the far side */
   bottom: calc(var(--space-5) + var(--tabbar-height) + env(safe-area-inset-bottom, 0px));
   display: flex;
@@ -13,7 +16,6 @@
   align-items: flex-end;
   gap: var(--space-3);
 }
-[dir="rtl"] .floating-actions { align-items: flex-start; }
 
 /* ── Trigger ── */
 .fa-trigger {
@@ -46,7 +48,6 @@
     transform var(--transition-base),
     visibility var(--transition-base);
 }
-[dir="rtl"] .fa-menu { align-items: flex-start; transform-origin: bottom left; }
 
 .floating-actions.is-open .fa-menu {
   opacity: 1;

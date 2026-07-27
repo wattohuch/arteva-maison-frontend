@@ -544,4 +544,14 @@
   .search-panel { padding: var(--space-5) var(--space-4); }
   .search-form { height: 50px; padding-inline: var(--space-4) 6px; }
   .search-form input { font-size: var(--fs-base); }
+
+  /* The lang toggle + search + cart cluster is wider than the lone hamburger
+     on the other side, but an equal 1fr/1fr split gives both the same share
+     regardless — and since none of these icons shrink (flex-shrink: 0), the
+     heavier side overflows past its column and into the logo's. Giving it
+     more of the real width (rather than shaving gaps/padding, which stops
+     working again on anything narrower) fixes this without touching any
+     tap target. A few px off dead-centre for the logo is not noticeable;
+     an overlapping button is. */
+  .navbar { grid-template-columns: 0.6fr auto 1.4fr; gap: var(--space-2); }
 }
