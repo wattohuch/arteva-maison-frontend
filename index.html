@@ -28,13 +28,23 @@
   <meta property="og:title" content="ARTÉVA Maison | Luxury Home Décor" />
   <meta property="og:description" content="Luxury home décor, handcrafted glassware and artisan collections. Discover exquisite pieces for your home." />
   <meta property="og:url" content="https://www.artevamaisonkw.com/" />
-  <meta property="og:image" content="https://www.artevamaisonkw.com/assets/images/og-default.jpg" />
+  <!-- Served from Cloudinary, resized to the 1200x630 Meta expects by the
+       c_fill,w_1200,h_630 transform in the URL. Deliberately not a local path:
+       /assets/images/* is not deployed — that folder sits outside public/, so
+       Vite never copies it and the catch-all rewrite answers those URLs with
+       index.html. A preview image that resolves to HTML shows no image at all.
+       To use a proper brand banner instead, upload it to Cloudinary and swap
+       the id below, or drop the file in public/ and point this at its path. -->
+  <meta property="og:image" content="https://res.cloudinary.com/dbbwduzfa/image/upload/c_fill,w_1200,h_630,q_auto,f_jpg/v1777344385/arteva/products/ede41w0jjkfcvfuiirys.jpg" />
+  <meta property="og:image:width" content="1200" />
+  <meta property="og:image:height" content="630" />
   <meta property="og:locale" content="en_US" />
   <meta property="og:locale:alternate" content="ar_AR" />
 
   <meta name="twitter:card" content="summary_large_image" />
   <meta name="twitter:title" content="ARTÉVA Maison | Luxury Home Décor" />
   <meta name="twitter:description" content="Luxury home décor, handcrafted glassware and artisan collections." />
+  <meta name="twitter:image" content="https://res.cloudinary.com/dbbwduzfa/image/upload/c_fill,w_1200,h_630,q_auto,f_jpg/v1777344385/arteva/products/ede41w0jjkfcvfuiirys.jpg" />
 
   <!-- Fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com" />
