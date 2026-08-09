@@ -99,13 +99,6 @@ export default function MarketingSection() {
         : 'Set WHATSAPP_ACCESS_TOKEN and WHATSAPP_PHONE_NUMBER_ID',
       warn: meta.whatsapp?.configured && !meta.whatsapp?.signatureCheckEnabled,
     },
-    {
-      label: 'Facebook Login',
-      ok: meta.facebookLogin?.configured,
-      detail: meta.facebookLogin?.configured
-        ? 'App credentials present'
-        : 'Set FACEBOOK_APP_ID and FACEBOOK_APP_SECRET',
-    },
   ] : [];
 
   return (

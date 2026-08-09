@@ -43,20 +43,6 @@ export function AuthProvider({ children }) {
     }
   }, [persistAuth]);
 
-  /** Sign in with a Meta access token obtained by the Facebook JS SDK. */
-  const loginWithFacebook = useCallback(async (accessToken) => {
-    setLoading(true);
-    try {
-      const data = await AuthAPI.facebookLogin(accessToken);
-      if (data.success && data.data.token) {
-        persistAuth(data.data.token, data.data);
-      }
-      return data;
-    } finally {
-      setLoading(false);
-    }
-  }, [persistAuth]);
-
   const register = useCallback(async (name, email, password, phone) => {
     setLoading(true);
     try {
@@ -118,10 +104,10 @@ export function AuthProvider({ children }) {
   // page on any parent update.
   const value = useMemo(() => ({
     user, token, isLoggedIn, loading, authChecked,
-    login, loginWithFacebook, register, logout, refreshUser, updateProfile,
+    login, register, logout, refreshUser, updateProfile,
   }), [
     user, token, isLoggedIn, loading, authChecked,
-    login, loginWithFacebook, register, logout, refreshUser, updateProfile,
+    login, register, logout, refreshUser, updateProfile,
   ]);
 
   return (

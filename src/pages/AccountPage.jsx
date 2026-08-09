@@ -5,7 +5,6 @@ import { useI18n } from '../contexts/I18nContext';
 import { showToast } from '../components/ui/Toast';
 import Button from '../components/ui/Button';
 import { Input } from '../components/ui/Field';
-import FacebookLoginButton, { facebookLoginEnabled } from '../components/auth/FacebookLoginButton';
 import './AccountPage.css';
 
 export default function AccountPage() {
@@ -71,14 +70,6 @@ export default function AccountPage() {
               />
               <Button type="submit" variant="primary" fullWidth loading={loading}>{t('sign_in')}</Button>
               <Link to="/forgot-password" className="forgot-link">{t('forgot_password')}</Link>
-
-              {/* Divider and button appear together or not at all. */}
-              {facebookLoginEnabled && (
-                <>
-                  <div className="auth-divider">{t('or_divider')}</div>
-                  <FacebookLoginButton />
-                </>
-              )}
             </form>
           ) : (
             <form onSubmit={handleRegister} className="account-form">

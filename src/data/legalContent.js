@@ -210,18 +210,11 @@ export const legalContent = {
           ],
         },
         {
-          heading: 'If you signed in with Facebook',
-          body: [
-            `You can also remove ARTÉVA Maison from your Facebook settings: Settings & Privacy → Settings → Apps and Websites → ARTÉVA Maison → Remove. That disconnects the login. To delete the data we hold as well, use one of the methods above.`,
-          ],
-        },
-        {
           heading: 'What gets deleted',
           list: [
             'Your profile: name, email, phone number.',
             'Saved delivery addresses and pinned map locations.',
             'Your wishlist and any saved basket.',
-            'Your Facebook connection, if you used one.',
           ],
         },
         {
@@ -249,16 +242,11 @@ export const legalContent = {
           body: ['راسلنا على رقم واتساب الظاهر أسفل الموقع واطلب حذف بياناتك. سنطلب منك تأكيد البريد الإلكتروني المسجل قبل التنفيذ.'],
         },
         {
-          heading: 'إذا سجّلت الدخول عبر فيسبوك',
-          body: ['يمكنك أيضاً إزالة أرتيفا ميزون من إعدادات فيسبوك: الإعدادات والخصوصية ← الإعدادات ← التطبيقات والمواقع ← أرتيفا ميزون ← إزالة. هذا يفصل تسجيل الدخول. ولحذف البيانات لدينا أيضاً، استخدم إحدى الطريقتين أعلاه.'],
-        },
-        {
           heading: 'ما الذي يُحذف',
           list: [
             'ملفك الشخصي: الاسم والبريد ورقم الهاتف.',
             'عناوين التوصيل المحفوظة والمواقع المحددة على الخريطة.',
             'المفضلة وسلة التسوق المحفوظة.',
-            'ارتباط حساب فيسبوك إن وُجد.',
           ],
         },
         {

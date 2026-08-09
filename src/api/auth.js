@@ -8,16 +8,6 @@ export const AuthAPI = {
       body: JSON.stringify({ name, email, password, phone }),
     }),
 
-  /**
-   * Exchange a Meta access token for one of ours. The server verifies the
-   * token against Meta before it trusts any identity in it.
-   */
-  facebookLogin: (accessToken) =>
-    apiRequest('/auth/facebook', {
-      method: 'POST',
-      body: JSON.stringify({ accessToken }),
-    }),
-
   login: (email, password) =>
     apiRequest('/auth/login', {
       method: 'POST',

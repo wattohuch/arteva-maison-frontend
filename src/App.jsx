@@ -35,8 +35,9 @@ const TrackOrderPage = lazy(() => import('./pages/TrackOrderPage'));
 const ContactPage = lazy(() => import('./pages/ContactPage'));
 const ForgotPasswordPage = lazy(() => import('./pages/ForgotPasswordPage'));
 // Privacy, returns, terms and data deletion — one component, four documents.
-// Meta requires the privacy and data-deletion URLs before Facebook Login can
-// go live, and a published returns policy before a Shop is reviewed.
+// Meta requires the privacy and data-deletion URLs for the app behind the
+// Pixel and catalogue, and a published returns policy before a Shop is
+// reviewed.
 const LegalPage = lazy(() => import('./pages/LegalPage'));
 const PaymentErrorPage = lazy(() => import('./pages/PaymentErrorPage'));
 const PaymentPendingPage = lazy(() => import('./pages/PaymentPendingPage'));
