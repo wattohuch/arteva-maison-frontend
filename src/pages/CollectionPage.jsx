@@ -20,7 +20,7 @@ export default function CollectionPage() {
     setLoading(true);
     Promise.all([
       CategoriesAPI.getBySlug(slug).catch(() => null),
-      ProductsAPI.getAll({ category: slug }),
+      ProductsAPI.getEvery({ category: slug }),
     ]).then(([catRes, prodRes]) => {
       if (cancelled) return;
       if (catRes?.data) setCategory(catRes.data);

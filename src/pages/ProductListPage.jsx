@@ -23,7 +23,7 @@ export default function ProductListPage() {
     if (searchQuery) params.search = searchQuery;
     if (category) params.category = category;
 
-    ProductsAPI.getAll(params).then(res => {
+    ProductsAPI.getEvery(params).then(res => {
       if (!cancelled) {
         setProducts(res.data || res || []);
         setLoading(false);
