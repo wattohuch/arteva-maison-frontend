@@ -11,6 +11,7 @@ import {
   renderReceipt, downloadReceiptJPEG, printReceipt,
 } from '../../../utils/receiptCanvas';
 import { resolveImageUrl, getProductImage } from '../../../utils/imageHelpers';
+import ProductPicker from './ProductPicker';
 import {
   useReceiptDraft, emptyDraft, draftFromOrder, generateOrderNumber,
 } from './useReceiptDraft';
@@ -130,8 +131,7 @@ export default function ReceiptGenerator() {
     }
   }, [lookupNumber, actions]);
 
-  const quickAddProduct = useCallback((productId) => {
-    const product = products.find(p => p._id === productId);
+  const quickAddProduct = useCallback((product) => {
     if (!product) return;
     actions.addItem({
       product: product._id,
@@ -142,7 +142,8 @@ export default function ReceiptGenerator() {
       price: product.price,
       quantity: 1,
     });
-  }, [products, actions]);
+    showToast(`${product.name} added`, 'success');
+  }, [actions]);
 
   const [exchangingLine, setExchangingLine] = useState(null);
 
@@ -543,16 +544,17 @@ const ReceiptFields = memo(function ReceiptFields({ draft, actions }) {
 });
 
 const ExchangeModal = memo(function ExchangeModal({ line, products, onClose, onConfirm }) {
-  const [selectedProductId, setSelectedProductId] = useState('');
+  const [selectedProd, setSelectedProd] = useState(null);
 
-  const selectedProd = products.find(p => p._id === selectedProductId);
   const oldPrice = Number(line.price) || 0;
   const newPrice = selectedProd ? Number(selectedProd.price) || 0 : 0;
   const diff = newPrice - oldPrice;
 
   return (
     <div className="rg-modal-backdrop" style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.5)', zIndex: 1000, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 16 }}>
-      <div className="rg-modal" style={{ background: '#fff', borderRadius: 10, padding: 20, maxWidth: 460, width: '100%', boxShadow: '0 20px 25px -5px rgba(0,0,0,0.1)' }}>
+      {/* Wider than it was, and scrollable: the picker is a grid of photos
+          rather than the one-line <select> this box was sized for. */}
+      <div className="rg-modal" style={{ background: '#fff', borderRadius: 10, padding: 20, maxWidth: 620, width: '100%', maxHeight: '90vh', overflowY: 'auto', boxShadow: '0 20px 25px -5px rgba(0,0,0,0.1)' }}>
         <h3 style={{ margin: '0 0 8px', fontSize: '1.1rem', display: 'flex', alignItems: 'center', gap: 6 }}>
           🔄 Exchange Product
         </h3>
@@ -560,23 +562,15 @@ const ExchangeModal = memo(function ExchangeModal({ line, products, onClose, onC
           Exchanging: <strong style={{ color: '#0f172a' }}>{line.name}</strong> ({kwd(oldPrice)})
         </p>
 
-        <label className="rg-field" style={{ marginTop: 16, display: 'block' }}>
-          <span style={{ fontSize: '0.82rem', fontWeight: 600, color: '#334155', display: 'block', marginBottom: 4 }}>
-            Select Replacement Product
-          </span>
-          <select
-            value={selectedProductId}
-            onChange={e => setSelectedProductId(e.target.value)}
-            style={{ width: '100%', padding: '8px 10px', borderRadius: 6, border: '1px solid #cbd5e1' }}
-          >
-            <option value="">Select a product catalog item…</option>
-            {products.map(p => (
-              <option key={p._id} value={p._id}>
-                {p.name}{p.sku ? ` (${p.sku})` : ''} — {kwd(p.price)}
-              </option>
-            ))}
-          </select>
-        </label>
+        <div style={{ marginTop: 16 }}>
+          <ProductPicker
+            products={products}
+            selectedId={selectedProd?._id || ''}
+            onSelect={setSelectedProd}
+            label="Replacement product"
+            hint="Pick a category, then tap the product it is being exchanged for."
+          />
+        </div>
 
         {selectedProd && (
           <div style={{ background: '#f8fafc', padding: 12, borderRadius: 8, border: '1px solid #e2e8f0', marginTop: 14 }}>
@@ -631,21 +625,7 @@ const LineItems = memo(function LineItems({
         Adding items takes stock when you save.
       </p>
 
-      <label className="rg-field">
-        <span>Quick add product</span>
-        <select
-          value=""
-          onChange={e => { if (e.target.value) { onAdd(e.target.value); e.target.value = ''; } }}
-        >
-          <option value="">Select a product…</option>
-          {products.map(p => (
-            <option key={p._id} value={p._id}>
-              {p.name}{p.sku ? ` (${p.sku})` : ''} — {kwd(p.price)}
-              {typeof p.stock === 'number' ? ` · ${p.stock} in stock` : ''}
-            </option>
-          ))}
-        </select>
-      </label>
+      <ProductPicker products={products} onSelect={onAdd} />
 
       <div className="rg-items">
         {items.map(line => (

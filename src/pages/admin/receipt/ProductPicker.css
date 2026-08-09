@@ -1,0 +1,211 @@
+/* ══════════════════════════════════════════════════════
+   Catalogue product picker
+   Category chips → tiles with photos. Mobile-first: two
+   columns on a phone, more as the panel widens.
+   ══════════════════════════════════════════════════════ */
+
+.pp { display: flex; flex-direction: column; gap: var(--space-3); }
+
+.pp-head { display: flex; flex-direction: column; gap: 2px; }
+
+.pp-label {
+  font-size: var(--fs-xs);
+  font-weight: var(--fw-semibold);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+.pp-hint { font-size: 11px; color: var(--text-light); }
+
+/* ── Category chips ── */
+.pp-cats {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+
+.pp-cat {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 36px;
+  padding: 6px var(--space-3);
+  font-family: var(--font-primary);
+  font-size: var(--fs-sm);
+  color: var(--text-secondary);
+  background: var(--color-warm-white);
+  border: 1px solid var(--border-light);
+  border-radius: var(--radius-pill);
+  cursor: pointer;
+  transition: background 0.15s ease, border-color 0.15s ease, color 0.15s ease;
+}
+.pp-cat:hover { border-color: var(--color-gold-soft); }
+.pp-cat.is-active {
+  color: var(--text-primary);
+  background: var(--color-champagne);
+  border-color: var(--color-gold-soft);
+  font-weight: var(--fw-semibold);
+}
+.pp-cat--all { font-style: italic; }
+
+.pp-cat-count {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 18px;
+  height: 18px;
+  padding: 0 5px;
+  border-radius: var(--radius-pill);
+  background: var(--color-ivory);
+  font-size: 10px;
+  font-style: normal;
+  font-weight: var(--fw-semibold);
+  color: var(--text-muted);
+}
+.pp-cat.is-active .pp-cat-count { background: var(--color-warm-white); }
+
+/* ── Search ── */
+.pp-search {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: 0 var(--space-3);
+  background: var(--color-warm-white);
+  border: 1px solid var(--border-light);
+  border-radius: var(--radius-md);
+  color: var(--text-light);
+}
+.pp-search:focus-within {
+  border-color: var(--color-gold-soft);
+  box-shadow: 0 0 0 3px rgba(181, 140, 74, 0.13);
+}
+.pp-search input {
+  flex: 1;
+  min-width: 0;
+  min-height: 42px;
+  padding: 0;
+  /* 16px keeps iOS from zooming the page when the field takes focus. */
+  font-size: 16px;
+  font-family: var(--font-primary);
+  color: var(--text-primary);
+  background: transparent;
+  border: 0;
+}
+.pp-search input:focus { outline: none; }
+
+/* ── Tiles ── */
+.pp-grid {
+  display: grid;
+  gap: var(--space-2);
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 132px), 1fr));
+  /* Long categories scroll inside the panel rather than pushing the rest of
+     the form off the screen. */
+  max-height: 420px;
+  overflow-y: auto;
+  padding: 2px;
+}
+
+.pp-tile {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  padding: 0 0 var(--space-2);
+  text-align: start;
+  background: var(--color-warm-white);
+  border: 1px solid var(--border-light);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  cursor: pointer;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease, transform 0.15s ease;
+}
+.pp-tile:hover {
+  border-color: var(--color-gold-soft);
+  box-shadow: var(--shadow-sm);
+  transform: translateY(-1px);
+}
+.pp-tile:focus-visible {
+  outline: none;
+  border-color: var(--color-gold-soft);
+  box-shadow: 0 0 0 3px rgba(181, 140, 74, 0.2);
+}
+.pp-tile.is-selected {
+  border-color: var(--color-gold-soft);
+  box-shadow: 0 0 0 2px rgba(181, 140, 74, 0.28);
+}
+
+.pp-tile-media {
+  position: relative;
+  display: block;
+  aspect-ratio: 1 / 1;
+  background: var(--color-ivory);
+}
+.pp-tile-media img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.pp-tile-flag {
+  position: absolute;
+  inset-inline-start: 4px;
+  bottom: 4px;
+  padding: 2px 6px;
+  border-radius: var(--radius-pill);
+  background: rgba(239, 68, 68, 0.92);
+  color: #fff;
+  font-size: 9px;
+  font-weight: var(--fw-bold);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.pp-tile-name {
+  margin: var(--space-2) var(--space-2) 0;
+  font-size: var(--fs-sm);
+  font-weight: var(--fw-medium);
+  line-height: 1.3;
+  color: var(--text-primary);
+  /* Two lines, then ellipsis — tiles in a row stay the same height. */
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.pp-tile-sku {
+  margin: 0 var(--space-2);
+  font-size: 10px;
+  letter-spacing: 0.04em;
+  color: var(--text-light);
+}
+
+.pp-tile-foot {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 2px var(--space-2);
+  margin: 2px var(--space-2) 0;
+}
+.pp-tile-foot strong {
+  font-size: var(--fs-sm);
+  font-weight: var(--fw-semibold);
+  color: var(--color-gold-text);
+}
+.pp-tile-foot em {
+  font-style: normal;
+  font-size: 10px;
+  color: var(--text-light);
+}
+.pp-tile-foot em.is-out { color: #dc2626; }
+
+.pp-empty {
+  margin: 0;
+  padding: var(--space-5) var(--space-3);
+  text-align: center;
+  font-size: var(--fs-sm);
+  color: var(--text-light);
+  background: var(--color-warm-white);
+  border: 1px dashed var(--border-light);
+  border-radius: var(--radius-md);
+}
