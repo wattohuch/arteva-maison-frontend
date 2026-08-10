@@ -6,6 +6,7 @@ import { useI18n } from '../../contexts/I18nContext';
 import { useCategories } from '../../contexts/CategoriesContext';
 import { useWishlist } from '../../contexts/WishlistContext';
 import CartDrawer from '../cart/CartDrawer';
+import { trackSearch } from '../../utils/metaPixel';
 import {
   SearchIcon, UserIcon, HeartIcon, BagIcon,
   MenuIcon, CloseIcon, ChevronDownIcon, ArrowRightIcon,
@@ -71,6 +72,10 @@ export default function Header() {
   const handleSearch = useCallback((e) => {
     e.preventDefault();
     if (searchQuery.trim()) {
+      // Search is a standard Meta event and one of the more useful ones for a
+      // catalogue this size — it says what people expected to find. It was
+      // defined in metaPixel.js but never called from anywhere.
+      trackSearch(searchQuery.trim());
       navigate(`/products?search=${encodeURIComponent(searchQuery.trim())}`);
       setSearchOpen(false);
       setSearchQuery('');
