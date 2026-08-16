@@ -822,6 +822,59 @@
 .visitor-day-table { font-size: var(--fs-xs); }
 .visitor-day-table code { font-size: 12px; font-weight: var(--fw-semibold); }
 
+/* The products an IP opened, lined up beside it. Overlapping the photos keeps
+   a browsing visitor's whole trail inside one table cell; hovering lifts the
+   photo under the cursor clear of its neighbours so it can be read. */
+.visitor-products {
+  display: inline-flex;
+  align-items: center;
+  padding-inline-start: 3px;
+}
+
+.visitor-product-thumb {
+  width: 30px;
+  height: 30px;
+  border-radius: var(--radius-sm);
+  object-fit: cover;
+  background: var(--color-champagne);
+  border: 1px solid var(--color-ivory);
+  box-shadow: 0 1px 3px rgba(44, 36, 27, 0.14);
+  margin-inline-start: -6px;
+  transition: transform var(--transition-fast), z-index 0s;
+}
+
+.visitor-product-thumb:hover {
+  transform: translateY(-2px) scale(1.35);
+  position: relative;
+  z-index: 2;
+}
+
+.visitor-product-more {
+  margin-inline-start: 4px;
+  font-size: 11px;
+  font-weight: var(--fw-semibold);
+  color: var(--text-muted);
+  white-space: nowrap;
+}
+
+.visitor-products-cell {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  flex-wrap: wrap;
+}
+
+.visitor-products-count {
+  font-size: var(--fs-xs);
+  color: var(--text-muted);
+  white-space: nowrap;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .visitor-product-thumb { transition: none; }
+  .visitor-product-thumb:hover { transform: none; }
+}
+
 .visitor-bot-tag {
   margin-inline-start: 6px;
   padding: 1px 6px;

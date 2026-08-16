@@ -5,6 +5,7 @@ import AdminTable from '../components/AdminTable';
 import AdminToolbar from '../components/AdminToolbar';
 import StatCard from '../components/StatCard';
 import { GlobeIcon, UserIcon, EyeIcon, ClockIcon } from '../../../components/ui/Icons';
+import { resolveImageUrl, cloudinaryImage, handleImageError } from '../../../utils/imageHelpers';
 
 /** "3 minutes ago" reads faster than a timestamp when scanning a list. */
 function relativeTime(value) {
@@ -24,6 +25,42 @@ function relativeTime(value) {
 }
 
 const DEVICE_ICON = { Mobile: '📱', Tablet: '📲', Desktop: '🖥️' };
+
+/* How many photos sit on one row before the rest collapse into a "+N".
+   Six is what fits beside an IP on a laptop without the column growing wide
+   enough to push "Last Seen" off the screen. */
+const MAX_THUMBS = 6;
+
+/**
+ * The products an IP opened, as a line of thumbnails.
+ *
+ * A count and one product name — what this column used to be — does not answer
+ * the question the owner is actually asking, which is "what were they looking
+ * at". Photos answer it at a glance, newest first.
+ */
+function ProductStrip({ products, count }) {
+  if (!products?.length) return <span style={{ color: 'var(--text-muted)' }}>—</span>;
+
+  const shown = products.slice(0, MAX_THUMBS);
+  const hidden = (count ?? products.length) - shown.length;
+
+  return (
+    <span className="visitor-products">
+      {shown.map(p => (
+        <img
+          key={p.id}
+          className="visitor-product-thumb"
+          src={cloudinaryImage(resolveImageUrl(p.image), 96)}
+          alt={p.name || 'Product'}
+          title={p.views > 1 ? `${p.name} · ${p.views} views` : p.name}
+          loading="lazy"
+          onError={handleImageError}
+        />
+      ))}
+      {hidden > 0 && <span className="visitor-product-more" title={`${hidden} more`}>+{hidden}</span>}
+    </span>
+  );
+}
 
 export default function VisitorsSection() {
   const [siteVisitsData, setSiteVisitsData] = useState(null);
@@ -110,7 +147,12 @@ export default function VisitorsSection() {
     return (source || []).filter(r => {
       if (hideBots && r.isBot) return false;
       if (!term) return true;
-      return [r.ip, r.browser, r.os, r.device, r.page, r.lastProduct, r.referrer]
+      // Product names are searchable too, so "who looked at the Vienna vase"
+      // is one query away now that the products are on the row.
+      const fields = [r.ip, r.browser, r.os, r.device, r.page, r.referrer]
+        .concat((r.products || []).map(p => p.name));
+
+      return fields
         .filter(Boolean)
         .some(field => String(field).toLowerCase().includes(term));
     });
@@ -181,7 +223,14 @@ export default function VisitorsSection() {
       key: 'productViews',
       header: 'Products Viewed',
       render: r => (r.productViews
-        ? <span title={r.lastProduct || ''}>{r.productViews}{r.lastProduct ? ` · ${r.lastProduct}` : ''}</span>
+        ? (
+          <span className="visitor-products-cell">
+            <ProductStrip products={r.products} count={r.productCount} />
+            <span className="visitor-products-count">
+              {r.productCount || r.productViews} product{(r.productCount || r.productViews) === 1 ? '' : 's'}
+            </span>
+          </span>
+        )
         : <span style={{ color: 'var(--text-muted)' }}>—</span>),
     },
     {
@@ -212,6 +261,11 @@ export default function VisitorsSection() {
       render: r => <span title={new Date(r.createdAt).toLocaleString()}>{relativeTime(r.createdAt)}</span>,
     },
     { key: 'page', header: 'Page', render: r => r.page || r.productName || '/' },
+    {
+      key: 'products',
+      header: 'Products Viewed',
+      render: r => <ProductStrip products={r.products} count={r.productCount} />,
+    },
     {
       key: 'device',
       header: 'Device',
@@ -255,7 +309,7 @@ export default function VisitorsSection() {
           type="search"
           className="field-input"
           style={{ width: 220 }}
-          placeholder="Search IP, browser, page…"
+          placeholder="Search IP, browser, page, product…"
           value={search}
           onChange={e => setSearch(e.target.value)}
         />
@@ -313,6 +367,7 @@ export default function VisitorsSection() {
                           <thead>
                             <tr>
                               <th scope="col">IP Address</th>
+                              <th scope="col">Products Viewed</th>
                               <th scope="col">Time</th>
                               <th scope="col">Device</th>
                               <th scope="col">Page</th>
@@ -327,6 +382,9 @@ export default function VisitorsSection() {
                                   <td data-label="IP Address">
                                     <code>{v.ip || '—'}</code>
                                     {v.isBot && <span className="visitor-bot-tag">BOT</span>}
+                                  </td>
+                                  <td data-label="Products Viewed">
+                                    <ProductStrip products={v.products} count={v.productCount} />
                                   </td>
                                   <td data-label="Time">
                                     {v.createdAt
