@@ -110,10 +110,18 @@ export const AdminAPI = {
   /** Whether this account can open revenue, and whether a password exists yet. */
   getRevenueAccessStatus: () => apiRequest('/admin/revenue/status'),
 
-  setRevenuePassword: (revenuePassword) =>
+  /**
+   * Set or replace the revenue password.
+   *
+   * Replacing an existing one needs proof beyond being signed in: either the
+   * current revenue password, or a `resetToken` bought by verifying the emailed
+   * OTP. Without that, an unattended open owner session could simply overwrite
+   * the password and read the takings.
+   */
+  setRevenuePassword: (revenuePassword, { currentPassword, resetToken } = {}) =>
     apiRequest('/admin/set-revenue-password', {
       method: 'POST',
-      body: JSON.stringify({ revenuePassword }),
+      body: JSON.stringify({ revenuePassword, currentPassword, resetToken }),
     }),
 
   /**

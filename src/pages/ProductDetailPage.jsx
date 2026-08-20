@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { useParams } from 'react-router-dom';
 import { useI18n } from '../contexts/I18nContext';
 import { useCurrency } from '../contexts/CurrencyContext';
@@ -10,6 +10,7 @@ import {
 } from '../utils/imageHelpers';
 import { showToast } from '../components/ui/Toast';
 import { trackViewContent } from '../utils/metaPixel';
+import { stockLevel, stockBadge, isOutOfStock } from '../utils/stock';
 import { LuxuryLoader } from '../components/ui/loading';
 import Button from '../components/ui/Button';
 import { HeartIcon, PlusIcon, MinusIcon, TruckIcon, ShieldIcon, HomeIcon } from '../components/ui/Icons';
@@ -26,6 +27,10 @@ export default function ProductDetailPage() {
   const [selectedImage, setSelectedImage] = useState(0);
   const [quantity, setQuantity] = useState(1);
 
+  // Opening a second product from a related rail must not carry the previous
+  // one's quantity across — it may not even be in stock on the new product.
+  useEffect(() => { setQuantity(1); }, [slug]);
+
   useEffect(() => {
     let cancelled = false;
     setLoading(true);
@@ -40,8 +45,37 @@ export default function ProductDetailPage() {
     return () => { cancelled = true; };
   }, [slug]);
 
+  /* Product views, counted once per product per browser session.
+   *
+   * Two things were inflating this. React 18's StrictMode runs every effect
+   * twice in development, so every view was counted twice there; and in
+   * production the effect re-runs whenever the id changes, so navigating back
+   * to a product from a related-items rail counted it again — as did a refresh.
+   * The Visitors page was reporting engagement the shop never had.
+   *
+   * A ref guards the StrictMode double-invoke within a mount, and
+   * sessionStorage guards re-mounts, mirroring how site visits are already
+   * de-duplicated in utils/siteVisit.js. Unique-per-day counting still happens
+   * server-side on the IP; this stops the raw counter being wrong.
+   */
+  const countedViews = useRef(new Set());
+
   useEffect(() => {
-    if (product?._id) ProductsAPI.incrementView(product._id).catch(() => {});
+    const id = product?._id;
+    if (!id) return;
+
+    if (countedViews.current.has(id)) return;
+    countedViews.current.add(id);
+
+    const key = `arteva_viewed_${id}`;
+    try {
+      if (sessionStorage.getItem(key)) return;
+      sessionStorage.setItem(key, '1');
+    } catch {
+      // Private mode with storage blocked — count it rather than lose it.
+    }
+
+    ProductsAPI.incrementView(id).catch(() => {});
   }, [product?._id]);
 
   // ViewContent is what Meta builds product-level retargeting audiences from.
@@ -52,9 +86,20 @@ export default function ProductDetailPage() {
   }, [product?._id]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const handleAddToCart = useCallback(() => {
-    addItem(product, quantity);
+    const available = stockLevel(product);
+
+    // Belt and braces: the stepper below cannot exceed `available`, and the
+    // API refuses an oversell regardless. This catches the case where the
+    // product was restocked-to-zero while the page sat open.
+    if (available === 0) {
+      showToast(stockBadge(product, lang)?.text || t('out_of_stock'), 'error');
+      return;
+    }
+
+    const qty = Math.min(quantity, available);
+    addItem(product, qty);
     showToast(t('added_to_cart'), 'success');
-  }, [addItem, product, quantity, t]);
+  }, [addItem, product, quantity, t, lang]);
 
   const handleWishlist = useCallback(() => {
     const added = toggle(product);
@@ -81,6 +126,9 @@ export default function ProductDetailPage() {
 
   const name = lang === 'ar' && product.nameAr ? product.nameAr : product.name;
   const desc = lang === 'ar' && product.descriptionAr ? product.descriptionAr : product.description;
+  const available = stockLevel(product);
+  const soldOut = isOutOfStock(product);
+  const badge = stockBadge(product, lang);
   const images = product.images?.length ? product.images : [{ url: getProductImage(product) }];
   const saved = has(product._id || product.id);
 
@@ -132,22 +180,35 @@ export default function ProductDetailPage() {
 
           <h1 className="pdp-name">{name}</h1>
           <p className="pdp-price">{format(product.price)}</p>
+
+          {/* Scarcity, stated once and plainly. `role="status"` so a screen
+              reader announces it when the product loads. */}
+          {badge && (
+            <p className={`pdp-stock is-${badge.tone}`} role="status">
+              {badge.text}
+            </p>
+          )}
           {product.sku && <p className="pdp-sku">SKU: {product.sku}</p>}
           {desc && <p className="pdp-desc">{desc}</p>}
 
           <div className="pdp-actions">
             <div className="pdp-buy-row">
+              {/* The stepper stops at what is actually on the shelf. Two units
+                  left means the "+" is dead at 2 — the customer never builds a
+                  basket of three and discovers the problem at checkout. */}
               <div className="qty-stepper pdp-qty">
                 <button
                   onClick={() => setQuantity(q => Math.max(1, q - 1))}
                   aria-label={t('decrease_quantity')}
+                  disabled={soldOut || quantity <= 1}
                 >
                   <MinusIcon size={14} />
                 </button>
-                <span>{quantity}</span>
+                <span aria-live="polite">{quantity}</span>
                 <button
-                  onClick={() => setQuantity(q => q + 1)}
+                  onClick={() => setQuantity(q => Math.min(available, q + 1))}
                   aria-label={t('increase_quantity')}
+                  disabled={soldOut || quantity >= available}
                 >
                   <PlusIcon size={14} />
                 </button>
@@ -163,8 +224,14 @@ export default function ProductDetailPage() {
               </button>
             </div>
 
-            <Button variant="primary" size="lg" fullWidth onClick={handleAddToCart}>
-              {t('add_to_cart')}
+            <Button
+              variant="primary"
+              size="lg"
+              fullWidth
+              onClick={handleAddToCart}
+              disabled={soldOut}
+            >
+              {soldOut ? t('out_of_stock') : t('add_to_cart')}
             </Button>
           </div>
 

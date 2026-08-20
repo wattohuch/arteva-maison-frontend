@@ -309,6 +309,15 @@
   text-transform: uppercase;
   color: var(--text-muted);
 }
+/* Secondary figure under the label — "12 today" beneath an all-time total. */
+.admin-stat-hint {
+  display: block;
+  margin-top: 2px;
+  font-size: var(--fs-xs);
+  font-weight: 600;
+  color: var(--color-gold-text, #8a6d1f);
+  font-variant-numeric: tabular-nums;
+}
 
 /* ── Toolbar ── */
 .admin-toolbar {

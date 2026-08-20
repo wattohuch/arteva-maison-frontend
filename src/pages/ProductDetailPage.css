@@ -91,6 +91,45 @@
   font-variant-numeric: tabular-nums;
 }
 
+/* ── Stock notice ──
+   Sits directly under the price, where the buying decision is being made. */
+.pdp-stock {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: var(--space-3);
+  padding: 5px 12px;
+  border-radius: var(--radius-pill);
+  font-size: var(--fs-sm);
+  font-weight: var(--fw-semibold);
+  letter-spacing: 0.04em;
+}
+
+.pdp-stock::before {
+  content: '';
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: currentColor;
+  flex: 0 0 auto;
+}
+
+.pdp-stock.is-low {
+  background: rgba(180, 83, 9, 0.1);
+  color: #b45309;
+}
+
+.pdp-stock.is-out {
+  background: rgba(40, 34, 28, 0.08);
+  color: var(--text-secondary);
+}
+
+/* A disabled stepper button must look disabled, or it reads as broken. */
+.qty-stepper button:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+}
+
 .pdp-sku {
   font-size: var(--fs-xs);
   letter-spacing: 0.1em;

@@ -6,6 +6,7 @@ import AdminToolbar from '../components/AdminToolbar';
 import StatCard from '../components/StatCard';
 import { GlobeIcon, UserIcon, EyeIcon, ClockIcon } from '../../../components/ui/Icons';
 import { resolveImageUrl, cloudinaryImage, handleImageError } from '../../../utils/imageHelpers';
+import './VisitorsSection.css';
 
 /** "3 minutes ago" reads faster than a timestamp when scanning a list. */
 function relativeTime(value) {
@@ -164,6 +165,7 @@ export default function VisitorsSection() {
   const uniqueIPs = siteVisitsData?.totalUniqueVisitors || 0;
   const dailySummary = siteVisitsData?.dailyBreakdown || [];
 
+
   /* Read today's figure out of the same breakdown the table renders whenever
      it is there. The card showed 0 while the row directly beneath it showed 3
      for the same date — deriving both from one source means they cannot
@@ -173,19 +175,62 @@ export default function VisitorsSection() {
     ?? siteVisitsData?.todayVisitors
     ?? 0;
 
-  let productViewsCount = 0;
-  if (Array.isArray(productAnalytics)) {
-    productViewsCount = productAnalytics.reduce((sum, p) => sum + (p.views || 0), 0);
-  } else if (productAnalytics?.totalViews) {
-    productViewsCount = productAnalytics.totalViews;
-  }
+  /* Product clicks.
+   *
+   * This read `productAnalytics.totalViews`, which does not exist — the
+   * endpoint nests it as `summary.totalViews`. So the card read `undefined`,
+   * fell through to 0, and the Visitors page has been reporting "0 product
+   * views" for as long as it has existed, however much traffic the shop had.
+   *
+   * Preferred source is now the site-visit endpoint, because that is the same
+   * data the per-day rows below are built from and the two must not disagree.
+   * The older shapes are still accepted so the page keeps working against a
+   * backend that has not been redeployed yet. */
+  const productViewsCount =
+    siteVisitsData?.totalProductClicks
+    ?? productAnalytics?.summary?.totalViews
+    ?? (Array.isArray(productAnalytics)
+      ? productAnalytics.reduce((sum, p) => sum + (p.views || 0), 0)
+      : productAnalytics?.totalViews)
+    ?? 0;
+
+  const todayProductClicks =
+    dailySummary.find(d => d.date === todayKey)?.productClicks
+    ?? siteVisitsData?.todayProductClicks
+    ?? 0;
+
+  /* Which products were clicked in the period on screen, ranked.
+   *
+   * Folded up from the per-day rows so the table, the cards and this ranking
+   * are all derived from one number rather than three queries that can drift. */
+  const topProducts = (() => {
+    const byId = new Map();
+    for (const day of dailySummary) {
+      for (const product of day.products || []) {
+        const existing = byId.get(product.id);
+        if (existing) {
+          existing.clicks += product.clicks || 0;
+          existing.visitors += product.visitors || 0;
+        } else {
+          byId.set(product.id, { ...product });
+        }
+      }
+    }
+    return [...byId.values()].sort((a, b) => b.clicks - a.clicks);
+  })();
 
   const botCount = visitors.totals?.bots || 0;
 
   const statCards = [
     { Icon: GlobeIcon, label: 'Website Visits', value: totalVisits.toLocaleString(), tone: 'blue' },
     { Icon: UserIcon, label: 'Unique IP Visitors', value: uniqueIPs.toLocaleString(), tone: 'green' },
-    { Icon: EyeIcon, label: 'Product Views', value: productViewsCount.toLocaleString(), tone: 'gold' },
+    {
+      Icon: EyeIcon,
+      label: 'Product Clicks',
+      value: productViewsCount.toLocaleString(),
+      tone: 'gold',
+      hint: todayProductClicks ? `${todayProductClicks.toLocaleString()} today` : undefined,
+    },
     { Icon: ClockIcon, label: "Today's Visitors", value: todayVisits.toLocaleString(), tone: 'amber' },
   ];
 
@@ -351,11 +396,58 @@ export default function VisitorsSection() {
                       {' · '}
                       <strong>{(day.uniqueVisitors || 0).toLocaleString()}</strong> unique IP
                       {day.uniqueVisitors === 1 ? '' : 's'}
+                      {' · '}
+                      {/* The third total: how many product clicks that day, and
+                          how many separate people made them. "12 clicks" from
+                          one person browsing is a different fact from 12 people
+                          each opening one thing, so both are shown. */}
+                      <strong className="visitor-day-clicks">
+                        {(day.productClicks || 0).toLocaleString()}
+                      </strong> product click{day.productClicks === 1 ? '' : 's'}
+                      {day.productVisitors > 0 && (
+                        <span className="visitor-day-sub">
+                          {' '}by {day.productVisitors.toLocaleString()}{' '}
+                          {day.productVisitors === 1 ? 'person' : 'people'}
+                        </span>
+                      )}
                     </span>
                   </button>
 
+                  {/* Which products, without having to expand the row — this is
+                      the question the shop is actually asking of this page. */}
+                  {!isOpen && day.products?.length > 0 && (
+                    <div className="visitor-day-products">
+                      <ProductStrip products={day.products} count={day.products.length} />
+                    </div>
+                  )}
+
                   {isOpen && (
                     <div className="visitor-day-body" id={`day-${day.date}`}>
+                      {day.products?.length > 0 && (
+                        <div className="visitor-day-ranked">
+                          <h4>Products clicked on {day.date}</h4>
+                          <ol className="visitor-product-rank">
+                            {day.products.map(product => (
+                              <li key={product.id}>
+                                <img
+                                  className="visitor-product-thumb"
+                                  src={cloudinaryImage(resolveImageUrl(product.image), 96)}
+                                  alt=""
+                                  loading="lazy"
+                                  onError={handleImageError}
+                                />
+                                <span className="visitor-product-name">{product.name}</span>
+                                <span className="visitor-product-stat">
+                                  <strong>{product.clicks}</strong> click{product.clicks === 1 ? '' : 's'}
+                                  {' · '}
+                                  {product.visitors} {product.visitors === 1 ? 'person' : 'people'}
+                                </span>
+                              </li>
+                            ))}
+                          </ol>
+                        </div>
+                      )}
+
                       {isLoading && <div className="admin-loading"><Loader size="sm" /></div>}
 
                       {!isLoading && rowsForDay?.length === 0 && (
@@ -411,6 +503,39 @@ export default function VisitorsSection() {
               );
             })}
           </div>
+        </section>
+      )}
+
+      {topProducts.length > 0 && (
+        <section className="admin-section">
+          <h3 className="admin-section-title">
+            Most-clicked products <span className="admin-count">{topProducts.length}</span>
+          </h3>
+          <p className="admin-hint">
+            Every product opened in this period, most clicked first.
+          </p>
+          <ol className="visitor-product-rank visitor-product-rank--wide">
+            {topProducts.map(product => (
+              <li key={product.id}>
+                <img
+                  className="visitor-product-thumb"
+                  src={cloudinaryImage(resolveImageUrl(product.image), 96)}
+                  alt=""
+                  loading="lazy"
+                  onError={handleImageError}
+                />
+                <span className="visitor-product-name">
+                  {product.name}
+                  {product.nameAr && <small dir="rtl">{product.nameAr}</small>}
+                </span>
+                <span className="visitor-product-stat">
+                  <strong>{product.clicks.toLocaleString()}</strong> click{product.clicks === 1 ? '' : 's'}
+                  {' · '}
+                  {product.visitors.toLocaleString()} {product.visitors === 1 ? 'person' : 'people'}
+                </span>
+              </li>
+            ))}
+          </ol>
         </section>
       )}
 

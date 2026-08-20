@@ -571,36 +571,15 @@ export function downloadReceiptJPEG(canvas, orderNumber = 'receipt') {
   link.click();
 }
 
-/**
- * Open the rendered receipt in a print window.
+/*
+ * `printReceipt` used to live here: it opened `window.open('', '_blank')`,
+ * wrote an <img> of this canvas into it and called print() on the popup.
  *
- * Built with DOM calls rather than `document.write` of an interpolated string:
- * the order number is operator-supplied text, and writing it into markup is an
- * injection waiting to happen.
+ * It is gone rather than fixed. On iOS Safari a popup opened after any await
+ * is blocked, a popup that does open becomes a new tab instead of a print
+ * dialog, and a multi-megabyte JPEG data URL is a poor thing to hand a phone.
+ * Printing now goes through utils/printDocument.js, which prints in a hidden
+ * iframe on the current page and needs no popup at all — and for a saved order
+ * it prints the server-rendered HTML, which is sharper and far smaller than a
+ * bitmap of it.
  */
-export function printReceipt(canvas, orderNumber = '') {
-  if (!canvas) return false;
-
-  const dataUrl = canvas.toDataURL('image/jpeg', 0.95);
-  const win = window.open('', '_blank');
-  if (!win) return false;
-
-  const doc = win.document;
-  doc.title = `Receipt ${orderNumber}`.trim();
-
-  const style = doc.createElement('style');
-  style.textContent = `
-    @page { size: A4; margin: 0; }
-    body { margin: 0; display: flex; justify-content: center; background: #fff; }
-    img { width: 100%; max-width: 210mm; height: auto; }
-  `;
-  doc.head.appendChild(style);
-
-  const img = doc.createElement('img');
-  img.alt = `Receipt ${orderNumber}`.trim();
-  img.addEventListener('load', () => { win.focus(); win.print(); });
-  img.src = dataUrl;
-  doc.body.appendChild(img);
-
-  return true;
-}

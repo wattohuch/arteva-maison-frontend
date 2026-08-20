@@ -14,6 +14,19 @@ export const AuthAPI = {
       body: JSON.stringify({ email, password }),
     }),
 
+  /**
+   * End this session server-side as well as locally.
+   *
+   * Takes the refresh token explicitly rather than reading storage, so the
+   * caller controls the ordering: the token has to be read before the local
+   * clear wipes it.
+   */
+  logout: (refreshToken) =>
+    apiRequest('/auth/logout', {
+      method: 'POST',
+      body: JSON.stringify({ refreshToken }),
+    }),
+
   getMe: () => apiRequest('/auth/me'),
 
   updateProfile: (updates) =>

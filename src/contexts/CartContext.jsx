@@ -3,7 +3,9 @@ import {
 } from 'react';
 import { CartAPI } from '../api/cart';
 import { trackAddToCart } from '../utils/metaPixel';
+import { showToast } from '../components/ui/Toast';
 import { useAuth } from './AuthContext';
+import { useI18n } from './I18nContext';
 
 const CartContext = createContext(null);
 
@@ -14,6 +16,7 @@ const CART_OWNER_KEY = 'arteva_cart_owner';
 
 export function CartProvider({ children }) {
   const { isLoggedIn, user } = useAuth();
+  const { t } = useI18n();
 
   const [items, setItems] = useState(() => {
     try { return JSON.parse(localStorage.getItem('arteva_cart') || '[]'); }
@@ -37,21 +40,54 @@ export function CartProvider({ children }) {
   ), [items]);
 
   const addItem = useCallback((product, quantity = 1) => {
-    // Reported here rather than in each button, so every route into the basket
-    // — card, detail page, drawer — is counted exactly once.
-    trackAddToCart(product, quantity);
-
     const id = product._id || product.id;
-    // Fire-and-forget: so the admin cart view (and any other device the same
-    // account is logged into) sees this without waiting on checkout.
-    if (isLoggedIn) CartAPI.add(id, quantity).catch(() => {});
+
+    /* Cap the basket at what is on the shelf.
+     *
+     * The server refuses an oversell either way, but the guest basket lives
+     * entirely in localStorage and never asked, so a guest could build a
+     * quantity of five against two units and only discover it at checkout —
+     * after entering an address and choosing a payment method.
+     *
+     * `stock` absent means unknown (an older cart entry, or a product summary
+     * that did not include it) and is left uncapped, so this can never make a
+     * previously-working basket un-addable.
+     */
+    const available = Number.isFinite(Number(product?.stock)) ? Number(product.stock) : null;
 
     setItems(prev => {
       const existing = prev.find(i => (i._id || i.id) === id);
+      const inCart = existing ? (Number(existing.quantity) || 0) : 0;
+
+      const wanted = Math.max(1, Number(quantity) || 1);
+      const room = available === null ? wanted : Math.max(0, available - inCart);
+      const added = Math.min(wanted, room);
+
+      if (added <= 0) {
+        // Nothing to add. Report it rather than silently doing nothing.
+        showToast(
+          available === 0
+            ? t('out_of_stock')
+            : `Only ${available} in stock — already in your bag.`,
+          'error'
+        );
+        return prev;
+      }
+
+      // Counted here, with the quantity actually added rather than the one
+      // asked for, so the analytics match the basket.
+      trackAddToCart(product, added);
+
+      // Fire-and-forget: so the admin cart view (and any other device the same
+      // account is logged into) sees this without waiting on checkout.
+      if (isLoggedIn) CartAPI.add(id, added).catch(() => {});
+
       let next;
       if (existing) {
         next = prev.map(i =>
-          (i._id || i.id) === id ? { ...i, quantity: (Number(i.quantity) || 1) + quantity } : i
+          (i._id || i.id) === id
+            ? { ...i, quantity: inCart + added, stock: available ?? i.stock }
+            : i
         );
       } else {
         const image = product.images?.length
@@ -64,13 +100,21 @@ export function CartProvider({ children }) {
           nameAr: product.nameAr || '',
           price: priceNum,
           image,
-          quantity: Number(quantity) || 1,
+          quantity: added,
+          // Carried onto the line so the cart page's stepper can cap itself
+          // without re-fetching every product.
+          stock: available ?? undefined,
         }];
       }
+
+      if (added < wanted) {
+        showToast(`Only ${available} in stock — added ${added}.`, 'info');
+      }
+
       localStorage.setItem('arteva_cart', JSON.stringify(next));
       return next;
     });
-  }, [isLoggedIn]);
+  }, [isLoggedIn, t]);
 
   const updateQuantity = useCallback((id, quantity) => {
     if (isLoggedIn) {
@@ -86,7 +130,15 @@ export function CartProvider({ children }) {
       });
     } else {
       setItems(prev => {
-        const next = prev.map(i => (i._id || i.id) === id ? { ...i, quantity } : i);
+        const next = prev.map(i => {
+          if ((i._id || i.id) !== id) return i;
+          // Same cap as addItem: a known stock figure on the line bounds it,
+          // an unknown one leaves it alone.
+          const available = Number.isFinite(Number(i.stock)) ? Number(i.stock) : null;
+          const capped = available === null ? quantity : Math.min(quantity, available);
+          if (capped < quantity) showToast(`Only ${available} in stock.`, 'info');
+          return { ...i, quantity: capped };
+        });
         localStorage.setItem('arteva_cart', JSON.stringify(next));
         return next;
       });
@@ -129,6 +181,10 @@ export function CartProvider({ children }) {
           const nameAr = prod.nameAr || item.nameAr || '';
           const price = Number(prod.price ?? item.price ?? 0);
           const quantity = Number(item.quantity || 1);
+          // The server populates `stock` on cart products, so this is the
+          // freshest figure available — it keeps the cart stepper honest even
+          // if the item has been sitting in the basket for days.
+          const stock = Number.isFinite(Number(prod.stock)) ? Number(prod.stock) : undefined;
           return {
             id,
             _id: id,
@@ -137,6 +193,7 @@ export function CartProvider({ children }) {
             price,
             image,
             quantity,
+            stock,
           };
         });
         persist(normalized);

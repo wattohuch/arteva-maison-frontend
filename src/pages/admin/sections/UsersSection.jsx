@@ -9,7 +9,20 @@ import { SearchIcon, TrashIcon } from '../../../components/ui/Icons';
 import AdminTable from '../components/AdminTable';
 import AdminToolbar from '../components/AdminToolbar';
 
-const ROLES = ['user', 'admin', 'driver', 'owner', 'superuser'];
+/* Mirrors the User schema's role enum. `cashier` is counter staff: it can
+   create an invoice and nothing else, and it is granted and revoked from this
+   screen because the person on the till changes. */
+const ROLES = ['user', 'cashier', 'admin', 'driver', 'owner', 'superuser'];
+
+/** Plain-language note under each role in the picker. */
+const ROLE_HINTS = {
+  user: 'Shopper. No dashboard access.',
+  cashier: 'Can create invoices only — no order history, customers or revenue.',
+  driver: 'Delivery app only.',
+  admin: 'Runs the shop. No revenue access.',
+  owner: 'Full access, including revenue.',
+  superuser: 'System administration. Deliberately excluded from revenue.',
+};
 
 /* Roles that can still open this screen. Changing your own account to anything
    outside this set locks you out of the dashboard you are standing in, so the
@@ -35,7 +48,8 @@ function assignableRoles(viewerRole, current, isSelf) {
     return true;
   });
 
-  if (viewerRole === 'admin') roles = roles.filter(r => ['admin', 'driver', 'user'].includes(r));
+  // Keep in step with ADMIN_ASSIGNABLE in the backend's updateUserRole.
+  if (viewerRole === 'admin') roles = roles.filter(r => ['admin', 'cashier', 'driver', 'user'].includes(r));
   if (isSelf) roles = roles.filter(r => KEEPS_DASHBOARD_ACCESS.includes(r));
 
   return roles.includes(current) ? roles : [current, ...roles];
@@ -156,15 +170,26 @@ export default function UsersSection() {
                  and cannot drop to `user` or `driver`. */
               const options = assignableRoles(currentUser?.role, u.role, isSelf);
               return (
-                <select
-                  className="status-select"
-                  value={u.role}
-                  onChange={e => updateRole(u._id, e.target.value)}
-                  aria-label={`${t('role')} — ${u.email}`}
-                  title={isSelf ? 'Your own account — you cannot drop below admin here' : undefined}
-                >
-                  {options.map(r => <option key={r} value={r}>{r}</option>)}
-                </select>
+                <>
+                  <select
+                    className="status-select"
+                    value={u.role}
+                    onChange={e => updateRole(u._id, e.target.value)}
+                    aria-label={`${t('role')} — ${u.email}`}
+                    title={isSelf ? 'Your own account — you cannot drop below admin here' : undefined}
+                  >
+                    {options.map(r => (
+                      <option key={r} value={r} title={ROLE_HINTS[r]}>{r}</option>
+                    ))}
+                  </select>
+                  {/* What the role actually permits, in words. "cashier" means
+                      nothing on its own to whoever is assigning it. */}
+                  {ROLE_HINTS[u.role] && (
+                    <small className="admin-muted" style={{ display: 'block', marginTop: 2, fontSize: 11 }}>
+                      {ROLE_HINTS[u.role]}
+                    </small>
+                  )}
+                </>
               );
             },
           },

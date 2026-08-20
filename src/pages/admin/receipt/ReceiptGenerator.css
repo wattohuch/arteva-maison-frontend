@@ -544,3 +544,11 @@
 @media (prefers-reduced-motion: reduce) {
   .rg-tab, .rg-item-btn, .rg-add-line { transition: none; }
 }
+
+
+/* Cashier view: one card, so it should not sit in a two-column grid looking
+   like something is missing beside it. */
+.rg-start-grid.is-single {
+  grid-template-columns: minmax(0, 420px);
+  justify-content: center;
+}

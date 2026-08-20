@@ -77,3 +77,34 @@
   background: var(--color-champagne, #f3ece1);
   border-radius: var(--radius-md, 10px);
 }
+
+
+/* Recovery link — a text button, not a second call to action competing with
+   "Open revenue". */
+.revgate-link {
+  background: none;
+  border: 0;
+  padding: 6px 4px;
+  margin-top: 4px;
+  font: inherit;
+  font-size: 0.82rem;
+  color: var(--text-secondary, #6b6157);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  cursor: pointer;
+  /* Still a comfortable tap target on a phone despite reading as a link. */
+  min-height: 40px;
+}
+
+.revgate-link:hover:not(:disabled) { color: var(--text-primary, #2c241b); }
+.revgate-link:disabled { opacity: 0.5; cursor: not-allowed; }
+
+.revgate-notice {
+  margin: 0 0 4px;
+  padding: 8px 12px;
+  border-radius: 8px;
+  background: rgba(5, 150, 105, 0.09);
+  color: #047857;
+  font-size: 0.85rem;
+  line-height: 1.5;
+}
