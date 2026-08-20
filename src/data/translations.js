@@ -42,6 +42,7 @@ export const translations = {
     new_arrivals_subtitle: "Discover our latest additions",
     badge_new: "New", add_to_cart: "Add to Cart", currency: "KWD",
     out_of_stock: "Out of Stock", only_n_left: "Only {n} left",
+    new_invoice: "New Invoice",
 
     // Currency Names
     currency_kwd: "Kuwaiti Dinar", currency_sar: "Saudi Riyal",
@@ -416,6 +417,7 @@ export const translations = {
     new_arrivals_subtitle: "اكتشف أحدث إضافاتنا",
     badge_new: "جديد", add_to_cart: "أضف للسلة", currency: "د.ك",
     out_of_stock: "نفدت الكمية", only_n_left: "{n} قطع متبقية",
+    new_invoice: "فاتورة جديدة",
 
     // Currency Names
     currency_kwd: "دينار كويتي", currency_sar: "ريال سعودي",

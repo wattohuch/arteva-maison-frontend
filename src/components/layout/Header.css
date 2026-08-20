@@ -555,3 +555,17 @@
      an overlapping button is. */
   .navbar { grid-template-columns: 0.6fr auto 1.4fr; gap: var(--space-2); }
 }
+
+
+/* Staff shortcut in the header.
+   Tinted so it reads as a different KIND of control from the shopper icons
+   beside it — it leads out of the storefront into the panel. Visible at every
+   width, unlike the icons that hide on small screens: the phone is exactly
+   where counter staff need it. */
+.nav-staff-link {
+  color: var(--color-gold-text, #a88a44);
+}
+
+.nav-staff-link:hover {
+  color: var(--text-primary, #2c241b);
+}

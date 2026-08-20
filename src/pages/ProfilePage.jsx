@@ -1,6 +1,7 @@
 import { useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
+import { staffDestination } from '../utils/roles';
 import { useI18n } from '../contexts/I18nContext';
 import { SparkleIcon, PackageIcon, SearchIcon, BagIcon, CarIcon } from '../components/ui/Icons';
 import { PinMark } from '../components/ui/PaymentMarks';
@@ -10,6 +11,11 @@ import './ProfilePage.css';
 export default function ProfilePage() {
   const { user, isLoggedIn, logout } = useAuth();
   const { t } = useI18n();
+
+  /* Where staff go, if anywhere. A cashier is sent to the till rather than the
+     dashboard — /admin would bounce them there anyway, and labelling it
+     "Admin Dashboard" would promise a panel they cannot open. */
+  const staff = staffDestination(user?.role, t);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -61,10 +67,10 @@ export default function ProfilePage() {
               {/* Staff entry point. Only rendered for privileged roles, and the
                   /admin route is independently guarded by RequireRole plus the
                   server's role checks — this tile is a shortcut, not the gate. */}
-              {['admin', 'owner', 'superuser'].includes(user.role) && (
-                <Link to="/admin" className="dashboard-card glass-card dashboard-card-staff">
+              {staff && (
+                <Link to={staff.to} className="dashboard-card glass-card dashboard-card-staff">
                   <span className="dashboard-icon"><SparkleIcon size={24} /></span>
-                  <h4>{t('admin_dashboard_btn')}</h4>
+                  <h4>{staff.label}</h4>
                 </Link>
               )}
               {user.role === 'driver' && (

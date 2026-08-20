@@ -8,9 +8,10 @@ import { useWishlist } from '../../contexts/WishlistContext';
 import CartDrawer from '../cart/CartDrawer';
 import { trackSearch } from '../../utils/metaPixel';
 import {
-  SearchIcon, UserIcon, HeartIcon, BagIcon,
+  SearchIcon, UserIcon, HeartIcon, BagIcon, SparkleIcon,
   MenuIcon, CloseIcon, ChevronDownIcon, ArrowRightIcon,
 } from '../ui/Icons';
+import { staffDestination } from '../../utils/roles';
 import './Header.css';
 
 export default function Header() {
@@ -21,6 +22,10 @@ export default function Header() {
   const { count: wishlistCount } = useWishlist();
   const navigate = useNavigate();
   const location = useLocation();
+
+  /* Where this account's staff link goes, if it has one. Null for shoppers,
+     the till for a cashier, the dashboard for everyone above. */
+  const staff = staffDestination(user?.role, t);
 
   const [scrolled, setScrolled] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
@@ -183,6 +188,21 @@ export default function Header() {
                   <SearchIcon size={20} />
                 </button>
 
+                {/* Staff shortcut, on the desktop header as well as in the
+                    mobile menu. There was no desktop entry point at all — an
+                    admin had to know to type /admin, and counter staff, whose
+                    whole job is this one screen, had nothing. */}
+                {isLoggedIn && staff && (
+                  <Link
+                    to={staff.to}
+                    className="nav-icon-btn nav-staff-link"
+                    aria-label={staff.label}
+                    title={staff.label}
+                  >
+                    <SparkleIcon size={20} />
+                  </Link>
+                )}
+
                 <Link
                   to={isLoggedIn ? '/profile' : '/account'}
                   className="nav-icon-btn nav-hide-sm"
@@ -287,8 +307,11 @@ export default function Header() {
           <Link to="/wishlist" className="mobile-nav-link">{t('wishlist')}</Link>
           <Link to="/contact" className="mobile-nav-link">{t('contact')}</Link>
           <Link to={isLoggedIn ? '/profile' : '/account'} className="mobile-nav-link">{t('account')}</Link>
-          {isLoggedIn && user?.role === 'admin' && (
-            <Link to="/admin" className="mobile-nav-link">{t('admin_dashboard')}</Link>
+          {/* Was `role === 'admin'` exactly, so an owner or superuser signing in
+              on a phone was never offered the dashboard at all, and a cashier
+              had no route to the till but to type the URL. */}
+          {isLoggedIn && staff && (
+            <Link to={staff.to} className="mobile-nav-link">{staff.label}</Link>
           )}
         </nav>
 
