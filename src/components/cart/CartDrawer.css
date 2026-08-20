@@ -225,3 +225,14 @@
   .cart-item { grid-template-columns: 64px minmax(0, 1fr) 32px; }
   .cart-item-media { width: 64px; }
 }
+
+
+/* Shown when a line already holds everything on the shelf, so the disabled
+   "+" reads as a limit rather than as a broken control. */
+.cart-item-stock {
+  margin: 4px 0 0;
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.03em;
+  color: #b45309;
+}

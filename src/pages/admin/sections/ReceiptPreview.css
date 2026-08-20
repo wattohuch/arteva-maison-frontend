@@ -1,0 +1,83 @@
+/**
+ * Receipt preview sheet.
+ *
+ * Mobile-first: on a phone this fills the screen, because the thing being
+ * previewed is an A4 document and any margin around it makes the type too
+ * small to check. It becomes a centred sheet only once there is room for one.
+ */
+
+.rcpt-preview-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 1200;
+  display: flex;
+  align-items: stretch;
+  justify-content: center;
+  background: rgba(20, 16, 12, 0.55);
+  /* Fall back to a plain scrim where backdrop-filter is unsupported. */
+  -webkit-backdrop-filter: blur(3px);
+  backdrop-filter: blur(3px);
+}
+
+.rcpt-preview {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  background: #fff;
+  overflow: hidden;
+  /* iOS: the browser chrome overlaps the bottom of a 100vh element, which
+     would hide the frame's last centimetre. dvh tracks the visible area. */
+  height: 100dvh;
+}
+
+.rcpt-preview-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 10px 14px;
+  /* Clears the iPhone notch and home indicator in landscape. */
+  padding-left: max(14px, env(safe-area-inset-left));
+  padding-right: max(14px, env(safe-area-inset-right));
+  border-bottom: 1px solid var(--color-border, #e6e1d6);
+  background: var(--color-surface, #faf9f7);
+  flex: 0 0 auto;
+}
+
+.rcpt-preview-bar strong {
+  font-size: 0.9rem;
+  letter-spacing: 0.02em;
+}
+
+.rcpt-preview-actions {
+  display: flex;
+  gap: 8px;
+}
+
+/* Comfortably tappable — these are pressed on a phone at a counter. */
+.rcpt-preview-actions .btn {
+  min-height: 40px;
+}
+
+.rcpt-preview-frame {
+  flex: 1 1 auto;
+  width: 100%;
+  border: 0;
+  background: #fff;
+  /* Momentum scrolling inside the frame on iOS. */
+  -webkit-overflow-scrolling: touch;
+}
+
+@media (min-width: 768px) {
+  .rcpt-preview-backdrop {
+    align-items: center;
+    padding: 24px;
+  }
+
+  .rcpt-preview {
+    width: min(860px, 100%);
+    height: min(92vh, 1100px);
+    border-radius: 12px;
+    box-shadow: 0 24px 60px rgba(0, 0, 0, 0.28);
+  }
+}

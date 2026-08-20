@@ -5,13 +5,25 @@ import { useI18n } from '../../contexts/I18nContext';
 import { useCurrency } from '../../contexts/CurrencyContext';
 import { handleImageError, cloudinaryImage } from '../../utils/imageHelpers';
 import { CloseIcon, TrashIcon, PlusIcon, MinusIcon, BagIcon } from '../ui/Icons';
+import { atMax } from '../../utils/stock';
 import './CartDrawer.css';
 
 export default function CartDrawer({ open, onClose }) {
-  const { items, count, subtotal, updateQuantity, removeItem } = useCart();
+  const { items, count, subtotal, updateQuantity, removeItem, refreshStock } = useCart();
   const { t } = useI18n();
   const { format } = useCurrency();
   const panelRef = useRef(null);
+
+  /* Re-read stock each time the basket is opened.
+     A basket restored from localStorage carries a stale figure, or none at all,
+     and the shelf moves while it sits closed. Anything now over the limit is
+     clamped here rather than at checkout. */
+  useEffect(() => {
+    if (open) refreshStock();
+    // `refreshStock` is intentionally out of the dependency list: it is rebuilt
+    // whenever `items` changes, and the clamp changes `items`, so including it
+    // would loop.
+  }, [open]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Lock the page behind the panel and restore on close
   useEffect(() => {
@@ -83,10 +95,14 @@ export default function CartDrawer({ open, onClose }) {
                       <h3 className="cart-item-name">{item.name}</h3>
                       <p className="cart-item-price">{format(priceNum)}</p>
 
+                      {/* The + stops at what is on the shelf. It used to be
+                          unbounded, so the basket could be run past the stock
+                          level here even though the product page capped it. */}
                       <div className="qty-stepper">
                         <button
                           onClick={() => updateQuantity(id, item.quantity - 1)}
                           aria-label={t('decrease_quantity')}
+                          disabled={item.quantity <= 1}
                         >
                           <MinusIcon size={14} />
                         </button>
@@ -94,10 +110,14 @@ export default function CartDrawer({ open, onClose }) {
                         <button
                           onClick={() => updateQuantity(id, item.quantity + 1)}
                           aria-label={t('increase_quantity')}
+                          disabled={atMax(item)}
                         >
                           <PlusIcon size={14} />
                         </button>
                       </div>
+                      {atMax(item) && (
+                        <p className="cart-item-stock">Only {item.stock} in stock</p>
+                      )}
                     </div>
 
                     <button

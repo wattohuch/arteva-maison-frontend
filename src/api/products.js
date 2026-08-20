@@ -20,6 +20,20 @@ export const ProductsAPI = {
   },
 
   /**
+   * Current server state for a known set of products, in one request.
+   *
+   * The basket uses this to re-read stock. A stock figure captured when an item
+   * was added goes stale while the basket sits open, and a basket restored from
+   * localStorage may carry no figure at all — either way the shopper can build a
+   * quantity the shelf cannot fill and only discover it at checkout.
+   */
+  getByIds: async (ids = []) => {
+    const list = [...new Set(ids.filter(Boolean).map(String))];
+    if (!list.length) return { success: true, data: [] };
+    return apiRequest(`/products?ids=${encodeURIComponent(list.join(','))}&limit=${list.length}`);
+  },
+
+  /**
    * Every product matching `params`, not just the first page.
    *
    * One request in the normal case; a second only if the match set is larger

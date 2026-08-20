@@ -5,8 +5,10 @@ import { showToast } from '../../../components/ui/Toast';
 import { Input, Select } from '../../../components/ui/Field';
 import { SearchIcon, EyeIcon, PrinterIcon, ReceiptIcon } from '../../../components/ui/Icons';
 import { formatDate } from '../../../utils/formatters';
+import { printHtmlDocument } from '../../../utils/printDocument';
 import AdminTable from '../components/AdminTable';
 import AdminToolbar from '../components/AdminToolbar';
+import './ReceiptPreview.css';
 
 const kwd = (n) => `${(Number(n) || 0).toFixed(3)} KWD`;
 
@@ -52,29 +54,37 @@ export default function ReceiptsSection() {
 
   useEffect(() => { load(); }, [load]);
 
+  const [preview, setPreview] = useState(null);   // { orderNumber, html }
+  const [busyId, setBusyId] = useState(null);
+
   /**
-   * Open the server-rendered receipt HTML.
+   * Fetch the server-rendered receipt and either print it or show it.
    *
-   * Written into the new window with the DOM parser rather than
-   * `document.write`, so the markup is never re-parsed through a string
-   * concatenation path.
+   * No `window.open` anywhere in this path any more. It used to open a popup
+   * AFTER awaiting the fetch, and on iOS Safari a window opened once the
+   * gesture has been forgotten is blocked outright — so the owner's iPhone
+   * showed "Allow pop-ups" however the setting was configured, and when it did
+   * get through, iOS opened a whole new tab instead of printing.
+   *
+   * Printing now happens in a hidden iframe on this page (see
+   * utils/printDocument.js) and previewing renders in a sheet, so neither
+   * action depends on popups at all.
    */
   const openReceipt = useCallback(async (orderId, print) => {
+    setBusyId(orderId);
     try {
       const html = await AdminAPI.getReceipt(orderId);
-      const win = window.open('', '_blank');
-      if (!win) {
-        showToast('Allow pop-ups to preview receipts', 'error');
-        return;
-      }
-      win.document.open();
-      win.document.write(html);
-      win.document.close();
+
       if (print) {
-        win.addEventListener('load', () => win.print(), { once: true });
+        const ok = await printHtmlDocument(html, { title: 'Receipt' });
+        if (!ok) showToast('Could not open the print dialog on this device', 'error');
+      } else {
+        setPreview({ orderId, html });
       }
     } catch (err) {
       showToast(err.message || 'Failed to load the receipt', 'error');
+    } finally {
+      setBusyId(null);
     }
   }, []);
 
@@ -134,6 +144,7 @@ export default function ReceiptsSection() {
             onClick={() => openReceipt(o._id, false)}
             title="Preview receipt"
             aria-label={`Preview receipt ${o.orderNumber}`}
+            disabled={busyId === o._id}
           >
             <EyeIcon size={15} />
           </button>
@@ -143,13 +154,14 @@ export default function ReceiptsSection() {
             title="Print receipt"
             aria-label={`Print receipt ${o.orderNumber}`}
             style={{ background: '#10b98120', color: '#10b981' }}
+            disabled={busyId === o._id}
           >
             <PrinterIcon size={15} />
           </button>
         </div>
       ),
     },
-  ], [openReceipt]);
+  ], [openReceipt, busyId]);
 
   return (
     <div className="admin-view">
@@ -209,6 +221,66 @@ export default function ReceiptsSection() {
         rows={orders}
         columns={columns}
       />
+
+      {preview && (
+        <ReceiptPreview
+          html={preview.html}
+          onPrint={() => printHtmlDocument(preview.html, { title: 'Receipt' })}
+          onClose={() => setPreview(null)}
+        />
+      )}
+    </div>
+  );
+}
+
+/**
+ * Receipt preview, in a sheet on this page.
+ *
+ * The receipt is a complete HTML document with its own `body` and `:root`
+ * rules, so it goes in an iframe rather than being spliced into the admin DOM —
+ * otherwise its stylesheet would repaint the dashboard around it.
+ *
+ * Full-screen on a phone by design: this is the view the counter actually uses
+ * to check a receipt before printing it, and a modal that leaves 20px of margin
+ * around an A4 document is unreadable on a handset.
+ */
+function ReceiptPreview({ html, onPrint, onClose }) {
+  useEffect(() => {
+    const onKey = (e) => { if (e.key === 'Escape') onClose(); };
+    window.addEventListener('keydown', onKey);
+    document.body.classList.add('no-scroll');
+    return () => {
+      window.removeEventListener('keydown', onKey);
+      document.body.classList.remove('no-scroll');
+    };
+  }, [onClose]);
+
+  return (
+    <div
+      className="rcpt-preview-backdrop"
+      role="dialog"
+      aria-modal="true"
+      aria-label="Receipt preview"
+      onClick={onClose}
+    >
+      <div className="rcpt-preview" onClick={e => e.stopPropagation()}>
+        <header className="rcpt-preview-bar">
+          <strong>Receipt preview</strong>
+          <div className="rcpt-preview-actions">
+            <button type="button" className="btn btn-primary btn-sm" onClick={onPrint}>
+              <PrinterIcon size={15} /> Print
+            </button>
+            <button type="button" className="btn btn-ghost btn-sm" onClick={onClose}>
+              Close
+            </button>
+          </div>
+        </header>
+        <iframe
+          className="rcpt-preview-frame"
+          title="Receipt"
+          srcDoc={html}
+        />
+      </div>
     </div>
   );
 }

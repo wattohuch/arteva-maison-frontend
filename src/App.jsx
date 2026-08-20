@@ -98,7 +98,7 @@ function AppRoutes() {
         <Route
           path="admin/*"
           element={
-            <RequireRole roles={['admin', 'owner', 'superuser']}>
+            <RequireRole roles={['cashier', 'admin', 'owner', 'superuser']}>
               {/* `view` motion: these panels carry fixed sidebars and toolbars,
                   which a transform on the wrapper would re-anchor. */}
               <PageTransition motion="view">

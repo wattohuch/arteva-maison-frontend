@@ -3,13 +3,15 @@ import {
 } from 'react';
 import { AdminAPI } from '../../../api/admin';
 import { PromoAPI } from '../../../api/promoCodes';
+import { useAuth } from '../../../contexts/AuthContext';
 import { showToast } from '../../../components/ui/Toast';
 import {
   PlusIcon, TrashIcon, DownloadIcon, PrinterIcon, SearchIcon,
 } from '../../../components/ui/Icons';
 import {
-  renderReceipt, downloadReceiptJPEG, printReceipt,
+  renderReceipt, downloadReceiptJPEG,
 } from '../../../utils/receiptCanvas';
+import { printHtmlDocument, buildImagePrintDocument } from '../../../utils/printDocument';
 import { resolveImageUrl, getProductImage } from '../../../utils/imageHelpers';
 import ProductPicker from './ProductPicker';
 import {
@@ -60,14 +62,31 @@ export default function ReceiptGenerator() {
   // stale content over fresh.
   const renderToken = useRef(0);
 
+  const { user } = useAuth();
+
+  /* Counter staff use this screen as a till and nothing else.
+   *
+   * They may build and save a new invoice, and print the one they just made.
+   * They may not look up an existing order — that is the "no access to old
+   * orders" rule, and the lookup below calls GET /admin/orders, which refuses
+   * them anyway. Hiding it is so they are not offered a control that can only
+   * fail; the API is what enforces it.
+   */
+  const isCashier = user?.role === 'cashier';
+
   const isExisting = !!draft.orderId;
 
   // ── Reference data ──
   useEffect(() => {
     let cancelled = false;
+
+    /* The promo-code list is marketing configuration — every campaign, its
+       discounts and its limits. A cashier can still APPLY a code a customer
+       presents (it is typed in, and the server re-prices it from the code),
+       but they are not shown the catalogue of them. */
     Promise.all([
       AdminAPI.getProducts().catch(() => ({ data: [] })),
-      AdminAPI.getPromoCodes().catch(() => ({ data: [] })),
+      isCashier ? Promise.resolve({ data: [] }) : AdminAPI.getPromoCodes().catch(() => ({ data: [] })),
     ]).then(([prodRes, promoRes]) => {
       if (cancelled) return;
       const list = prodRes.data || [];
@@ -75,7 +94,7 @@ export default function ReceiptGenerator() {
       setPromoCodes((promoRes.data || []).filter(p => p.isActive));
     });
     return () => { cancelled = true; };
-  }, []);
+  }, [isCashier]);
 
   // ── Live preview ──
   // The order object is deferred so typing stays responsive: React keeps the
@@ -264,29 +283,76 @@ export default function ReceiptGenerator() {
     downloadReceiptJPEG(canvasRef.current, draft.orderNumber || 'receipt');
   }, [draft.orderNumber]);
 
-  const handlePrint = useCallback(() => {
-    const ok = printReceipt(canvasRef.current, draft.orderNumber);
-    if (!ok) showToast('Allow pop-ups to print receipts', 'error');
-  }, [draft.orderNumber]);
+  const [printing, setPrinting] = useState(false);
+
+  /**
+   * Print the receipt.
+   *
+   * A SAVED order prints the server-rendered HTML: real text, so it comes out
+   * sharp at any printer resolution, and the document is a few kilobytes. The
+   * canvas alternative is a 2480x3508 JPEG — several megabytes once base64'd —
+   * which is slow to hand to the print pipeline and visibly softer on paper.
+   * That size is felt most on exactly the device this had to be fixed for.
+   *
+   * An UNSAVED draft has no server document to ask for, so it prints the canvas.
+   *
+   * Neither path opens a popup. The old one did, after an await, which iOS
+   * Safari blocks outright — the reason printing did not work on the owner's
+   * iPhone at all.
+   */
+  const handlePrint = useCallback(async () => {
+    setPrinting(true);
+    try {
+      if (draft.orderId) {
+        try {
+          const html = await AdminAPI.getReceipt(draft.orderId);
+          const ok = await printHtmlDocument(html, { title: `Receipt ${draft.orderNumber}` });
+          if (ok) return;
+        } catch {
+          // Server receipt unavailable (offline, or the order was only just
+          // written) — fall through to the canvas rather than failing.
+        }
+      }
+
+      const canvas = canvasRef.current;
+      if (!canvas) {
+        showToast('The receipt preview is not ready yet', 'error');
+        return;
+      }
+
+      const ok = await printHtmlDocument(
+        buildImagePrintDocument(canvas.toDataURL('image/jpeg', 0.92), `Receipt ${draft.orderNumber}`),
+        { title: `Receipt ${draft.orderNumber}` }
+      );
+      if (!ok) showToast('Could not open the print dialog on this device', 'error');
+    } finally {
+      setPrinting(false);
+    }
+  }, [draft.orderId, draft.orderNumber]);
 
   // ── Empty state ──
   if (!started) {
     return (
       <div className="admin-view rg-start">
-        <h2 className="admin-view-title">Receipt Generator</h2>
+        <h2 className="admin-view-title">
+          {isCashier ? 'New Invoice — فاتورة' : 'Receipt Generator'}
+        </h2>
         <p className="rg-start-lead">
-          Build a receipt from scratch, or load an existing order to edit and reprint it.
+          {isCashier
+            ? 'Ring up a sale. Add the items, take the payment, print the invoice.'
+            : 'Build a receipt from scratch, or load an existing order to edit and reprint it.'}
         </p>
 
-        <div className="rg-start-grid">
+        <div className={`rg-start-grid ${isCashier ? 'is-single' : ''}`}>
           <div className="rg-start-card">
-            <h3>Create new receipt</h3>
+            <h3>{isCashier ? 'Start a new invoice' : 'Create new receipt'}</h3>
             <p>Records a manual order. Stock is deducted when you save.</p>
             <button type="button" className="btn btn-primary btn-full" onClick={startBlank}>
-              <PlusIcon size={16} /> New receipt
+              <PlusIcon size={16} /> {isCashier ? 'New invoice' : 'New receipt'}
             </button>
           </div>
 
+          {!isCashier && (
           <div className="rg-start-card">
             <h3>Load an order</h3>
             <p>Edit details, refund items, or reprint an existing receipt.</p>
@@ -308,6 +374,7 @@ export default function ReceiptGenerator() {
               </button>
             </form>
           </div>
+          )}
         </div>
       </div>
     );
@@ -397,8 +464,14 @@ export default function ReceiptGenerator() {
           <button type="button" className="btn btn-ghost btn-sm" onClick={handleDownload}>
             <DownloadIcon size={16} /><span className="rg-btn-label">JPEG</span>
           </button>
-          <button type="button" className="btn btn-ghost btn-sm" onClick={handlePrint}>
-            <PrinterIcon size={16} /><span className="rg-btn-label">Print</span>
+          <button
+            type="button"
+            className="btn btn-ghost btn-sm"
+            onClick={handlePrint}
+            disabled={printing}
+          >
+            <PrinterIcon size={16} />
+            <span className="rg-btn-label">{printing ? 'Preparing…' : 'Print'}</span>
           </button>
 
           <button

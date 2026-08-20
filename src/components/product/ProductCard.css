@@ -210,6 +210,43 @@
   border-color: rgba(255, 255, 255, 0.4) !important;
 }
 
+/* ── Stock badge ──
+   Anchored to the BOTTOM of the image, not the top: "New" and the sale
+   percentage already occupy the top-start corner, and a third badge stacked
+   there would sit on top of them. */
+.product-badge-stock {
+  top: auto;
+  bottom: var(--space-3);
+  inset-inline-start: var(--space-3);
+  letter-spacing: 0.08em;
+}
+
+/* Amber — urgency without alarm. This is a nudge to buy, not a warning. */
+.product-badge-stock.is-low {
+  background: rgba(180, 83, 9, 0.94) !important;
+  color: #fff !important;
+  border-color: rgba(255, 255, 255, 0.35) !important;
+}
+
+.product-badge-stock.is-out {
+  background: rgba(40, 34, 28, 0.9) !important;
+  color: rgba(255, 255, 255, 0.92) !important;
+  border-color: rgba(255, 255, 255, 0.25) !important;
+}
+
+/* A sold-out card stays legible and clickable — the product page still has the
+   description and photographs, and it may be restocked — but it reads as
+   unavailable at a glance. */
+.product-card.is-sold-out .product-media img {
+  filter: grayscale(0.55);
+  opacity: 0.72;
+}
+
+.product-card.is-sold-out .product-quick-add {
+  opacity: 0.4;
+  pointer-events: none;
+}
+
 /* ── Touch: hover states never fire, so surface the controls ── */
 @media (hover: none) {
   .product-quick-add { opacity: 1; transform: translateY(0); }
@@ -230,4 +267,6 @@
   .product-quick-add svg { width: 14px; height: 14px; }
   .product-wishlist { width: 32px; height: 32px; top: var(--space-2); inset-inline-end: var(--space-2); }
   .product-badge { top: var(--space-2); inset-inline-start: var(--space-2); padding: 4px 9px; font-size: 8.5px; }
+  /* Re-anchor after the rule above resets `top` for the small breakpoint. */
+  .product-badge-stock { top: auto; bottom: var(--space-2); inset-inline-start: var(--space-2); }
 }

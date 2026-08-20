@@ -1,0 +1,225 @@
+/**
+ * Visitors page — product-interest presentation.
+ *
+ * Mobile-first throughout: this page is read on a phone as often as a laptop,
+ * and the interesting columns (which products, how many clicks) are the ones a
+ * narrow screen drops first if they are not designed for it.
+ */
+
+/* ── Thumbnail strips ── */
+
+.visitor-products {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  flex-wrap: wrap;
+}
+
+.visitor-product-thumb {
+  width: 32px;
+  height: 32px;
+  border-radius: 6px;
+  object-fit: cover;
+  background: var(--color-surface-alt, #f4f1ec);
+  border: 1px solid var(--color-border, #e6e1d6);
+  flex: 0 0 auto;
+}
+
+.visitor-product-more {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--text-secondary, #6b6157);
+  background: var(--color-surface-alt, #f4f1ec);
+  border: 1px solid var(--color-border, #e6e1d6);
+  border-radius: 6px;
+  padding: 0 6px;
+  line-height: 30px;
+}
+
+.visitor-products-cell {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.visitor-products-count {
+  font-size: 11px;
+  color: var(--text-muted, #9a8f83);
+}
+
+/* ── Daily summary ── */
+
+.visitor-days {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.visitor-day {
+  border: 1px solid var(--color-border, #e6e1d6);
+  border-radius: 10px;
+  overflow: hidden;
+  background: var(--color-surface, #fff);
+}
+
+.visitor-day-head {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  padding: 12px 14px;
+  background: none;
+  border: 0;
+  cursor: pointer;
+  text-align: left;
+  font: inherit;
+  /* A comfortable tap target on a phone. */
+  min-height: 48px;
+  flex-wrap: wrap;
+}
+
+.visitor-day-head:hover {
+  background: var(--color-surface-alt, #faf9f7);
+}
+
+.visitor-day-chevron {
+  transition: transform 0.18s ease;
+  color: var(--text-muted, #9a8f83);
+  font-size: 10px;
+  flex: 0 0 auto;
+}
+
+.visitor-day.is-open .visitor-day-chevron {
+  transform: rotate(90deg);
+}
+
+.visitor-day-date {
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  flex: 0 0 auto;
+}
+
+.visitor-day-meta {
+  font-size: 12.5px;
+  color: var(--text-secondary, #6b6157);
+  /* Pushed right on a wide screen, wraps under the date on a narrow one. */
+  margin-inline-start: auto;
+}
+
+.visitor-day-clicks {
+  color: var(--color-gold-text, #8a6d1f);
+}
+
+.visitor-day-sub {
+  color: var(--text-muted, #9a8f83);
+}
+
+/* Thumbnails on a collapsed row, so the day's products are visible without
+   expanding it. */
+.visitor-day-products {
+  padding: 0 14px 12px;
+  margin-top: -4px;
+}
+
+.visitor-day-body {
+  padding: 12px 14px 16px;
+  border-top: 1px solid var(--color-border, #e6e1d6);
+  background: var(--color-surface-alt, #faf9f7);
+}
+
+.visitor-day-ranked h4 {
+  margin: 0 0 8px;
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--text-secondary, #6b6157);
+}
+
+/* ── Ranked product list ── */
+
+.visitor-product-rank {
+  list-style: none;
+  margin: 0 0 14px;
+  padding: 0;
+  display: grid;
+  gap: 6px;
+}
+
+.visitor-product-rank li {
+  display: grid;
+  /* thumb | name (flexes) | stats */
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 10px;
+  background: var(--color-surface, #fff);
+  border: 1px solid var(--color-border, #e6e1d6);
+  border-radius: 8px;
+}
+
+.visitor-product-name {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  font-size: 13px;
+  font-weight: 500;
+  /* Long product names truncate rather than pushing the stats off-screen. */
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.visitor-product-name small {
+  font-size: 11px;
+  font-weight: 400;
+  color: var(--text-muted, #9a8f83);
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.visitor-product-stat {
+  font-size: 12px;
+  color: var(--text-secondary, #6b6157);
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+}
+
+.visitor-product-stat strong {
+  color: var(--color-gold-text, #8a6d1f);
+}
+
+.visitor-bot-tag {
+  font-size: 9px;
+  font-weight: 700;
+  color: #92400e;
+  background: #fef3c7;
+  padding: 1px 5px;
+  border-radius: 4px;
+  margin-inline-start: 6px;
+}
+
+@media (min-width: 900px) {
+  /* Two columns once there is room, so a long tail of products does not turn
+     into an endless scroll. */
+  .visitor-product-rank--wide {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+@media (max-width: 560px) {
+  .visitor-day-meta {
+    /* Full width under the date rather than squeezed beside it. */
+    margin-inline-start: 0;
+    flex-basis: 100%;
+    font-size: 12px;
+  }
+
+  .visitor-product-rank li {
+    /* Stats drop under the name — there is not room for three columns. */
+    grid-template-columns: auto minmax(0, 1fr);
+  }
+
+  .visitor-product-stat {
+    grid-column: 2;
+  }
+}

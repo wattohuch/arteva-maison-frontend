@@ -74,26 +74,41 @@ export default function AdminLayout() {
   // so it does NOT count as an owner here.
   const isOwner = user?.role === 'owner';
 
-  const navItems = [
-    { to: '/admin/dashboard', Icon: SparkleIcon, label: t('dashboard') },
-    { to: '/admin/products', Icon: GridIcon, label: t('products') },
-    { to: '/admin/hero-slides', Icon: ImageIcon, label: 'Hero Slides' },
-    { to: '/admin/browse-collections', Icon: GridIcon, label: 'Browse Collections' },
-    { to: '/admin/categories', Icon: FolderIcon, label: 'Categories' },
-    { to: '/admin/orders', Icon: BagIcon, label: t('orders') },
-    { to: '/admin/carts', Icon: PackageIcon, label: 'Carts' },
-    { to: '/admin/receipt-generator', Icon: ReceiptIcon, label: 'Receipt Generator' },
-    ...(isOwner ? [{ to: '/admin/revenue', Icon: CoinsIcon, label: 'Revenue' }] : []),
-    { to: '/admin/users', Icon: UserIcon, label: t('users') },
-    { to: '/admin/drivers', Icon: CarIcon, label: 'Drivers' },
-    { to: '/admin/marketing', Icon: SendIcon, label: 'Marketing' },
-    { to: '/admin/analytics', Icon: ChartIcon, label: 'Analytics' },
-    { to: '/admin/discounts', Icon: TagIcon, label: 'Discounts' },
-    { to: '/admin/receipts', Icon: ReceiptIcon, label: 'Receipts' },
-    { to: '/admin/visitors', Icon: GlobeIcon, label: 'Visitors' },
-    { to: '/admin/promo-codes', Icon: TicketIcon, label: 'Promo Codes' },
-    { to: '/admin/social-contacts', Icon: PhoneIcon, label: 'Social Contacts' },
-  ];
+  /* Counter staff.
+   *
+   * A cashier gets one screen: the till. No order history, no customers, no
+   * revenue, no settings, no analytics.
+   *
+   * This is presentation only. Every one of those sections is refused by the
+   * API for this role (see backend middleware/auth.js and routes/admin.js), so
+   * a cashier who types the URL, edits the bundle or curls the endpoint gets
+   * 403 rather than data. Hiding the links is what makes the dashboard usable
+   * for them, not what makes it safe.
+   */
+  const isCashier = user?.role === 'cashier';
+
+  const navItems = isCashier
+    ? [{ to: '/admin/receipt-generator', Icon: ReceiptIcon, label: 'New Invoice' }]
+    : [
+      { to: '/admin/dashboard', Icon: SparkleIcon, label: t('dashboard') },
+      { to: '/admin/products', Icon: GridIcon, label: t('products') },
+      { to: '/admin/hero-slides', Icon: ImageIcon, label: 'Hero Slides' },
+      { to: '/admin/browse-collections', Icon: GridIcon, label: 'Browse Collections' },
+      { to: '/admin/categories', Icon: FolderIcon, label: 'Categories' },
+      { to: '/admin/orders', Icon: BagIcon, label: t('orders') },
+      { to: '/admin/carts', Icon: PackageIcon, label: 'Carts' },
+      { to: '/admin/receipt-generator', Icon: ReceiptIcon, label: 'Receipt Generator' },
+      ...(isOwner ? [{ to: '/admin/revenue', Icon: CoinsIcon, label: 'Revenue' }] : []),
+      { to: '/admin/users', Icon: UserIcon, label: t('users') },
+      { to: '/admin/drivers', Icon: CarIcon, label: 'Drivers' },
+      { to: '/admin/marketing', Icon: SendIcon, label: 'Marketing' },
+      { to: '/admin/analytics', Icon: ChartIcon, label: 'Analytics' },
+      { to: '/admin/discounts', Icon: TagIcon, label: 'Discounts' },
+      { to: '/admin/receipts', Icon: ReceiptIcon, label: 'Receipts' },
+      { to: '/admin/visitors', Icon: GlobeIcon, label: 'Visitors' },
+      { to: '/admin/promo-codes', Icon: TicketIcon, label: 'Promo Codes' },
+      { to: '/admin/social-contacts', Icon: PhoneIcon, label: 'Social Contacts' },
+    ];
 
   // Close sidebar on route change
   useEffect(() => { setSidebarOpen(false); }, [location.pathname]);
@@ -111,6 +126,11 @@ export default function AdminLayout() {
 
   // Global Socket.IO Listener for Admin Dashboard
   useEffect(() => {
+    // Counter staff do not get the live order feed: it announces every order
+    // the shop takes, which is exactly the information a cashier is not
+    // supposed to have.
+    if (isCashier) return undefined;
+
     const backendOrigin = API_BASE_URL.replace(/\/api\/?$/, '');
     const socket = io(backendOrigin, {
       transports: ['websocket', 'polling'],
@@ -144,7 +164,7 @@ export default function AdminLayout() {
     return () => {
       socket.disconnect();
     };
-  }, []);
+  }, [isCashier]);
 
   const current = navItems.find(n => location.pathname.startsWith(n.to));
 
@@ -204,9 +224,11 @@ export default function AdminLayout() {
           </button>
           <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
             <h1 className="admin-topbar-title" style={{ margin: 0 }}>{current?.label || t('admin_dashboard')}</h1>
-            <span style={{ fontSize: '0.78rem', fontWeight: 600, color: socketConnected ? '#059669' : '#d97706', background: socketConnected ? '#ecfdf5' : '#fffbeb', padding: '3px 10px', borderRadius: 16, border: '1px solid currentColor' }}>
-              {socketConnected ? '🟢 Live Socket Active' : '🟡 Socket Reconnecting...'}
-            </span>
+            {!isCashier && (
+              <span style={{ fontSize: '0.78rem', fontWeight: 600, color: socketConnected ? '#059669' : '#d97706', background: socketConnected ? '#ecfdf5' : '#fffbeb', padding: '3px 10px', borderRadius: 16, border: '1px solid currentColor' }}>
+                {socketConnected ? '🟢 Live Socket Active' : '🟡 Socket Reconnecting...'}
+              </span>
+            )}
           </div>
           <div className="admin-topbar-user">
             <span className="admin-topbar-name">{user?.name}</span>
@@ -217,6 +239,17 @@ export default function AdminLayout() {
         <main className="admin-content">
           <Suspense fallback={<div className="admin-loading"><Loader /></div>}>
             <Routes>
+              {isCashier ? (
+                /* Everything else is not merely hidden from a cashier — it is
+                   absent from the route tree, so a typed URL lands on the till
+                   instead of mounting a section that would then fill with 403s. */
+                <>
+                  <Route index element={<Navigate to="receipt-generator" replace />} />
+                  <Route path="receipt-generator" element={<ReceiptGenerator />} />
+                  <Route path="*" element={<Navigate to="receipt-generator" replace />} />
+                </>
+              ) : (
+                <>
               <Route index element={<Navigate to="dashboard" replace />} />
               <Route path="dashboard" element={<DashboardSection />} />
               <Route path="products" element={<ProductsSection />} />
@@ -239,6 +272,8 @@ export default function AdminLayout() {
               <Route path="promo-codes" element={<PromoCodesSection />} />
               <Route path="social-contacts" element={<SocialContactsSection />} />
               <Route path="*" element={<Navigate to="dashboard" replace />} />
+                </>
+              )}
             </Routes>
           </Suspense>
         </main>

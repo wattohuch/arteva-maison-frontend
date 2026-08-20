@@ -9,6 +9,7 @@ import {
 } from '../../utils/imageHelpers';
 import { showToast } from '../ui/Toast';
 import { HeartIcon, BagIcon } from '../ui/Icons';
+import { stockBadge, isOutOfStock } from '../../utils/stock';
 import './ProductCard.css';
 
 const ProductCard = memo(function ProductCard({ product }) {
@@ -25,15 +26,29 @@ const ProductCard = memo(function ProductCard({ product }) {
 
   const handleAddToCart = useCallback((e) => {
     e.preventDefault();
+    // Refused here as well as at the API. The server is the authority, but
+    // letting the click through only to fail is a worse experience than not
+    // offering it.
+    if (isOutOfStock(product)) {
+      showToast(stockBadge(product, lang)?.text || 'Out of stock', 'error');
+      return;
+    }
     addItem(product, 1);
     showToast(t('added_to_cart'), 'success');
-  }, [addItem, product, t]);
+  }, [addItem, product, t, lang]);
 
   const handleWishlist = useCallback((e) => {
     e.preventDefault();
     const added = toggle(product);
     showToast(added ? t('added_wishlist') : t('removed_wishlist'), 'info');
   }, [toggle, product, t]);
+
+  /* Scarcity, shown only when it is real: "Only 2 left" once the count drops
+     to the threshold, "Out of stock" at zero. Derived from one helper so the
+     card, the detail page and the cart cannot contradict each other about the
+     same product. */
+  const badge = stockBadge(product, lang);
+  const soldOut = isOutOfStock(product);
 
   const hasDiscount = (product.compareAtPrice && product.compareAtPrice > product.price) ||
                       (product.originalPrice && product.originalPrice > product.price);
@@ -42,7 +57,7 @@ const ProductCard = memo(function ProductCard({ product }) {
     (hasDiscount ? Math.round(((oldPrice - product.price) / oldPrice) * 100) : 0);
 
   return (
-    <article className="product-card">
+    <article className={`product-card ${soldOut ? 'is-sold-out' : ''}`}>
       <div className="product-media">
         {/* The link covers the image; the controls sit above it as siblings so
             we never nest interactive elements inside an anchor. */}
@@ -63,6 +78,11 @@ const ProductCard = memo(function ProductCard({ product }) {
 
         {product.isNewArrival && <span className="product-badge">{t('badge_new')}</span>}
         {hasDiscount && <span className="product-badge product-badge-sale">-{discountPct}%</span>}
+        {badge && (
+          <span className={`product-badge product-badge-stock is-${badge.tone}`}>
+            {badge.text}
+          </span>
+        )}
       </div>
 
       <Link to={href} className="product-body">

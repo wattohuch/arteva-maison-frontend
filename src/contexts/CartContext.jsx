@@ -2,8 +2,11 @@ import {
   createContext, useContext, useState, useCallback, useEffect, useMemo,
 } from 'react';
 import { CartAPI } from '../api/cart';
+import { ProductsAPI } from '../api/products';
 import { trackAddToCart } from '../utils/metaPixel';
+import { showToast } from '../components/ui/Toast';
 import { useAuth } from './AuthContext';
+import { useI18n } from './I18nContext';
 
 const CartContext = createContext(null);
 
@@ -14,6 +17,7 @@ const CART_OWNER_KEY = 'arteva_cart_owner';
 
 export function CartProvider({ children }) {
   const { isLoggedIn, user } = useAuth();
+  const { t } = useI18n();
 
   const [items, setItems] = useState(() => {
     try { return JSON.parse(localStorage.getItem('arteva_cart') || '[]'); }
@@ -37,21 +41,54 @@ export function CartProvider({ children }) {
   ), [items]);
 
   const addItem = useCallback((product, quantity = 1) => {
-    // Reported here rather than in each button, so every route into the basket
-    // — card, detail page, drawer — is counted exactly once.
-    trackAddToCart(product, quantity);
-
     const id = product._id || product.id;
-    // Fire-and-forget: so the admin cart view (and any other device the same
-    // account is logged into) sees this without waiting on checkout.
-    if (isLoggedIn) CartAPI.add(id, quantity).catch(() => {});
+
+    /* Cap the basket at what is on the shelf.
+     *
+     * The server refuses an oversell either way, but the guest basket lives
+     * entirely in localStorage and never asked, so a guest could build a
+     * quantity of five against two units and only discover it at checkout —
+     * after entering an address and choosing a payment method.
+     *
+     * `stock` absent means unknown (an older cart entry, or a product summary
+     * that did not include it) and is left uncapped, so this can never make a
+     * previously-working basket un-addable.
+     */
+    const available = Number.isFinite(Number(product?.stock)) ? Number(product.stock) : null;
 
     setItems(prev => {
       const existing = prev.find(i => (i._id || i.id) === id);
+      const inCart = existing ? (Number(existing.quantity) || 0) : 0;
+
+      const wanted = Math.max(1, Number(quantity) || 1);
+      const room = available === null ? wanted : Math.max(0, available - inCart);
+      const added = Math.min(wanted, room);
+
+      if (added <= 0) {
+        // Nothing to add. Report it rather than silently doing nothing.
+        showToast(
+          available === 0
+            ? t('out_of_stock')
+            : `Only ${available} in stock — already in your bag.`,
+          'error'
+        );
+        return prev;
+      }
+
+      // Counted here, with the quantity actually added rather than the one
+      // asked for, so the analytics match the basket.
+      trackAddToCart(product, added);
+
+      // Fire-and-forget: so the admin cart view (and any other device the same
+      // account is logged into) sees this without waiting on checkout.
+      if (isLoggedIn) CartAPI.add(id, added).catch(() => {});
+
       let next;
       if (existing) {
         next = prev.map(i =>
-          (i._id || i.id) === id ? { ...i, quantity: (Number(i.quantity) || 1) + quantity } : i
+          (i._id || i.id) === id
+            ? { ...i, quantity: inCart + added, stock: available ?? i.stock }
+            : i
         );
       } else {
         const image = product.images?.length
@@ -64,13 +101,21 @@ export function CartProvider({ children }) {
           nameAr: product.nameAr || '',
           price: priceNum,
           image,
-          quantity: Number(quantity) || 1,
+          quantity: added,
+          // Carried onto the line so the cart page's stepper can cap itself
+          // without re-fetching every product.
+          stock: available ?? undefined,
         }];
       }
+
+      if (added < wanted) {
+        showToast(`Only ${available} in stock — added ${added}.`, 'info');
+      }
+
       localStorage.setItem('arteva_cart', JSON.stringify(next));
       return next;
     });
-  }, [isLoggedIn]);
+  }, [isLoggedIn, t]);
 
   const updateQuantity = useCallback((id, quantity) => {
     if (isLoggedIn) {
@@ -86,7 +131,15 @@ export function CartProvider({ children }) {
       });
     } else {
       setItems(prev => {
-        const next = prev.map(i => (i._id || i.id) === id ? { ...i, quantity } : i);
+        const next = prev.map(i => {
+          if ((i._id || i.id) !== id) return i;
+          // Same cap as addItem: a known stock figure on the line bounds it,
+          // an unknown one leaves it alone.
+          const available = Number.isFinite(Number(i.stock)) ? Number(i.stock) : null;
+          const capped = available === null ? quantity : Math.min(quantity, available);
+          if (capped < quantity) showToast(`Only ${available} in stock.`, 'info');
+          return { ...i, quantity: capped };
+        });
         localStorage.setItem('arteva_cart', JSON.stringify(next));
         return next;
       });
@@ -107,6 +160,115 @@ export function CartProvider({ children }) {
     if (isLoggedIn) CartAPI.clear().catch(() => {});
     persist([]);
   }, [persist, isLoggedIn]);
+
+  /**
+   * Re-read stock for everything in the basket, and clamp anything over.
+   *
+   * Two holes this closes, both of which let a shopper reach checkout holding
+   * more than exists:
+   *
+   *   · a basket restored from localStorage carries whatever `stock` was true
+   *     when the item was added — or none at all, for a basket saved before
+   *     stock was tracked on the line, in which case the cap was skipped
+   *     entirely and the + button ran free;
+   *   · stock moves while the basket sits open. Someone else buys the last one,
+   *     or an admin refunds and the count goes up.
+   *
+   * Clamping here rather than only disabling the + button matters: the excess
+   * is already in the basket by the time this runs, and a disabled button does
+   * not remove it.
+   *
+   * Returns what it had to change, so the caller can say so.
+   */
+  const refreshStock = useCallback(async () => {
+    const ids = items.map(i => i._id || i.id).filter(Boolean);
+    if (!ids.length) return [];
+
+    let fresh;
+    try {
+      fresh = await ProductsAPI.getByIds(ids);
+    } catch {
+      // Offline or the request failed. Leave the basket alone — the server
+      // refuses an oversell at checkout regardless, so this is a convenience
+      // layer and not the guarantee.
+      return [];
+    }
+
+    const stockById = new Map(
+      (fresh?.data || []).map(p => [String(p._id), Number(p.stock) || 0])
+    );
+
+    const adjustments = [];
+
+    setItems(prev => {
+      let changed = false;
+
+      const next = prev.flatMap(item => {
+        const id = String(item._id || item.id);
+        if (!stockById.has(id)) return item;   // product no longer listed
+
+        const available = stockById.get(id);
+        const held = Number(item.quantity) || 0;
+
+        if (available <= 0) {
+          changed = true;
+          adjustments.push({ id, name: item.name, from: held, to: 0 });
+          return [];                            // sold out — drop the line
+        }
+
+        if (held > available) {
+          changed = true;
+          adjustments.push({ id, name: item.name, from: held, to: available });
+          return { ...item, quantity: available, stock: available };
+        }
+
+        // In range, but record the current figure so the steppers can cap.
+        if (item.stock !== available) {
+          changed = true;
+          return { ...item, stock: available };
+        }
+
+        return item;
+      });
+
+      if (!changed) return prev;
+      localStorage.setItem('arteva_cart', JSON.stringify(next));
+      return next;
+    });
+
+    /* Keep the server basket in step with what was clamped, so the two do not
+     * disagree the next time it is read.
+     *
+     * The id travels on the adjustment. Looking the line back up by `name` —
+     * which this did — breaks whenever two lines share a name and silently does
+     * nothing when a name is missing.
+     *
+     * Failures are ignored on purpose, and are expected rather than
+     * exceptional: the product may not be in the SERVER basket at all (a guest
+     * basket that has not been synced yet), in which case removing it answers
+     * 404 — which is the outcome we wanted anyway. The local basket is already
+     * correct by this point, and the server refuses an oversell at checkout
+     * regardless, so nothing downstream depends on these landing.
+     */
+    if (isLoggedIn) {
+      for (const change of adjustments) {
+        if (!change.id) continue;
+        if (change.to === 0) CartAPI.remove(change.id).catch(() => {});
+        else CartAPI.update(change.id, change.to).catch(() => {});
+      }
+    }
+
+    for (const change of adjustments) {
+      showToast(
+        change.to === 0
+          ? `${change.name} is now out of stock and was removed from your bag.`
+          : `Only ${change.to} of ${change.name} left — your bag was updated.`,
+        'info'
+      );
+    }
+
+    return adjustments;
+  }, [items, isLoggedIn]);
 
   const uid = user?._id || user?.id || null;
 
@@ -129,6 +291,10 @@ export function CartProvider({ children }) {
           const nameAr = prod.nameAr || item.nameAr || '';
           const price = Number(prod.price ?? item.price ?? 0);
           const quantity = Number(item.quantity || 1);
+          // The server populates `stock` on cart products, so this is the
+          // freshest figure available — it keeps the cart stepper honest even
+          // if the item has been sitting in the basket for days.
+          const stock = Number.isFinite(Number(prod.stock)) ? Number(prod.stock) : undefined;
           return {
             id,
             _id: id,
@@ -137,6 +303,7 @@ export function CartProvider({ children }) {
             price,
             image,
             quantity,
+            stock,
           };
         });
         persist(normalized);
@@ -162,8 +329,8 @@ export function CartProvider({ children }) {
   // drawer would all re-render whenever anything above them changed.
   const value = useMemo(() => ({
     items, count, subtotal,
-    addItem, updateQuantity, removeItem, clearCart,
-  }), [items, count, subtotal, addItem, updateQuantity, removeItem, clearCart]);
+    addItem, updateQuantity, removeItem, clearCart, refreshStock,
+  }), [items, count, subtotal, addItem, updateQuantity, removeItem, clearCart, refreshStock]);
 
   return (
     <CartContext.Provider value={value}>
