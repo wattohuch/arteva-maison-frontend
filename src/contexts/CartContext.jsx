@@ -212,13 +212,13 @@ export function CartProvider({ children }) {
 
         if (available <= 0) {
           changed = true;
-          adjustments.push({ name: item.name, from: held, to: 0 });
+          adjustments.push({ id, name: item.name, from: held, to: 0 });
           return [];                            // sold out — drop the line
         }
 
         if (held > available) {
           changed = true;
-          adjustments.push({ name: item.name, from: held, to: available });
+          adjustments.push({ id, name: item.name, from: held, to: available });
           return { ...item, quantity: available, stock: available };
         }
 
@@ -236,15 +236,25 @@ export function CartProvider({ children }) {
       return next;
     });
 
-    // Keep the server basket in step with what was clamped, so the two do not
-    // disagree the next time it is read.
+    /* Keep the server basket in step with what was clamped, so the two do not
+     * disagree the next time it is read.
+     *
+     * The id travels on the adjustment. Looking the line back up by `name` —
+     * which this did — breaks whenever two lines share a name and silently does
+     * nothing when a name is missing.
+     *
+     * Failures are ignored on purpose, and are expected rather than
+     * exceptional: the product may not be in the SERVER basket at all (a guest
+     * basket that has not been synced yet), in which case removing it answers
+     * 404 — which is the outcome we wanted anyway. The local basket is already
+     * correct by this point, and the server refuses an oversell at checkout
+     * regardless, so nothing downstream depends on these landing.
+     */
     if (isLoggedIn) {
       for (const change of adjustments) {
-        const line = items.find(i => i.name === change.name);
-        const id = line && (line._id || line.id);
-        if (!id) continue;
-        if (change.to === 0) CartAPI.remove(id).catch(() => {});
-        else CartAPI.update(id, change.to).catch(() => {});
+        if (!change.id) continue;
+        if (change.to === 0) CartAPI.remove(change.id).catch(() => {});
+        else CartAPI.update(change.id, change.to).catch(() => {});
       }
     }
 
