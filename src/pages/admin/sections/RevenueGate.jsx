@@ -138,7 +138,18 @@ export default function RevenueGate({ children }) {
     setBusy(true);
     try {
       const res = await AdminAPI.verifyRevenueOTP(otp.trim());
-      if (!res?.resetToken) throw new Error('That code was not accepted.');
+
+      /* A 200 with no reset ticket means the code WAS accepted but the server
+         predates the reset flow — it verified and granted nothing, which is the
+         original bug. Saying "that code was not accepted" here would blame the
+         owner for a correct code and send them hunting for the wrong problem,
+         which is exactly what it did. */
+      if (!res?.resetToken) {
+        throw new Error(
+          'This server does not support resetting the revenue password yet. ' +
+          'The backend needs updating — the code itself was correct.'
+        );
+      }
       setResetToken(res.resetToken);
       setOtp('');
       setPassword('');
