@@ -2,6 +2,7 @@ import {
   createContext, useContext, useState, useCallback, useEffect, useMemo,
 } from 'react';
 import { CartAPI } from '../api/cart';
+import { ProductsAPI } from '../api/products';
 import { trackAddToCart } from '../utils/metaPixel';
 import { showToast } from '../components/ui/Toast';
 import { useAuth } from './AuthContext';
@@ -160,6 +161,105 @@ export function CartProvider({ children }) {
     persist([]);
   }, [persist, isLoggedIn]);
 
+  /**
+   * Re-read stock for everything in the basket, and clamp anything over.
+   *
+   * Two holes this closes, both of which let a shopper reach checkout holding
+   * more than exists:
+   *
+   *   · a basket restored from localStorage carries whatever `stock` was true
+   *     when the item was added — or none at all, for a basket saved before
+   *     stock was tracked on the line, in which case the cap was skipped
+   *     entirely and the + button ran free;
+   *   · stock moves while the basket sits open. Someone else buys the last one,
+   *     or an admin refunds and the count goes up.
+   *
+   * Clamping here rather than only disabling the + button matters: the excess
+   * is already in the basket by the time this runs, and a disabled button does
+   * not remove it.
+   *
+   * Returns what it had to change, so the caller can say so.
+   */
+  const refreshStock = useCallback(async () => {
+    const ids = items.map(i => i._id || i.id).filter(Boolean);
+    if (!ids.length) return [];
+
+    let fresh;
+    try {
+      fresh = await ProductsAPI.getByIds(ids);
+    } catch {
+      // Offline or the request failed. Leave the basket alone — the server
+      // refuses an oversell at checkout regardless, so this is a convenience
+      // layer and not the guarantee.
+      return [];
+    }
+
+    const stockById = new Map(
+      (fresh?.data || []).map(p => [String(p._id), Number(p.stock) || 0])
+    );
+
+    const adjustments = [];
+
+    setItems(prev => {
+      let changed = false;
+
+      const next = prev.flatMap(item => {
+        const id = String(item._id || item.id);
+        if (!stockById.has(id)) return item;   // product no longer listed
+
+        const available = stockById.get(id);
+        const held = Number(item.quantity) || 0;
+
+        if (available <= 0) {
+          changed = true;
+          adjustments.push({ name: item.name, from: held, to: 0 });
+          return [];                            // sold out — drop the line
+        }
+
+        if (held > available) {
+          changed = true;
+          adjustments.push({ name: item.name, from: held, to: available });
+          return { ...item, quantity: available, stock: available };
+        }
+
+        // In range, but record the current figure so the steppers can cap.
+        if (item.stock !== available) {
+          changed = true;
+          return { ...item, stock: available };
+        }
+
+        return item;
+      });
+
+      if (!changed) return prev;
+      localStorage.setItem('arteva_cart', JSON.stringify(next));
+      return next;
+    });
+
+    // Keep the server basket in step with what was clamped, so the two do not
+    // disagree the next time it is read.
+    if (isLoggedIn) {
+      for (const change of adjustments) {
+        const line = items.find(i => i.name === change.name);
+        const id = line && (line._id || line.id);
+        if (!id) continue;
+        if (change.to === 0) CartAPI.remove(id).catch(() => {});
+        else CartAPI.update(id, change.to).catch(() => {});
+      }
+    }
+
+    for (const change of adjustments) {
+      showToast(
+        change.to === 0
+          ? `${change.name} is now out of stock and was removed from your bag.`
+          : `Only ${change.to} of ${change.name} left — your bag was updated.`,
+        'info'
+      );
+    }
+
+    return adjustments;
+  }, [items, isLoggedIn]);
+
   const uid = user?._id || user?.id || null;
 
   // Sync with server when logged in.
@@ -219,8 +319,8 @@ export function CartProvider({ children }) {
   // drawer would all re-render whenever anything above them changed.
   const value = useMemo(() => ({
     items, count, subtotal,
-    addItem, updateQuantity, removeItem, clearCart,
-  }), [items, count, subtotal, addItem, updateQuantity, removeItem, clearCart]);
+    addItem, updateQuantity, removeItem, clearCart, refreshStock,
+  }), [items, count, subtotal, addItem, updateQuantity, removeItem, clearCart, refreshStock]);
 
   return (
     <CartContext.Provider value={value}>

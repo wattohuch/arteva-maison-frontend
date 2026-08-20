@@ -75,3 +75,18 @@ export function stockBadge(product, lang = 'en') {
 
   return null;
 }
+
+
+/**
+ * Whether a basket line is already holding everything the shelf has.
+ *
+ * Drives the disabled state of the "+" control. A line whose stock is unknown
+ * (an older saved basket, before stock was recorded per line) is never treated
+ * as capped — CartContext.refreshStock fills that figure in on open, and until
+ * it does the server remains the backstop.
+ */
+export function atMax(line) {
+  const available = Number(line?.stock);
+  if (!Number.isFinite(available)) return false;
+  return (Number(line?.quantity) || 0) >= available;
+}

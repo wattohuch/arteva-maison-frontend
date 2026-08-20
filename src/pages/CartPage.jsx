@@ -1,3 +1,4 @@
+import { useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { useI18n } from '../contexts/I18nContext';
 import { useCurrency } from '../contexts/CurrencyContext';
@@ -5,14 +6,19 @@ import { useCart } from '../contexts/CartContext';
 import { usePromo } from '../contexts/PromoContext';
 import { handleImageError } from '../utils/imageHelpers';
 import { BagIcon, TrashIcon, PlusIcon, MinusIcon } from '../components/ui/Icons';
+import { atMax } from '../utils/stock';
 import PromoCodeField from '../components/promo/PromoCodeField';
 import './CartPage.css';
 
 export default function CartPage() {
   const { t } = useI18n();
   const { format } = useCurrency();
-  const { items, subtotal, updateQuantity, removeItem, clearCart } = useCart();
+  const { items, subtotal, updateQuantity, removeItem, clearCart, refreshStock } = useCart();
   const { discount } = usePromo();
+
+  // Same re-read as the drawer — this page is reachable directly, so it cannot
+  // rely on the drawer having been opened first.
+  useEffect(() => { refreshStock(); }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Shipping is free at the cart stage; the 2 KWD delivery fee is added at
   // checkout, which is where the address makes it meaningful.
@@ -67,6 +73,7 @@ export default function CartPage() {
                       <button
                         onClick={() => updateQuantity(id, item.quantity - 1)}
                         aria-label={t('decrease_quantity')}
+                        disabled={item.quantity <= 1}
                       >
                         <MinusIcon size={14} />
                       </button>
@@ -74,10 +81,14 @@ export default function CartPage() {
                       <button
                         onClick={() => updateQuantity(id, item.quantity + 1)}
                         aria-label={t('increase_quantity')}
+                        disabled={atMax(item)}
                       >
                         <PlusIcon size={14} />
                       </button>
                     </div>
+                    {atMax(item) && (
+                      <p className="cart-line-stock">Only {item.stock} in stock</p>
+                    )}
                   </div>
 
                   <div className="cart-line-end">

@@ -36,7 +36,7 @@ const ADDRESS_TYPES = [
 
 export default function CheckoutPage() {
   const { isLoggedIn } = useAuth();
-  const { items, subtotal } = useCart();
+  const { items, subtotal, refreshStock } = useCart();
   const { discount, promoCode, promoVisitId } = usePromo();
   const { t, lang } = useI18n();
   const { format } = useCurrency();
@@ -267,12 +267,40 @@ export default function CheckoutPage() {
     }
   };
 
+  /* Re-read stock the moment checkout opens.
+   *
+   * The server refuses an oversell at the point of order, but by then the
+   * customer has chosen an address, pinned a map location and picked a payment
+   * method — and the failure arrives as a rejected order rather than as
+   * something they can act on. Checking on arrival means the basket is
+   * corrected before any of that work is asked for.
+   */
+  useEffect(() => { refreshStock(); }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!paymentMethod) { showToast(t('select_payment_method'), 'error'); return; }
     const address = collectAddress();
     if (!address) return;
+
+    /* Last check before taking payment.
+     *
+     * Someone else may have bought the last one during the minutes spent on
+     * this form. Sending the customer to a payment gateway for stock that is
+     * gone means taking money for goods that cannot ship — so this runs before
+     * the redirect, not after.
+     */
     setProcessing(true);
+    const adjustments = await refreshStock();
+    if (adjustments.length) {
+      setProcessing(false);
+      showToast(
+        'Your bag changed while you were checking out. Please review it before paying.',
+        'error'
+      );
+      return;
+    }
+
 
     // Reported at the point of committing to pay, before the gateway redirect
     // takes the tab away — this is the last moment we can speak for the basket.
