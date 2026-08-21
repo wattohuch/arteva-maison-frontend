@@ -377,3 +377,93 @@
 @media (prefers-reduced-motion: reduce) {
   .rev-chip, .rev-bar, .rev-source-meter i { transition: none; }
 }
+
+/* ── Editable headline figures ────────────────────────────────
+   A corrected tile has to look different from a computed one at a glance.
+   Without that, an owner reading the dashboard next month has no way to tell
+   which numbers came from the orders and which they typed themselves. */
+
+.rev-tile-value.is-editable {
+  cursor: text;
+  border-radius: 6px;
+  padding: 0 4px;
+  margin: 0 -4px;
+  transition: background 0.15s ease;
+}
+
+.rev-tile-value.is-editable:hover,
+.rev-tile-value.is-editable:focus-visible {
+  background: rgba(212, 175, 55, 0.12);
+  outline: none;
+}
+
+.rev-tile-edit { display: block; }
+
+.rev-tile-input {
+  width: 100%;
+  font: inherit;
+  font-size: 1.6rem;
+  font-weight: 700;
+  font-family: var(--font-display, Georgia, serif);
+  color: inherit;
+  background: rgba(255, 255, 255, 0.14);
+  border: 1px solid var(--color-gold, #d4af37);
+  border-radius: 6px;
+  padding: 2px 6px;
+  /* Chrome's spinners steal width from an already-tight tile. */
+  appearance: textfield;
+  -moz-appearance: textfield;
+}
+
+.rev-tile-input::-webkit-outer-spin-button,
+.rev-tile-input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+
+.rev-tile.is-adjusted { position: relative; }
+
+.rev-tile.is-adjusted::after {
+  /* A gold edge, not a badge alone — visible even when the tile is scanned
+     rather than read. */
+  content: '';
+  position: absolute;
+  inset: 0 auto 0 0;
+  width: 3px;
+  border-radius: 3px 0 0 3px;
+  background: var(--color-gold, #d4af37);
+}
+
+.rev-tile-badge {
+  margin-inline-start: 6px;
+  font-size: 0.62rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  padding: 1px 6px;
+  border-radius: 10px;
+  background: rgba(212, 175, 55, 0.2);
+  color: var(--color-gold-text, #a88a44);
+  vertical-align: middle;
+}
+
+.rev-delta-up { color: #059669; font-weight: 600; }
+.rev-delta-down { color: #dc2626; font-weight: 600; }
+
+.rev-tile-reset {
+  margin-inline-start: 8px;
+  border: 0;
+  background: none;
+  padding: 0;
+  font: inherit;
+  font-size: 0.72rem;
+  color: var(--text-muted, #8a8177);
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+.rev-tile-reset:hover { color: var(--text-primary, #2c241b); }
+
+/* The accent tile is dark; its corrected figures need lighter contrast. */
+.rev-tile.is-accent .rev-tile-input { background: rgba(255, 255, 255, 0.18); color: #fff; }
+.rev-tile.is-accent .rev-tile-reset { color: rgba(255, 255, 255, 0.75); }
+.rev-tile.is-accent .rev-tile-reset:hover { color: #fff; }
+.rev-tile.is-accent .rev-delta-up { color: #6ee7b7; }
+.rev-tile.is-accent .rev-delta-down { color: #fca5a5; }

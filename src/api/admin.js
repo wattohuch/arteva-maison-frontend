@@ -81,6 +81,30 @@ export const AdminAPI = {
     return apiRequest(`/admin/revenue/overview${qs ? `?${qs}` : ''}`, { headers: revenueHeaders() });
   },
 
+  /**
+   * Type a figure over the computed one for the window on screen.
+   *
+   * The server stores the DIFFERENCE from what it computes, not the number
+   * itself, so the card keeps tracking new orders instead of freezing.
+   */
+  setRevenueAdjustment: ({ field, value, preset, from, to, note }) =>
+    apiRequest('/admin/revenue/adjustments', {
+      method: 'PUT',
+      headers: revenueHeaders(),
+      body: JSON.stringify({ field, value, preset, from, to, note }),
+    }),
+
+  /** Drop a correction, returning the card to what the orders say. */
+  clearRevenueAdjustment: (field, params = {}) => {
+    const qs = new URLSearchParams(
+      Object.entries(params).filter(([, v]) => v !== undefined && v !== null && v !== '')
+    ).toString();
+    return apiRequest(`/admin/revenue/adjustments/${field}${qs ? `?${qs}` : ''}`, {
+      method: 'DELETE',
+      headers: revenueHeaders(),
+    });
+  },
+
   // ── Users ──
   getUsers: () => apiRequest('/admin/users'),
   updateUserRole: (id, role) =>

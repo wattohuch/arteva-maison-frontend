@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useMemo, memo } from 'react';
+import { useState, useEffect, useCallback, useMemo, memo, useRef } from 'react';
 import { AdminAPI } from '../../../api/admin';
 import { showToast } from '../../../components/ui/Toast';
 import Loader from '../../../components/ui/Loader';
@@ -80,7 +80,52 @@ export default function RevenueSection() {
 
   useEffect(() => { load(); }, [load]);
 
+  /* The window currently on screen, in the shape the adjustment endpoints
+     expect. The server resolves a preset to real dates itself, so a correction
+     made while looking at "Today" is stored against today's date and not
+     against the word "today" — which would otherwise mean something different
+     tomorrow. */
+  const rangeParams = useCallback(() => {
+    const usingCustom = custom.from || custom.to;
+    return {
+      preset: usingCustom ? undefined : preset,
+      from: custom.from || undefined,
+      to: custom.to || undefined,
+    };
+  }, [preset, custom.from, custom.to]);
+
+  /**
+   * Type a figure over the computed one.
+   *
+   * Reloads rather than patching local state: the server recomputes the delta
+   * against what the aggregation says right now, so the authoritative answer is
+   * whatever comes back — and a card that showed the typed number while the
+   * server had stored something else would be exactly the kind of lie this
+   * whole feature is meant to avoid.
+   */
+  const saveAdjustment = useCallback(async (field, value) => {
+    try {
+      await AdminAPI.setRevenueAdjustment({ field, value, ...rangeParams() });
+      await load();
+      showToast('Figure updated. It will keep tracking new orders.', 'success');
+    } catch (err) {
+      showToast(err.message || 'Could not save that figure', 'error');
+      throw err;
+    }
+  }, [rangeParams, load]);
+
+  const resetAdjustment = useCallback(async (field) => {
+    try {
+      await AdminAPI.clearRevenueAdjustment(field, rangeParams());
+      await load();
+      showToast('Figure reset to what the orders say.', 'info');
+    } catch (err) {
+      showToast(err.message || 'Could not reset that figure', 'error');
+    }
+  }, [rangeParams, load]);
+
   const totals = data?.totals;
+  const adjustments = data?.adjustments;
 
   // Bar heights are relative to the busiest day in the window, so the shape of
   // the trend is readable regardless of absolute scale.
@@ -163,20 +208,44 @@ export default function RevenueSection() {
         <StatTile
           Icon={CoinsIcon}
           label="Net revenue"
+          field="net"
+          raw={totals?.net}
+          adjustment={adjustments?.net}
+          onSave={saveAdjustment}
+          onReset={resetAdjustment}
           value={kwd(totals?.net)}
           hint={`${totals?.orders || 0} orders`}
           accent
         />
-        <StatTile label="Gross" value={kwd(totals?.gross)} hint="Before refunds" />
+        <StatTile
+          label="Gross"
+          field="gross"
+          raw={totals?.gross}
+          adjustment={adjustments?.gross}
+          onSave={saveAdjustment}
+          onReset={resetAdjustment}
+          value={kwd(totals?.gross)}
+          hint="Before refunds"
+        />
         <StatTile
           Icon={UndoIcon}
           label="Refunds"
+          field="refunds"
+          raw={totals?.refunds}
+          adjustment={adjustments?.refunds}
+          onSave={saveAdjustment}
+          onReset={resetAdjustment}
           value={kwd(totals?.refunds)}
           hint={totals?.refunds > 0 ? 'Deducted from net' : 'None'}
           negative={totals?.refunds > 0}
         />
         <StatTile
           label="Average order"
+          field="averageOrderValue"
+          raw={totals?.averageOrderValue}
+          adjustment={adjustments?.averageOrderValue}
+          onSave={saveAdjustment}
+          onReset={resetAdjustment}
           value={kwd(totals?.averageOrderValue)}
           hint={`${totals?.items || 0} items sold`}
         />
@@ -345,15 +414,109 @@ export default function RevenueSection() {
   );
 }
 
-const StatTile = memo(function StatTile({ Icon, label, value, hint, accent, negative }) {
+/**
+ * A headline figure the owner can type over.
+ *
+ * What gets sent is the number they typed; what the server stores is the
+ * DIFFERENCE from the computed figure. That is what keeps the correction alive:
+ * the card tracks new orders instead of freezing at whatever was typed. When a
+ * correction is in force the tile says so and shows the computed value beneath
+ * it, so "what the system thinks" and "what I decided" are never confused.
+ */
+const StatTile = memo(function StatTile({
+  Icon, label, value, hint, accent, negative,
+  field, raw, adjustment, onSave, onReset,
+}) {
+  const [editing, setEditing] = useState(false);
+  const [draft, setDraft] = useState('');
+  const [busy, setBusy] = useState(false);
+  const inputRef = useRef(null);
+
+  const editable = !!field && !!onSave;
+  const adjusted = !!adjustment;
+
+  const begin = useCallback(() => {
+    if (!editable) return;
+    setDraft(String(raw ?? 0));
+    setEditing(true);
+  }, [editable, raw]);
+
+  useEffect(() => {
+    if (editing) inputRef.current?.select();
+  }, [editing]);
+
+  const commit = useCallback(async () => {
+    const typed = Number(draft);
+    if (!Number.isFinite(typed)) { setEditing(false); return; }
+    // Typing the figure back unchanged is not a correction worth storing.
+    if (typed === Number(raw)) { setEditing(false); return; }
+
+    setBusy(true);
+    try {
+      await onSave(field, typed);
+      setEditing(false);
+    } finally {
+      setBusy(false);
+    }
+  }, [draft, raw, field, onSave]);
+
+  const handleKey = useCallback((e) => {
+    if (e.key === 'Enter') { e.preventDefault(); commit(); }
+    if (e.key === 'Escape') { e.preventDefault(); setEditing(false); }
+  }, [commit]);
+
   return (
-    <div className={`rev-tile ${accent ? 'is-accent' : ''} ${negative ? 'is-negative' : ''}`}>
+    <div className={`rev-tile ${accent ? 'is-accent' : ''} ${negative ? 'is-negative' : ''} ${adjusted ? 'is-adjusted' : ''}`}>
       {Icon && <span className="rev-tile-icon"><Icon size={18} /></span>}
-      <span className="rev-tile-label">{label}</span>
-      <strong className="rev-tile-value">
-        {value} <small>KWD</small>
-      </strong>
-      {hint && <span className="rev-tile-hint">{hint}</span>}
+      <span className="rev-tile-label">
+        {label}
+        {adjusted && <span className="rev-tile-badge" title="You have corrected this figure">edited</span>}
+      </span>
+
+      {editing ? (
+        <span className="rev-tile-edit">
+          <input
+            ref={inputRef}
+            type="number"
+            step="0.001"
+            className="rev-tile-input"
+            value={draft}
+            disabled={busy}
+            onChange={e => setDraft(e.target.value)}
+            onKeyDown={handleKey}
+            onBlur={commit}
+            aria-label={`${label} value`}
+          />
+        </span>
+      ) : (
+        <strong
+          className={`rev-tile-value ${editable ? 'is-editable' : ''}`}
+          onClick={begin}
+          onKeyDown={e => { if (editable && (e.key === 'Enter' || e.key === ' ')) { e.preventDefault(); begin(); } }}
+          role={editable ? 'button' : undefined}
+          tabIndex={editable ? 0 : undefined}
+          title={editable ? 'Click to correct this figure' : undefined}
+        >
+          {value} <small>KWD</small>
+        </strong>
+      )}
+
+      {adjusted ? (
+        <span className="rev-tile-hint">
+          {kwd(adjustment.computed)} from orders
+          {' · '}
+          <span className={adjustment.delta >= 0 ? 'rev-delta-up' : 'rev-delta-down'}>
+            {adjustment.delta >= 0 ? '+' : '−'}{kwd(Math.abs(adjustment.delta))}
+          </span>
+          {onReset && (
+            <button type="button" className="rev-tile-reset" onClick={() => onReset(field)}>
+              reset
+            </button>
+          )}
+        </span>
+      ) : (
+        hint && <span className="rev-tile-hint">{hint}</span>
+      )}
     </div>
   );
 });
