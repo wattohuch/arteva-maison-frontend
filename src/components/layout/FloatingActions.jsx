@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useI18n } from '../../contexts/I18nContext';
+import { useSiteSettings } from '../../contexts/SiteSettingsContext';
 import { SupportIcon, CloseIcon, MailIcon } from '../ui/Icons';
 import './FloatingActions.css';
 
@@ -12,8 +13,14 @@ import './FloatingActions.css';
  * mobile tab bar; expanding reveals the individual actions.
  */
 
-const WHATSAPP_NUMBER = '96550683207';
-const WHATSAPP_URL = `https://api.whatsapp.com/send?phone=${WHATSAPP_NUMBER}`;
+/* The number is NOT hardcoded here.
+ *
+ * It was, which meant the button on every page pointed at the shop's personal
+ * line no matter what the admin panel said — so switching the business to the
+ * WhatsApp API number would have moved every other link and quietly left this
+ * one, the most used of all, behind. It now reads the same site setting as
+ * everything else, so there is one number to change and one place to change
+ * it. */
 
 /** Brand glyph — WhatsApp's mark is not part of the generic icon set. */
 function WhatsAppGlyph({ size = 20 }) {
@@ -26,8 +33,11 @@ function WhatsAppGlyph({ size = 20 }) {
 
 export default function FloatingActions() {
   const { t } = useI18n();
+  const { whatsappNumber } = useSiteSettings();
   const navigate = useNavigate();
   const [open, setOpen] = useState(false);
+
+  const whatsappUrl = `https://api.whatsapp.com/send?phone=${whatsappNumber}`;
   const wrapRef = useRef(null);
 
   // Close on outside click and on Escape
@@ -50,7 +60,7 @@ export default function FloatingActions() {
       <div className="fa-menu" role="menu" aria-hidden={!open}>
         <a
           className="fa-item fa-whatsapp"
-          href={WHATSAPP_URL}
+          href={whatsappUrl}
           target="_blank"
           rel="noopener noreferrer"
           role="menuitem"

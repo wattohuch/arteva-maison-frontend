@@ -457,7 +457,10 @@ export async function renderReceipt(canvas, order, { isStale } = {}) {
     });
 
     // 2. WhatsApp QR
-    const whatsappUrl = 'https://wa.me/96550683207';
+    // Falls back to the previous number so an older cached bundle still
+    // produces a working QR; the admin's configured value wins when present.
+    const contactNumber = (order.contactWhatsApp || '96550683207').replace(/\D/g, '');
+    const whatsappUrl = `https://wa.me/${contactNumber}`;
     const whatsappDataUrl = await toDataURL(whatsappUrl, {
       width: qrSz, margin: 1, color: { dark: '#2c241b', light: '#ffffff' }, errorCorrectionLevel: 'H'
     });
