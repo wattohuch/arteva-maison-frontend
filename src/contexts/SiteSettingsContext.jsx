@@ -14,8 +14,11 @@ import { apiRequest } from '../api/client';
  */
 
 const DEFAULTS = {
-  whatsappNumber: '96550683207',
-  whatsappDisplay: '+965 5068 3207',
+  // The WhatsApp API number, not the personal line — inbound here reaches
+  // the bot. Only a fallback: the stored site setting overrides it once the
+  // fetch lands, and that setting is what the admin panel edits.
+  whatsappNumber: '96598048900',
+  whatsappDisplay: '+965 9804 8900',
   instagramHandle: 'arteva.maison',
 };
 
