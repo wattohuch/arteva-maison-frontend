@@ -50,17 +50,36 @@ export default function SocialContactsSection() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     const validPhones = ownerPhones.filter(p => p.length >= 8);
+
+    /* An empty owner-phone list used to abort the whole save.
+     *
+     * That coupled two unrelated fields: changing the shop's WhatsApp number
+     * would fail with an alert about OWNER phones, which reads as "this field
+     * cannot be edited" rather than "a different field is invalid". Worse, the
+     * blocked save gave no way to fix the WhatsApp number at all.
+     *
+     * Owner phones are now simply omitted when there are none valid, so the
+     * stored ones are left alone rather than overwritten with an empty list —
+     * losing them would silently stop every owner notification. The warning
+     * still appears, but it informs instead of blocking. */
     if (validPhones.length === 0) {
-      alert('Please add at least one owner phone number (digits only, 8-15 digits)');
-      return;
+      // eslint-disable-next-line no-alert
+      const proceed = window.confirm(
+        'No valid owner phone numbers are set, so owner notifications will keep '
+        + 'using whatever is already saved. Save the other changes anyway?'
+      );
+      if (!proceed) return;
     }
+
     setSaving(true);
     try {
       const res = await AdminAPI.updateSiteSettings({
         whatsappNumber: waNumber,
         whatsappDisplay: waDisplay,
         instagramHandle: igHandle,
-        whatsappOwnerPhones: validPhones,
+        // Omitted entirely when empty — the backend only writes fields it is
+        // given, so this preserves the stored numbers instead of clearing them.
+        ...(validPhones.length ? { whatsappOwnerPhones: validPhones } : {}),
       });
       if (res.success) {
         alert('Social contacts updated successfully! Changes are live across the website.');
