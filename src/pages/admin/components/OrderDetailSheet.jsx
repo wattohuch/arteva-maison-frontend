@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { resolveCustomer as buyerOf } from '../../../utils/receiptCustomer';
 import { useNavigate } from 'react-router-dom';
 import { useI18n } from '../../../contexts/I18nContext';
 import { useAuth } from '../../../contexts/AuthContext';
@@ -147,8 +148,8 @@ export default function OrderDetailSheet({ order, onClose, onUpdated, drivers = 
         <div className="ord-detail-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 16 }}>
           <div className="ord-detail-block" style={{ padding: 12, border: '1px solid var(--border-color, #e5e0d8)', borderRadius: 8 }}>
             <h4 style={{ margin: '0 0 8px 0', fontSize: '0.9rem', color: 'var(--color-gold-text, #a88a44)' }}>👤 Customer Details</h4>
-            <p style={{ margin: '0 0 4px 0', fontWeight: 600 }}>{currentOrder.user?.name || address.fullName || 'Guest Customer'}</p>
-            <p style={{ margin: '0 0 4px 0', fontSize: '0.85rem', color: 'var(--text-muted)' }}>{currentOrder.user?.email || 'No email provided'}</p>
+            <p style={{ margin: '0 0 4px 0', fontWeight: 600 }}>{buyerOf(currentOrder).name || 'Guest Customer'}</p>
+            <p style={{ margin: '0 0 4px 0', fontSize: '0.85rem', color: 'var(--text-muted)' }}>{buyerOf(currentOrder).email || 'No email provided'}</p>
             <p style={{ margin: 0, fontSize: '0.85rem', color: 'var(--text-muted)' }}>📞 {address.phone || currentOrder.user?.phone || 'No phone provided'}</p>
           </div>
 

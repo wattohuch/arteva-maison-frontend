@@ -451,12 +451,26 @@ export async function renderReceipt(canvas, order, { isStale } = {}) {
     const QRCode = await loadQR();
     const toDataURL = QRCode.toDataURL || QRCode.default?.toDataURL;
 
-    // 1. Digital Receipt QR
+    /* 1. Digital Receipt QR
+     *
+     * Only drawn once the receipt has been SAVED and the server has minted a
+     * tracking token. An unsaved draft has neither a stored order nor a token,
+     * so a QR built from it sent the customer to a 404 — the order number on
+     * the paper did not exist in the database yet. Encoding a link that cannot
+     * resolve is worse than leaving the space empty: the customer scans it,
+     * gets an error page, and concludes the shop is broken.
+     *
+     * A saved receipt reprinted later has the token and behaves exactly as
+     * before. */
     const trackingToken = order.trackingToken || '';
-    const receiptUrl = `https://www.artevamaisonkw.com/receipt.html?order=${encodeURIComponent(order.orderNumber || '')}${trackingToken ? '&token=' + encodeURIComponent(trackingToken) : ''}`;
-    const receiptDataUrl = await toDataURL(receiptUrl, {
-      width: qrSz, margin: 1, color: { dark: '#2c241b', light: '#ffffff' }, errorCorrectionLevel: 'H'
-    });
+    const canLinkToReceipt = !!(trackingToken && order.orderNumber);
+
+    const receiptDataUrl = canLinkToReceipt
+      ? await toDataURL(
+          `https://www.artevamaisonkw.com/receipt.html?order=${encodeURIComponent(order.orderNumber)}&token=${encodeURIComponent(trackingToken)}`,
+          { width: qrSz, margin: 1, color: { dark: '#2c241b', light: '#ffffff' }, errorCorrectionLevel: 'H' }
+        )
+      : null;
 
     // 2. WhatsApp QR
     // Falls back to the previous number so an older cached bundle still
@@ -467,9 +481,13 @@ export async function renderReceipt(canvas, order, { isStale } = {}) {
       width: qrSz, margin: 1, color: { dark: '#2c241b', light: '#ffffff' }, errorCorrectionLevel: 'H'
     });
 
+    const loadImg = (src) => new Promise((res, rej) => {
+      const img = new Image(); img.onload = () => res(img); img.onerror = rej; img.src = src;
+    });
+
     const [imgReceipt, imgWA] = await Promise.all([
-      new Promise((res, rej) => { const img = new Image(); img.onload = () => res(img); img.onerror = rej; img.src = receiptDataUrl; }),
-      new Promise((res, rej) => { const img = new Image(); img.onload = () => res(img); img.onerror = rej; img.src = whatsappDataUrl; }),
+      receiptDataUrl ? loadImg(receiptDataUrl) : Promise.resolve(null),
+      loadImg(whatsappDataUrl),
     ]);
 
     if (isStale?.()) return;
@@ -478,21 +496,41 @@ export async function renderReceipt(canvas, order, { isStale } = {}) {
     const box1X = LM;
     const qr1X = box1X + (qrBoxW - qrSz) / 2;
     const qr1Y = y + f(6);
-    c.drawImage(imgReceipt, qr1X, qr1Y, qrSz, qrSz);
+
+    if (imgReceipt) {
+      c.drawImage(imgReceipt, qr1X, qr1Y, qrSz, qrSz);
+    } else {
+      /* Unsaved draft: an outline where the code will be, so the admin can see
+         the receipt is not finished rather than handing over paper carrying a
+         QR that leads nowhere. */
+      c.fillStyle = '#ffffff';
+      c.fillRect(qr1X, qr1Y, qrSz, qrSz);
+      c.strokeStyle = BORDER; c.lineWidth = f(0.8);
+      c.setLineDash([f(3), f(3)]);
+      c.strokeRect(qr1X, qr1Y, qrSz, qrSz);
+      c.setLineDash([]);
+      c.textAlign = 'center'; c.fillStyle = LIGHT; c.font = `${f(6)}px Arial`;
+      c.fillText('Save the receipt', qr1X + qrSz / 2, qr1Y + qrSz / 2 - f(5));
+      c.fillText('to activate this code', qr1X + qrSz / 2, qr1Y + qrSz / 2 + f(2));
+    }
 
     // Border around QR 1
-    c.strokeStyle = GOLD; c.lineWidth = f(0.8);
-    c.strokeRect(qr1X, qr1Y, qrSz, qrSz);
+    if (imgReceipt) {
+      c.strokeStyle = GOLD; c.lineWidth = f(0.8);
+      c.strokeRect(qr1X, qr1Y, qrSz, qrSz);
+    }
 
     // Overlay Box on QR 1
     const ovW = f(18), ovH = f(18);
     const ovX = qr1X + (qrSz - ovW) / 2, ovY = qr1Y + (qrSz - ovH) / 2;
+    if (imgReceipt) {
     c.fillStyle = '#ffffff'; rr(c, ovX, ovY, ovW, ovH, f(2)); c.fill();
     c.strokeStyle = GOLD; c.lineWidth = f(0.5); rr(c, ovX, ovY, ovW, ovH, f(2)); c.stroke();
     c.textAlign = 'center'; c.fillStyle = DARK; c.font = `bold ${f(4.5)}px Georgia`;
     c.fillText('ARTÉVA', ovX + ovW / 2, ovY + f(3));
     c.fillStyle = GOLD; c.font = `${f(3.5)}px Georgia`;
     c.fillText('MAISON', ovX + ovW / 2, ovY + f(10));
+    }
 
     // Label 1
     c.textAlign = 'center'; c.fillStyle = DARK; c.font = `600 ${f(7.5)}px Arial`;

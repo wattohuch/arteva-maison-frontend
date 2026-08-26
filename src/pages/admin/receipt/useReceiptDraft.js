@@ -34,6 +34,9 @@ export function emptyDraft() {
     promoCode: '',
     promoData: null,        // server-priced discount, when a code is applied
     notes: '',
+    // Minted by the server when the receipt is saved. Until then there is no
+    // order to look up, which is why the QR cannot be scannable yet.
+    trackingToken: '',
     refundStatus: 'None',
     refundAmount: 0,
   };
@@ -109,6 +112,7 @@ export function draftFromOrder(order) {
     promoCode: order.promoCode?.code || '',
     promoData: order.promoCode?.code ? order.promoCode : null,
     notes: order.notes || '',
+    trackingToken: order.trackingToken || '',
     refundStatus: order.refundStatus || 'None',
     refundAmount: Number(order.refundAmount) || 0,
   };
@@ -208,6 +212,7 @@ export function useReceiptDraft(initial) {
     shippingCost: totals.shipping,
     discount: totals.discount,
     refundAmount: totals.refunded,
+    trackingToken: draft.trackingToken,
     refundStatus: draft.refundStatus,
     total: totals.total,
     notes: draft.notes,

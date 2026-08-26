@@ -1,4 +1,5 @@
 import { useState, useEffect, useMemo, useCallback, useRef, memo } from 'react';
+import { resolveCustomer as buyerOf } from '../../../utils/receiptCustomer';
 import { useNavigate } from 'react-router-dom';
 import { useI18n } from '../../../contexts/I18nContext';
 import { useAuth } from '../../../contexts/AuthContext';
@@ -226,9 +227,9 @@ export default function OrdersSection() {
       key: 'customer', header: t('customer'),
       render: o => (
         <div>
-          <strong>{o.user?.name || o.shippingAddress?.fullName || 'Guest'}</strong>
+          <strong>{buyerOf(o).name || 'Guest'}</strong>
           <br />
-          <small className="admin-muted">{o.user?.email || ''}</small>
+          <small className="admin-muted">{buyerOf(o).email || ''}</small>
         </div>
       ),
     },
@@ -454,8 +455,8 @@ const OrderDetail = memo(function OrderDetail({ order }) {
       <div className="ord-detail-grid">
         <div className="ord-detail-block">
           <h4>Customer</h4>
-          <p>{order.user?.name || address.fullName || 'Guest'}</p>
-          <p className="admin-muted">{order.user?.email || '—'}</p>
+          <p>{buyerOf(order).name || 'Guest'}</p>
+          <p className="admin-muted">{buyerOf(order).email || '—'}</p>
           <p className="admin-muted">{address.phone || order.user?.phone || '—'}</p>
         </div>
         <div className="ord-detail-block">

@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { resolveCustomer as buyerOf } from '../../../utils/receiptCustomer';
 import { useNavigate } from 'react-router-dom';
 import { useI18n } from '../../../contexts/I18nContext';
 import { AdminAPI } from '../../../api/admin';
@@ -97,7 +98,7 @@ export default function DashboardSection() {
             rows={stats.recentOrders.slice(0, 10)}
             columns={[
               { key: 'orderNumber', header: '#', render: o => <span className="order-num">{o.orderNumber}</span> },
-              { key: 'customer', header: t('customer'), render: o => o.user?.name || o.shippingAddress?.fullName || t('guest') },
+              { key: 'customer', header: t('customer'), render: o => buyerOf(o).name || t('guest') },
               { key: 'total', header: t('total'), render: o => `${(o.totalAmount || o.total || 0).toFixed(3)} KWD` },
               { key: 'status', header: t('status'), render: o => <StatusPill status={o.status || o.orderStatus} /> },
               { key: 'date', header: t('date'), render: o => timeAgo(o.createdAt) },

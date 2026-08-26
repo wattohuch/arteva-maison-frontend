@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback, useMemo } from 'react';
+import { resolveCustomer as buyerOf } from '../../../utils/receiptCustomer';
 import { useNavigate } from 'react-router-dom';
 import { AdminAPI } from '../../../api/admin';
 import { showToast } from '../../../components/ui/Toast';
@@ -105,9 +106,9 @@ export default function ReceiptsSection() {
       render: o => (
         <div>
           <div style={{ fontWeight: 500 }}>
-            {o.user?.name || o.shippingAddress?.fullName || 'Guest'}
+            {buyerOf(o).name || 'Guest'}
           </div>
-          <small className="admin-muted">{o.user?.email || ''}</small>
+          <small className="admin-muted">{buyerOf(o).email || ''}</small>
         </div>
       ),
     },
