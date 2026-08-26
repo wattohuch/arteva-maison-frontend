@@ -97,7 +97,14 @@ export async function renderReceipt(canvas, order, { isStale } = {}) {
   c.fillStyle = '#fff';
   c.fillRect(0, 0, PAGE_W, PAGE_H);
 
-  const customer = order.user || {};
+  /* The buyer as written on this receipt, falling back to the linked account.
+     order.customer wins: a manual receipt saved without an email is attached to
+     the account that created it, so reading order.user first printed the
+     cashier in the customer box. Online orders have no order.customer and
+     resolve through order.user as before. */
+  const customer = (order.customer && (order.customer.name || order.customer.email || order.customer.phone))
+    ? order.customer
+    : (order.user || {});
   const LM = f(18);
   const RM = PAGE_W - f(18);
   const CW = RM - LM;
