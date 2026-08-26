@@ -1,4 +1,5 @@
 import { useReducer, useCallback, useMemo } from 'react';
+import { resolveCustomer } from '../../../utils/receiptCustomer';
 
 /**
  * Receipt draft state.
@@ -68,13 +69,7 @@ export function makeLine(partial = {}) {
 
 /** Map an API order onto a draft. */
 export function draftFromOrder(order) {
-  /* Prefer what was typed on the receipt over the linked account, matching
-     what the renderers print. Without this, reopening a saved receipt showed
-     the account's details in the customer fields and re-saving would write
-     them back, quietly replacing the buyer. */
-  const customer = (order.customer && (order.customer.name || order.customer.email || order.customer.phone))
-    ? order.customer
-    : (order.user || {});
+  const customer = resolveCustomer(order);
   const addr = order.shippingAddress || {};
 
   return {
