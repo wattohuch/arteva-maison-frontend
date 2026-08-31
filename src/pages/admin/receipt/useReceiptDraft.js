@@ -234,6 +234,14 @@ export function useReceiptDraft(initial) {
     items: draft.items,
     subtotal: totals.subtotal,
     shippingCost: totals.shipping,
+    /* Shaped the way an order stores it, because this object is what the
+     * preview, the JPEG export and the print all render from — the renderers
+     * read order.giftWrap and cannot see the draft. */
+    giftWrap: {
+      enabled: Boolean(draft.giftWrap?.enabled),
+      fee: totals.giftWrap,
+      message: draft.giftWrap?.message || '',
+    },
     discount: totals.discount,
     refundAmount: totals.refunded,
     trackingToken: draft.trackingToken,
