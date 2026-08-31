@@ -868,6 +868,18 @@ const PricingFields = memo(function PricingFields({
           />
           {hasPromo && <small className="rg-hint">Set by the promo code</small>}
         </label>
+        <label className="rg-field rg-field--check">
+          <span>Gift wrapping</span>
+          <label className="rg-check">
+            <input
+              type="checkbox"
+              checked={Boolean(draft.giftWrap?.enabled)}
+              onChange={e => actions.setGiftWrap({ enabled: e.target.checked })}
+            />
+            {/* Priced by the server, so the figure is shown, not typed. */}
+            <span>Add {kwd(draft.giftWrap?.fee || 3)} — charged once per order</span>
+          </label>
+        </label>
       </div>
 
       <div className="rg-promo">
@@ -904,9 +916,25 @@ const PricingFields = memo(function PricingFields({
         />
       </label>
 
+      {draft.giftWrap?.enabled && (
+        <label className="rg-field">
+          <span>Gift message</span>
+          <textarea
+            rows={2}
+            maxLength={300}
+            placeholder="Printed on the receipt for whoever writes the card"
+            value={draft.giftWrap?.message || ''}
+            onChange={e => actions.setGiftWrap({ message: e.target.value })}
+          />
+        </label>
+      )}
+
       <dl className="rg-totals">
         <div><dt>Subtotal</dt><dd>{kwd(totals.subtotal)}</dd></div>
         <div><dt>Shipping</dt><dd>{kwd(totals.shipping)}</dd></div>
+        {totals.giftWrap > 0 && (
+          <div><dt>Gift wrapping</dt><dd>{kwd(totals.giftWrap)}</dd></div>
+        )}
         {totals.discount > 0 && (
           <div className="is-discount"><dt>Discount</dt><dd>−{kwd(totals.discount)}</dd></div>
         )}

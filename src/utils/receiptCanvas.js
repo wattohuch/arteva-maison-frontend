@@ -164,8 +164,9 @@ export async function renderReceipt(canvas, order, { isStale } = {}) {
   const custPhone = customer.phone || addr.phone || '';
 
   c.fillStyle = MID; c.font = `${f(8)}px Arial`; c.fillText('Customer Details', LM + gP, y + gP);
+  const cdW = c.measureText('Customer Details').width;
   c.fillStyle = LIGHT; c.font = `${f(6.5)}px Arial`;
-  c.fillText('بيانات العميل', LM + gP + c.measureText('Customer Details ').width, y + gP + f(1));
+  c.fillText('بيانات العميل', LM + gP + cdW + f(6), y + gP + f(1));
   c.fillStyle = DARK; c.font = `600 ${f(10)}px Arial`; c.fillText(custName, LM + gP, y + f(20));
   c.fillStyle = MID; c.font = `${f(8.5)}px Arial`;
   c.fillText(custEmail, LM + gP, y + f(31));
@@ -173,8 +174,9 @@ export async function renderReceipt(canvas, order, { isStale } = {}) {
 
   const sx = LM + gW + f(15);
   c.fillStyle = MID; c.font = `${f(8)}px Arial`; c.fillText('Shipping Address', sx, y + gP);
+  const saW = c.measureText('Shipping Address').width;
   c.fillStyle = LIGHT; c.font = `${f(6.5)}px Arial`;
-  c.fillText('عنوان الشحن', sx + c.measureText('Shipping Address ').width, y + gP + f(1));
+  c.fillText('عنوان الشحن', sx + saW + f(6), y + gP + f(1));
   c.fillStyle = MID; c.font = `${f(8.5)}px Arial`;
   const addrLines = [
     addr.street,
@@ -192,14 +194,16 @@ export async function renderReceipt(canvas, order, { isStale } = {}) {
   c.beginPath(); c.moveTo(LM + gW + f(5), y + gP); c.lineTo(LM + gW + f(5), y + payH - gP); c.stroke();
 
   c.fillStyle = MID; c.font = `${f(8)}px Arial`; c.fillText('Payment Method', LM + gP, y + gP);
+  const pmW = c.measureText('Payment Method').width;
   c.fillStyle = LIGHT; c.font = `${f(6.5)}px Arial`;
-  c.fillText('طريقة الدفع', LM + gP + c.measureText('Payment Method ').width, y + gP + f(1));
+  c.fillText('طريقة الدفع', LM + gP + pmW + f(6), y + gP + f(1));
   c.fillStyle = DARK; c.font = `500 ${f(10)}px Arial`;
   c.fillText((PAYMENT_NAMES[order.paymentMethod] || order.paymentMethod || 'N/A').toUpperCase(), LM + gP, y + f(22));
 
   c.fillStyle = MID; c.font = `${f(8)}px Arial`; c.fillText('Payment Status', sx, y + gP);
+  const psLW = c.measureText('Payment Status').width;
   c.fillStyle = LIGHT; c.font = `${f(6.5)}px Arial`;
-  c.fillText('حالة الدفع', sx + c.measureText('Payment Status ').width, y + gP + f(1));
+  c.fillText('حالة الدفع', sx + psLW + f(6), y + gP + f(1));
 
   const ps = (order.paymentStatus || 'pending').replace(/_/g, ' ');
   const paid = order.paymentStatus === 'paid';
@@ -388,6 +392,15 @@ export async function renderReceipt(canvas, order, { isStale } = {}) {
   c.fillStyle = DARK; c.font = `${f(9.5)}px Arial`;
   c.textAlign = 'right'; c.fillText(money(order.shippingCost), RM, y); y += f(12);
 
+  if (order.giftWrap?.enabled) {
+    c.textAlign = 'left'; c.fillStyle = DARK; c.font = `${f(9.5)}px Arial`;
+    c.fillText('Gift Wrapping', ttx, y);
+    c.fillStyle = LIGHT; c.font = `${f(7.5)}px Arial`;
+    c.fillText('/ تغليف هدية', ttx + f(70), y + f(1.5));
+    c.fillStyle = DARK; c.font = `${f(9.5)}px Arial`;
+    c.textAlign = 'right'; c.fillText(money(order.giftWrap.fee || 0), RM, y); y += f(12);
+  }
+
   if (order.promoCode?.code) {
     const promoAmount = order.promoCode.totalDiscount || order.discount || 0;
     c.textAlign = 'left'; c.font = `${f(9.5)}px Arial`; c.fillStyle = '#059669';
@@ -423,6 +436,47 @@ export async function renderReceipt(canvas, order, { isStale } = {}) {
   c.fillStyle = fullyRefunded ? '#ef4444' : DARK;
   c.font = `bold ${f(13)}px Arial`;
   c.textAlign = 'right'; c.fillText(money(order.total), RM, y); y += f(24);
+
+  // ═══ GIFT MESSAGE ═══
+  // Printed for whoever writes the card. Stored and never shown would mean
+  // the customer paid for a message nobody reads.
+  if (order.giftWrap?.enabled && order.giftWrap.message) {
+    const gmX = LM + f(10);
+    c.font = `${f(9)}px Arial`;
+
+    const words = String(order.giftWrap.message).split(/\s+/);
+    const gLines = [];
+    let gLine = '';
+    for (const word of words) {
+      const attempt = gLine ? gLine + ' ' + word : word;
+      if (c.measureText(attempt).width > CW - f(30) && gLine) {
+        gLines.push(gLine);
+        gLine = word;
+      } else {
+        gLine = attempt;
+      }
+    }
+    if (gLine) gLines.push(gLine);
+
+    const gmH = f(26) + gLines.length * f(12);
+    c.fillStyle = '#fdf7f2'; rr(c, LM, y, CW, gmH, f(4)); c.fill();
+    c.strokeStyle = 'rgba(197,160,110,0.28)'; c.lineWidth = f(0.5);
+    rr(c, LM, y, CW, gmH, f(4)); c.stroke();
+    c.fillStyle = GOLD; c.fillRect(LM, y, f(2), gmH);
+
+    c.textAlign = 'left';
+    c.fillStyle = GOLD; c.font = `600 ${f(8.5)}px Arial`;
+    c.fillText('GIFT MESSAGE', gmX, y + f(14));
+    const gmLabelWidth = c.measureText('GIFT MESSAGE').width;
+    c.fillStyle = LIGHT; c.font = `${f(7.5)}px Arial`;
+    c.fillText('رسالة الهدية', gmX + gmLabelWidth + f(8), y + f(14));
+
+    c.fillStyle = DARK; c.font = `${f(9)}px Arial`;
+    let gy = y + f(26);
+    for (const l of gLines) { c.fillText(l, gmX, gy); gy += f(12); }
+
+    y += gmH + f(10);
+  }
 
   // ═══ NOTES ═══
   if (order.notes && order.notes.trim()) {

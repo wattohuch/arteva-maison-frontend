@@ -215,3 +215,54 @@
   .pdp-buy-row { flex-wrap: wrap; }
   .pdp-qty { flex: 1; justify-content: space-between; }
 }
+
+/* ── Gift wrapping ──
+   Sits directly above Add to Bag so it is decided in the same glance, but
+   stays quiet: a plain row on champagne, not a promotional block. The note
+   line carries its weight — a tick beside one product reads as "wrap this
+   item" unless it says otherwise. */
+.pdp-giftwrap {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-3);
+  margin-bottom: var(--space-3);
+  padding: var(--space-3);
+  background: var(--color-champagne);
+  border: 1px solid var(--border-hairline);
+  border-radius: var(--radius-sm, 6px);
+  cursor: pointer;
+}
+.pdp-giftwrap input {
+  flex: none;
+  width: 1.05rem;
+  height: 1.05rem;
+  margin-top: 0.1rem;
+  accent-color: var(--color-gold);
+  cursor: pointer;
+}
+.pdp-giftwrap input:disabled { cursor: not-allowed; opacity: 0.5; }
+
+.pdp-giftwrap-text {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+  min-width: 0;
+  flex: 1;
+}
+.pdp-giftwrap-title {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--space-2);
+  font-size: var(--fs-sm);
+  color: var(--text-primary);
+}
+.pdp-giftwrap-price {
+  font-variant-numeric: tabular-nums;
+  color: var(--color-gold-text);
+  white-space: nowrap;
+}
+.pdp-giftwrap-note {
+  font-size: var(--fs-xs);
+  color: var(--text-muted);
+}

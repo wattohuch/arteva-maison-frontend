@@ -30,6 +30,7 @@ export function emptyDraft() {
     address: { street: '', city: '', country: 'Kuwait' },
     items: [],
     shippingCost: 2,
+    giftWrap: { enabled: false, fee: 0, message: '' },
     discount: 0,
     promoCode: '',
     promoData: null,        // server-priced discount, when a code is applied
@@ -108,6 +109,13 @@ export function draftFromOrder(order) {
       exchangeDiff: item.exchangeDiff,
     })),
     shippingCost: Number(order.shippingCost ?? 2),
+    giftWrap: {
+      enabled: Boolean(order.giftWrap?.enabled),
+      // The stored fee, not today's price — an old receipt has to keep
+      // totalling to what the customer actually paid.
+      fee: Number(order.giftWrap?.fee ?? 0),
+      message: order.giftWrap?.message || '',
+    },
     discount: Number(order.promoCode?.totalDiscount ?? order.discount ?? 0),
     promoCode: order.promoCode?.code || '',
     promoData: order.promoCode?.code ? order.promoCode : null,
@@ -146,6 +154,17 @@ function reducer(state, action) {
     case 'removeItem':
       return { ...state, items: state.items.filter(line => line.key !== action.key) };
 
+    case 'giftWrap':
+      return {
+        ...state,
+        giftWrap: {
+          ...state.giftWrap,
+          ...action.patch,
+          // Cancelling wrapping drops the card message with it.
+          ...(action.patch.enabled === false ? { message: '' } : {}),
+        },
+      };
+
     case 'setPromo':
       // A cleared code drops the server-priced discount with it, otherwise the
       // saving would linger after the code that justified it was removed.
@@ -175,16 +194,20 @@ export function useReceiptDraft(initial) {
     );
     const shipping = Number(draft.shippingCost) || 0;
     const discount = Number(draft.discount) || 0;
-    const total = Math.max(0, subtotal + shipping - discount - refunded);
+    /* Shown at the fee the server will apply. It is quoted rather than typed
+       because the price belongs to the server, exactly as it does online. */
+    const giftWrap = draft.giftWrap?.enabled ? (Number(draft.giftWrap.fee) || 3) : 0;
+    const total = Math.max(0, subtotal + shipping + giftWrap - discount - refunded);
 
     return {
       subtotal: money(subtotal),
       shipping: money(shipping),
+      giftWrap: money(giftWrap),
       discount: money(discount),
       refunded: money(refunded),
       total: money(total),
     };
-  }, [draft.items, draft.shippingCost, draft.discount]);
+  }, [draft.items, draft.shippingCost, draft.discount, draft.giftWrap]);
 
   const actions = useMemo(() => ({
     reset: (d) => dispatch({ type: 'reset', draft: d }),
@@ -192,6 +215,7 @@ export function useReceiptDraft(initial) {
     setCustomer: (field, value) => dispatch({ type: 'customer', field, value }),
     setAddress: (field, value) => dispatch({ type: 'address', field, value }),
     addItem: (item) => dispatch({ type: 'addItem', item }),
+    setGiftWrap: (patch) => dispatch({ type: 'giftWrap', patch }),
     updateItem: (key, patch) => dispatch({ type: 'updateItem', key, patch }),
     removeItem: (key) => dispatch({ type: 'removeItem', key }),
     setPromo: (promoData, code) => dispatch({ type: 'setPromo', promoData, code }),
@@ -246,6 +270,11 @@ export function useReceiptDraft(initial) {
       exchangeDiff: line.exchangeDiff,
     })),
     shippingCost: Number(draft.shippingCost) || 0,
+    // Only the intent and the message travel; the server prices it.
+    giftWrap: {
+      enabled: Boolean(draft.giftWrap?.enabled),
+      message: draft.giftWrap?.message || '',
+    },
     // Sent for the no-code case. When a code is present the server re-prices
     // it and ignores this figure, which is what stops an admin from keying in
     // a discount the code does not actually grant.

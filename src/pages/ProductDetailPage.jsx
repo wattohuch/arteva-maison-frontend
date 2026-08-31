@@ -20,7 +20,7 @@ export default function ProductDetailPage() {
   const { slug } = useParams();
   const { t, lang } = useI18n();
   const { format } = useCurrency();
-  const { addItem } = useCart();
+  const { addItem, giftWrap, setGiftWrap } = useCart();
   const { has, toggle } = useWishlist();
   const [product, setProduct] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -98,8 +98,19 @@ export default function ProductDetailPage() {
 
     const qty = Math.min(quantity, available);
     addItem(product, qty);
+
+    /* Turned on only when the shopper asked for it here and the order does not
+       already have it — the charge is per order, so ticking it on a second
+       product must not send a second request saying the same thing. */
+    if (wantsWrap && !giftWrap?.enabled) setGiftWrap(true, giftWrap?.message || '');
+
     showToast(t('added_to_cart'), 'success');
-  }, [addItem, product, quantity, t, lang]);
+  }, [addItem, product, quantity, t, lang, wantsWrap, giftWrap, setGiftWrap]);
+
+  /* Seeded from the order so a shopper who already asked for wrapping sees it
+     ticked here rather than being asked twice. */
+  const [wantsWrap, setWantsWrap] = useState(Boolean(giftWrap?.enabled));
+  useEffect(() => { setWantsWrap(Boolean(giftWrap?.enabled)); }, [giftWrap?.enabled]);
 
   const handleWishlist = useCallback(() => {
     const added = toggle(product);
@@ -223,6 +234,22 @@ export default function ProductDetailPage() {
                 <HeartIcon size={18} filled={saved} />
               </button>
             </div>
+
+            <label className="pdp-giftwrap">
+              <input
+                type="checkbox"
+                checked={wantsWrap}
+                disabled={soldOut}
+                onChange={e => setWantsWrap(e.target.checked)}
+              />
+              <span className="pdp-giftwrap-text">
+                <span className="pdp-giftwrap-title">
+                  {t('gift_wrap_add')}
+                  <span className="pdp-giftwrap-price">+{format(giftWrap?.fee || 3)}</span>
+                </span>
+                <span className="pdp-giftwrap-note">{t('gift_wrap_note')}</span>
+              </span>
+            </label>
 
             <Button
               variant="primary"

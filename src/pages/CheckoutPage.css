@@ -356,3 +356,61 @@
   }
   .payment-mark svg { width: 34px; height: 24px; }
 }
+
+/* ── Gift wrapping ──
+   Sits above the totals because it is a charge: the shopper needs to see the
+   figure they are about to pay move when they tick it. Uses the champagne
+   ground rather than a coloured callout — it is an offer, not a warning. */
+.checkout-giftwrap {
+  margin-top: var(--space-4);
+  padding: var(--space-3) var(--space-4);
+  background: var(--color-champagne);
+  border: 1px solid var(--border-hairline);
+  border-radius: var(--radius-sm, 6px);
+}
+
+.checkout-giftwrap-toggle {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  cursor: pointer;
+}
+.checkout-giftwrap-toggle input {
+  flex: none;
+  width: 1.05rem;
+  height: 1.05rem;
+  accent-color: var(--color-gold);
+  cursor: pointer;
+}
+
+.checkout-giftwrap-label {
+  display: flex;
+  flex: 1;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--space-2);
+  font-size: var(--fs-sm);
+  color: var(--text-primary);
+}
+.checkout-giftwrap-price {
+  font-variant-numeric: tabular-nums;
+  color: var(--color-gold-text);
+  white-space: nowrap;
+}
+
+.checkout-giftwrap-note {
+  width: 100%;
+  margin-top: var(--space-3);
+  padding: var(--space-2) var(--space-3);
+  font-family: inherit;
+  font-size: var(--fs-sm);
+  color: var(--text-primary);
+  background: var(--color-ivory);
+  border: 1px solid var(--border-hairline);
+  border-radius: var(--radius-sm, 6px);
+  resize: vertical;
+}
+.checkout-giftwrap-note:focus-visible {
+  outline: 2px solid var(--color-gold);
+  outline-offset: 1px;
+}

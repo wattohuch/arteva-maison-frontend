@@ -552,3 +552,24 @@
   grid-template-columns: minmax(0, 420px);
   justify-content: center;
 }
+
+/* ── Gift wrapping ──
+   A tick rather than a price box: the fee belongs to the server, so a cashier
+   confirms it rather than typing it. Shown as a figure so they can still tell
+   the customer what it costs. */
+.rg-field--check .rg-check {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 38px;
+  font-size: 0.86rem;
+  color: #334155;
+  cursor: pointer;
+}
+.rg-field--check .rg-check input {
+  flex: none;
+  width: 1rem;
+  height: 1rem;
+  accent-color: #0f6b4f;
+  cursor: pointer;
+}

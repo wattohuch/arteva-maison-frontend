@@ -30,6 +30,11 @@ export function CartProvider({ children }) {
   }, []);
 
   // Derived once per basket change rather than on every provider render.
+  /* Gift wrapping is per-order, so it lives here rather than on any one
+   * screen. `fee` is whatever the server last quoted — never computed here,
+   * because a price the browser decides is a price a customer can edit. */
+  const [giftWrap, setGiftWrapState] = useState({ enabled: false, message: '', fee: 0 });
+
   const { count, subtotal } = useMemo(() => items.reduce(
     (acc, item) => {
       const qty = Number(item.quantity) || 1;
@@ -156,8 +161,40 @@ export function CartProvider({ children }) {
     });
   }, [isLoggedIn]);
 
+  /**
+   * Turn wrapping on or off, and keep the note with it.
+   *
+   * Applied locally first so the tick responds immediately, then confirmed by
+   * the server, which is what actually decides the fee. A failure puts the
+   * toggle back rather than leaving the customer believing their order will
+   * be wrapped when the server never heard about it.
+   */
+  const setGiftWrap = useCallback(async (enabled, message = '') => {
+    const previous = giftWrap;
+    setGiftWrapState(g => ({ ...g, enabled, message }));
+
+    if (!isLoggedIn) return { success: false };
+
+    try {
+      const res = await CartAPI.setGiftWrap(enabled, message);
+      if (!res.success) throw new Error(res.message || 'Could not save gift wrapping');
+      setGiftWrapState({
+        enabled: Boolean(res.data?.giftWrap?.enabled),
+        message: res.data?.giftWrap?.message || '',
+        fee: Number(res.data?.fee) || 0,
+      });
+      return res;
+    } catch (err) {
+      setGiftWrapState(previous);
+      return { success: false, message: err.message };
+    }
+  }, [isLoggedIn, giftWrap]);
+
   const clearCart = useCallback(() => {
     if (isLoggedIn) CartAPI.clear().catch(() => {});
+    // The server drops the wrapping request with the bag; mirror that here so
+    // the tick does not survive into the next order.
+    setGiftWrapState({ enabled: false, message: '', fee: 0 });
     persist([]);
   }, [persist, isLoggedIn]);
 
@@ -280,6 +317,16 @@ export function CartProvider({ children }) {
       if (!res.success) return;
       const serverItems = res.data?.items || [];
 
+      /* Restored on load, which is what carries the choice back across a
+       * payment redirect and across devices. */
+      if (res.data?.giftWrap) {
+        setGiftWrapState({
+          enabled: Boolean(res.data.giftWrap.enabled),
+          message: res.data.giftWrap.message || '',
+          fee: Number(res.data.giftWrapFee) || 0,
+        });
+      }
+
       if (serverItems.length) {
         const normalized = serverItems.map(item => {
           const prod = item.product || {};
@@ -328,9 +375,9 @@ export function CartProvider({ children }) {
   // on every provider render — the header badge, each product card and the
   // drawer would all re-render whenever anything above them changed.
   const value = useMemo(() => ({
-    items, count, subtotal,
-    addItem, updateQuantity, removeItem, clearCart, refreshStock,
-  }), [items, count, subtotal, addItem, updateQuantity, removeItem, clearCart, refreshStock]);
+    items, count, subtotal, giftWrap,
+    addItem, updateQuantity, removeItem, clearCart, refreshStock, setGiftWrap,
+  }), [items, count, subtotal, giftWrap, addItem, updateQuantity, removeItem, clearCart, refreshStock, setGiftWrap]);
 
   return (
     <CartContext.Provider value={value}>

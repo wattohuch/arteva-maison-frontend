@@ -36,7 +36,7 @@ const ADDRESS_TYPES = [
 
 export default function CheckoutPage() {
   const { isLoggedIn } = useAuth();
-  const { items, subtotal, refreshStock } = useCart();
+  const { items, subtotal, refreshStock, giftWrap, setGiftWrap } = useCart();
   const { discount, promoCode, promoVisitId } = usePromo();
   const { t, lang } = useI18n();
   const { format } = useCurrency();
@@ -66,9 +66,13 @@ export default function CheckoutPage() {
   });
 
   const shipping = 2.0;
+  /* Quoted by the server with the cart. Falls back to 3 only so the row is not
+   * blank on a slow load — the amount actually charged is decided server-side
+   * either way. */
+  const wrapFee = giftWrap?.enabled ? (giftWrap.fee || 3) : 0;
   // Display only. The server re-prices the promo against the live cart during
   // /payments/execute, so this figure can never become the charged amount.
-  const total = Math.max(0, subtotal + shipping - discount);
+  const total = Math.max(0, subtotal + shipping + wrapFee - discount);
 
   // Redirect if not logged in or cart empty
   useEffect(() => {
@@ -535,6 +539,36 @@ export default function CheckoutPage() {
 
               <PromoCodeField compact />
 
+              <div className="checkout-giftwrap">
+                <label className="checkout-giftwrap-toggle">
+                  <input
+                    type="checkbox"
+                    checked={Boolean(giftWrap?.enabled)}
+                    onChange={e => setGiftWrap(e.target.checked, giftWrap?.message || '')}
+                  />
+                  <span className="checkout-giftwrap-label">
+                    {t('gift_wrapping')}
+                    <span className="checkout-giftwrap-price">+{format(giftWrap?.fee || 3)}</span>
+                  </span>
+                </label>
+
+                {giftWrap?.enabled && (
+                  <textarea
+                    className="checkout-giftwrap-note"
+                    rows={2}
+                    maxLength={300}
+                    placeholder={t('gift_message_placeholder')}
+                    defaultValue={giftWrap?.message || ''}
+                    /* Saved on blur, not on every keystroke — a request per
+                       character would be a request per character. */
+                    onBlur={e => {
+                      const next = e.target.value.trim();
+                      if (next !== (giftWrap?.message || '')) setGiftWrap(true, next);
+                    }}
+                  />
+                )}
+              </div>
+
               <div className="checkout-totals">
                 <div className="checkout-total-row">
                   <span>{t('subtotal')}</span><span>{format(subtotal)}</span>
@@ -548,6 +582,11 @@ export default function CheckoutPage() {
                 <div className="checkout-total-row">
                   <span>{t('shipping')}</span><span>{format(shipping)}</span>
                 </div>
+                {wrapFee > 0 && (
+                  <div className="checkout-total-row">
+                    <span>{t('gift_wrapping')}</span><span>{format(wrapFee)}</span>
+                  </div>
+                )}
                 <div className="checkout-total-row checkout-total-final">
                   <span>{t('total')}</span><span>{format(total)}</span>
                 </div>
