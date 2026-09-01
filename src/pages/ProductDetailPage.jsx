@@ -104,10 +104,13 @@ export default function ProductDetailPage() {
     const qty = Math.min(quantity, available);
     addItem(product, qty);
 
-    /* Turned on only when the shopper asked for it here and the order does not
-       already have it — the charge is per order, so ticking it on a second
-       product must not send a second request saying the same thing. */
-    if (wantsWrap && !giftWrap?.enabled) setGiftWrap(true, giftWrap?.message || '');
+    /* Sent only when this differs from what the order already says — the
+       charge is per order, so ticking it on a second product must not send a
+       second request saying the same thing. Unticking has to travel too, or
+       a shopper who declines wrapping here is still charged for it. */
+    if (wantsWrap !== Boolean(giftWrap?.enabled)) {
+      setGiftWrap(wantsWrap, wantsWrap ? (giftWrap?.message || '') : '');
+    }
 
     showToast(t('added_to_cart'), 'success');
   }, [addItem, product, quantity, t, lang, wantsWrap, giftWrap, setGiftWrap]);
