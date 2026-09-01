@@ -303,6 +303,16 @@ export async function renderReceipt(canvas, order, { isStale } = {}) {
       c.fillText(item.nameAr, cols[1].x, y + f(11));
     }
 
+    /* Gift wrapping is a per-line choice, so it is said on the line it applies
+       to — on the browser copy, the JPEG and the printed one alike, because all
+       three draw from here. The totals below carry the charge; this is what
+       tells whoever packs the parcel which items to wrap. */
+    if (item.giftWrap) {
+      const wrapY = y + (showNameAr ? f(22) : f(11)) + (isExchanged ? f(18) : 0);
+      c.fillStyle = GOLD; c.font = `600 ${f(7)}px Arial`;
+      c.fillText('✦ Gift wrapped / تغليف هدية', cols[1].x, wrapY);
+    }
+
     if (isExchanged) {
       const exY = y + (showNameAr ? f(22) : f(11));
       c.fillStyle = '#2563eb'; c.font = `600 ${f(7)}px Arial`;
@@ -369,6 +379,8 @@ export async function renderReceipt(canvas, order, { isStale } = {}) {
     }
 
     y += showNameAr ? f(26) : (itemDiscount ? f(24) : f(20));
+    // Room for the wrap note, so it cannot land on the rule below it.
+    if (item.giftWrap) y += f(10);
     c.strokeStyle = BORDER; c.lineWidth = f(0.3);
     c.beginPath(); c.moveTo(LM, y); c.lineTo(RM, y); c.stroke();
     y += f(6);

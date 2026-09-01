@@ -13,7 +13,8 @@ import './CartPage.css';
 export default function CartPage() {
   const { t } = useI18n();
   const { format } = useCurrency();
-  const { items, subtotal, updateQuantity, removeItem, clearCart, refreshStock } = useCart();
+  const { items, subtotal, updateQuantity, removeItem, clearCart, refreshStock,
+    giftWrap, giftWrapUnitFee, setItemGiftWrap } = useCart();
   const { discount } = usePromo();
 
   // Same re-read as the drawer — this page is reachable directly, so it cannot
@@ -21,8 +22,10 @@ export default function CartPage() {
   useEffect(() => { refreshStock(); }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Shipping is free at the cart stage; the 2 KWD delivery fee is added at
-  // checkout, which is where the address makes it meaningful.
-  const total = Math.max(0, subtotal - discount);
+  // checkout, which is where the address makes it meaningful. Wrapping is
+  // counted here, because it was chosen here.
+  const wrapFee = giftWrap?.fee || 0;
+  const total = Math.max(0, subtotal + wrapFee - discount);
 
   if (items.length === 0) {
     return (
@@ -89,6 +92,17 @@ export default function CartPage() {
                     {atMax(item) && (
                       <p className="cart-line-stock">Only {item.stock} in stock</p>
                     )}
+
+                    {/* Wrapping is chosen per item, and charged once for the
+                        line however many units it holds. */}
+                    <label className="cart-line-giftwrap">
+                      <input
+                        type="checkbox"
+                        checked={Boolean(item.giftWrap)}
+                        onChange={e => setItemGiftWrap(id, e.target.checked)}
+                      />
+                      <span>{t('gift_wrap_this')} +{format(giftWrapUnitFee)}</span>
+                    </label>
                   </div>
 
                   <div className="cart-line-end">
@@ -121,6 +135,12 @@ export default function CartPage() {
                 <div className="summary-discount">
                   <dt>{t('discount')}</dt>
                   <dd>−{format(discount)}</dd>
+                </div>
+              )}
+              {wrapFee > 0 && (
+                <div>
+                  <dt>{t('gift_wrapping')} ({giftWrap.count})</dt>
+                  <dd>{format(wrapFee)}</dd>
                 </div>
               )}
               <div>

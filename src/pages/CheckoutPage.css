@@ -414,3 +414,24 @@
   outline: 2px solid var(--color-gold);
   outline-offset: 1px;
 }
+
+/* ── Gift wrapping, chosen line by line ──────────────────────────────────
+   The tick sits under the item it applies to. A single tick beside one
+   product in a bag of five never said which of them was the gift. */
+.checkout-item-giftwrap {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  margin-top: 4px;
+  cursor: pointer;
+  font-size: 0.78rem;
+  color: var(--color-text-muted, #6b6b6b);
+}
+.checkout-item-giftwrap input {
+  flex: none;
+  width: 0.9rem;
+  height: 0.9rem;
+  accent-color: var(--color-gold);
+  cursor: pointer;
+}
+.checkout-item-giftwrap:hover { color: var(--color-text, #1a1a1a); }

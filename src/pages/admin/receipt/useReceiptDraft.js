@@ -30,7 +30,9 @@ export function emptyDraft() {
     address: { street: '', city: '', country: 'Kuwait' },
     items: [],
     shippingCost: 2,
-    giftWrap: { enabled: false, fee: 0, message: '' },
+    /* `unitFee` is the price of wrapping one line, quoted by the server. The
+       total is counted from the ticked lines, never typed. */
+    giftWrap: { unitFee: 3, message: '' },
     discount: 0,
     promoCode: '',
     promoData: null,        // server-priced discount, when a code is applied
@@ -107,13 +109,17 @@ export function draftFromOrder(order) {
       oldName: item.oldName,
       oldPrice: item.oldPrice,
       exchangeDiff: item.exchangeDiff,
+      // Which lines were wrapped, so re-opening a receipt shows what was
+      // actually charged rather than an empty set of ticks.
+      giftWrap: item.giftWrap === true,
     })),
     shippingCost: Number(order.shippingCost ?? 2),
     giftWrap: {
-      enabled: Boolean(order.giftWrap?.enabled),
-      // The stored fee, not today's price — an old receipt has to keep
-      // totalling to what the customer actually paid.
-      fee: Number(order.giftWrap?.fee ?? 0),
+      /* The price this receipt was actually written at, not today's — an old
+         receipt has to keep totalling to what the customer paid. Recovered by
+         dividing the stored total by the lines it covered; a receipt with no
+         wrapping on it has nothing to recover and takes the current quote. */
+      unitFee: wrappedUnitFee(order),
       message: order.giftWrap?.message || '',
     },
     discount: Number(order.promoCode?.totalDiscount ?? order.discount ?? 0),
@@ -182,6 +188,21 @@ function reducer(state, action) {
   }
 }
 
+/**
+ * What one wrapped line cost on an order that already exists.
+ *
+ * Orders written before per-item wrapping carry a whole-order fee and no
+ * per-line flags; those come back as the fee itself, which is what they were
+ * charged. An order with nothing wrapped has no price to recover and falls
+ * back to the standing one until the server quotes.
+ */
+function wrappedUnitFee(order) {
+  const fee = Number(order?.giftWrap?.fee) || 0;
+  if (fee <= 0) return 3;
+  const wrapped = (order.items || []).filter(i => i.giftWrap).length;
+  return wrapped > 0 ? parseFloat((fee / wrapped).toFixed(3)) : fee;
+}
+
 export function useReceiptDraft(initial) {
   const [draft, dispatch] = useReducer(reducer, initial ?? null, (init) => init ?? emptyDraft());
 
@@ -194,15 +215,20 @@ export function useReceiptDraft(initial) {
     );
     const shipping = Number(draft.shippingCost) || 0;
     const discount = Number(draft.discount) || 0;
-    /* Shown at the fee the server will apply. It is quoted rather than typed
-       because the price belongs to the server, exactly as it does online. */
-    const giftWrap = draft.giftWrap?.enabled ? (Number(draft.giftWrap.fee) || 3) : 0;
+    /* Shown at the fee the server will apply: one charge per wrapped line, at
+       the quoted unit price. Quoted rather than typed because the price
+       belongs to the server, exactly as it does online.
+       A refunded line is not charged for its wrapping — the same rule the
+       server applies when it re-prices this receipt. */
+    const wrappedLines = draft.items.filter(i => i.giftWrap && !i.isRefunded).length;
+    const giftWrap = wrappedLines * (Number(draft.giftWrap?.unitFee) || 3);
     const total = Math.max(0, subtotal + shipping + giftWrap - discount - refunded);
 
     return {
       subtotal: money(subtotal),
       shipping: money(shipping),
       giftWrap: money(giftWrap),
+      giftWrapCount: wrappedLines,
       discount: money(discount),
       refunded: money(refunded),
       total: money(total),
@@ -238,7 +264,7 @@ export function useReceiptDraft(initial) {
      * preview, the JPEG export and the print all render from — the renderers
      * read order.giftWrap and cannot see the draft. */
     giftWrap: {
-      enabled: Boolean(draft.giftWrap?.enabled),
+      enabled: totals.giftWrapCount > 0,
       fee: totals.giftWrap,
       message: draft.giftWrap?.message || '',
     },
@@ -276,11 +302,13 @@ export function useReceiptDraft(initial) {
       oldName: line.oldName,
       oldPrice: line.oldPrice,
       exchangeDiff: line.exchangeDiff,
+      giftWrap: Boolean(line.giftWrap),
     })),
     shippingCost: Number(draft.shippingCost) || 0,
     // Only the intent and the message travel; the server prices it.
     giftWrap: {
-      enabled: Boolean(draft.giftWrap?.enabled),
+      // Which lines are wrapped rides on the lines; only the card message is
+      // an order-level thing. The server counts and prices the rest.
       message: draft.giftWrap?.message || '',
     },
     // Sent for the no-code case. When a code is present the server re-prices

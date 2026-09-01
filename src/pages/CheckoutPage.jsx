@@ -36,7 +36,7 @@ const ADDRESS_TYPES = [
 
 export default function CheckoutPage() {
   const { isLoggedIn } = useAuth();
-  const { items, subtotal, refreshStock, giftWrap, setGiftWrap } = useCart();
+  const { items, subtotal, refreshStock, giftWrap, giftWrapUnitFee, setItemGiftWrap, setGiftWrapMessage } = useCart();
   const { discount, promoCode, promoVisitId } = usePromo();
   const { t, lang } = useI18n();
   const { format } = useCurrency();
@@ -66,10 +66,9 @@ export default function CheckoutPage() {
   });
 
   const shipping = 2.0;
-  /* Quoted by the server with the cart. Falls back to 3 only so the row is not
-   * blank on a slow load — the amount actually charged is decided server-side
-   * either way. */
-  const wrapFee = giftWrap?.enabled ? (giftWrap.fee || 3) : 0;
+  /* Quoted by the server with the cart and summed over the wrapped lines — the
+   * amount actually charged is decided server-side either way. */
+  const wrapFee = giftWrap?.fee || 0;
   // Display only. The server re-prices the promo against the live cart during
   // /payments/execute, so this figure can never become the charged amount.
   const total = Math.max(0, subtotal + shipping + wrapFee - discount);
@@ -210,11 +209,29 @@ export default function CheckoutPage() {
     return method ? method.id : (fallbacks[type] || null);
   }, [paymentMethods]);
 
+  /**
+   * Put the browser's bag on the server, as one write.
+   *
+   * This used to clear the cart and re-add every line. Clearing a cart drops
+   * its gift wrapping, so the selection was destroyed a moment before the
+   * order was built from it: the customer saw the fee in the total they
+   * agreed to, the server priced an order from a cart that no longer
+   * mentioned wrapping, and the gift went out unwrapped. It also left the bag
+   * empty for as long as the re-adds took, and empty for good if one failed.
+   *
+   * Replacing in a single request carries the per-line wrap flags with the
+   * lines and cannot leave the cart half-written.
+   */
   const syncCartToServer = async () => {
-    await CartAPI.clear().catch(() => {});
-    for (const item of items) {
-      await CartAPI.add(item._id || item.id, item.quantity);
-    }
+    const res = await CartAPI.replace(
+      items.map(item => ({
+        productId: item._id || item.id,
+        quantity: item.quantity,
+        giftWrap: Boolean(item.giftWrap),
+      })),
+      giftWrap?.message || ''
+    );
+    if (!res?.success) throw new Error(t('cart_sync_failed'));
   };
 
   const collectAddress = () => {
@@ -531,6 +548,17 @@ export default function CheckoutPage() {
                       <div className="checkout-item-info">
                         <span className="checkout-item-name">{name}</span>
                         <span className="checkout-item-price">{format(item.price * item.quantity)}</span>
+                        {/* Wrapping is chosen per item, so it is asked on the
+                            item. A single tick beside one product in a bag of
+                            five never said which of them was the gift. */}
+                        <label className="checkout-item-giftwrap">
+                          <input
+                            type="checkbox"
+                            checked={Boolean(item.giftWrap)}
+                            onChange={e => setItemGiftWrap(id, e.target.checked)}
+                          />
+                          <span>{t('gift_wrap_this')} +{format(giftWrapUnitFee)}</span>
+                        </label>
                       </div>
                     </div>
                   );
@@ -539,20 +567,16 @@ export default function CheckoutPage() {
 
               <PromoCodeField compact />
 
-              <div className="checkout-giftwrap">
-                <label className="checkout-giftwrap-toggle">
-                  <input
-                    type="checkbox"
-                    checked={Boolean(giftWrap?.enabled)}
-                    onChange={e => setGiftWrap(e.target.checked, giftWrap?.message || '')}
-                  />
+              {/* One card goes in the parcel, so the message is asked once
+                  for the order rather than once per wrapped item. */}
+              {giftWrap?.enabled && (
+                <div className="checkout-giftwrap">
                   <span className="checkout-giftwrap-label">
                     {t('gift_wrapping')}
-                    <span className="checkout-giftwrap-price">+{format(giftWrap?.fee || 3)}</span>
+                    <span className="checkout-giftwrap-price">
+                      {giftWrap.count} x {format(giftWrapUnitFee)}
+                    </span>
                   </span>
-                </label>
-
-                {giftWrap?.enabled && (
                   <textarea
                     className="checkout-giftwrap-note"
                     rows={2}
@@ -563,11 +587,11 @@ export default function CheckoutPage() {
                        character would be a request per character. */
                     onBlur={e => {
                       const next = e.target.value.trim();
-                      if (next !== (giftWrap?.message || '')) setGiftWrap(true, next);
+                      if (next !== (giftWrap?.message || '')) setGiftWrapMessage(next);
                     }}
                   />
-                )}
-              </div>
+                </div>
+              )}
 
               <div className="checkout-totals">
                 <div className="checkout-total-row">

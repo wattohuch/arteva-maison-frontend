@@ -20,7 +20,7 @@ export default function ProductDetailPage() {
   const { slug } = useParams();
   const { t, lang } = useI18n();
   const { format } = useCurrency();
-  const { addItem, giftWrap, setGiftWrap } = useCart();
+  const { addItem, items, giftWrapUnitFee, setItemGiftWrap } = useCart();
   const { has, toggle } = useWishlist();
   const [product, setProduct] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -85,10 +85,15 @@ export default function ProductDetailPage() {
     if (product?._id) trackViewContent(product);
   }, [product?._id]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  /* Seeded from the order so a shopper who already asked for wrapping sees it
-     ticked here rather than being asked twice. */
-  const [wantsWrap, setWantsWrap] = useState(Boolean(giftWrap?.enabled));
-  useEffect(() => { setWantsWrap(Boolean(giftWrap?.enabled)); }, [giftWrap?.enabled]);
+  /* Wrapping applies to this product, not to the whole order.
+   *
+   * Seeded from the bag so a shopper who already ticked this item — here, on
+   * the cart page or at checkout — sees it ticked rather than being asked
+   * twice. Keyed on the product, so opening a second item from a related rail
+   * shows that item's own answer and not the previous one's. */
+  const inBag = items.find(i => (i._id || i.id) === product?._id);
+  const [wantsWrap, setWantsWrap] = useState(false);
+  useEffect(() => { setWantsWrap(Boolean(inBag?.giftWrap)); }, [inBag?.giftWrap, product?._id]);
 
   const handleAddToCart = useCallback(() => {
     const available = stockLevel(product);
@@ -102,18 +107,16 @@ export default function ProductDetailPage() {
     }
 
     const qty = Math.min(quantity, available);
-    addItem(product, qty);
-
-    /* Sent only when this differs from what the order already says — the
-       charge is per order, so ticking it on a second product must not send a
-       second request saying the same thing. Unticking has to travel too, or
-       a shopper who declines wrapping here is still charged for it. */
-    if (wantsWrap !== Boolean(giftWrap?.enabled)) {
-      setGiftWrap(wantsWrap, wantsWrap ? (giftWrap?.message || '') : '');
-    }
+    /* The wrap choice goes up with the add, in the same request.
+     *
+     * It used to be a second call fired behind this one. The two raced, and on
+     * a first-ever add the wrap call reached the server before the cart
+     * existed and came back an error — which the bag rolled back, so the tick
+     * silently undid itself and checkout never heard about it. */
+    addItem(product, qty, wantsWrap);
 
     showToast(t('added_to_cart'), 'success');
-  }, [addItem, product, quantity, t, lang, wantsWrap, giftWrap, setGiftWrap]);
+  }, [addItem, product, quantity, t, lang, wantsWrap]);
 
   const handleWishlist = useCallback(() => {
     const added = toggle(product);
@@ -243,12 +246,17 @@ export default function ProductDetailPage() {
                 type="checkbox"
                 checked={wantsWrap}
                 disabled={soldOut}
-                onChange={e => setWantsWrap(e.target.checked)}
+                onChange={e => {
+                  setWantsWrap(e.target.checked);
+                  // Already in the bag: the tick applies now rather than
+                  // waiting for an Add to Bag that may never come.
+                  if (inBag) setItemGiftWrap(product._id, e.target.checked);
+                }}
               />
               <span className="pdp-giftwrap-text">
                 <span className="pdp-giftwrap-title">
                   {t('gift_wrap_add')}
-                  <span className="pdp-giftwrap-price">+{format(giftWrap?.fee || 3)}</span>
+                  <span className="pdp-giftwrap-price">+{format(giftWrapUnitFee)}</span>
                 </span>
                 <span className="pdp-giftwrap-note">{t('gift_wrap_note')}</span>
               </span>

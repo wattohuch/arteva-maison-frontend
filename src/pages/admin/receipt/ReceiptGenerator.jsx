@@ -13,6 +13,7 @@ import {
 } from '../../../utils/receiptCanvas';
 import { printHtmlDocument, buildImagePrintDocument } from '../../../utils/printDocument';
 import { resolveImageUrl, getProductImage } from '../../../utils/imageHelpers';
+import { PricingAPI } from '../../../api/pricing';
 import ProductPicker from './ProductPicker';
 import {
   useReceiptDraft, emptyDraft, draftFromOrder, generateOrderNumber,
@@ -55,6 +56,18 @@ export default function ReceiptGenerator() {
   const [saving, setSaving] = useState(false);
   const [mobileTab, setMobileTab] = useState('edit');
   const [started, setStarted] = useState(false);
+
+  /* What wrapping costs today, quoted by the server so a cashier's receipt
+     charges what the storefront charges. A receipt loaded from an existing
+     order keeps the price it was written at instead — see wrappedUnitFee. */
+  useEffect(() => {
+    PricingAPI.get()
+      .then(res => {
+        const fee = Number(res?.data?.giftWrapFee);
+        if (Number.isFinite(fee)) actions.setGiftWrap({ unitFee: fee });
+      })
+      .catch(() => {});
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   const canvasRef = useRef(null);
   // Guards against overlapping renders: the QR step is async, so a fast typist
@@ -752,6 +765,19 @@ const LineRow = memo(function LineRow({ line, isExisting, onUpdate, onRemove, on
               Original: {line.oldName} ({kwd(line.oldPrice || 0)})
             </div>
           )}
+          {/* Wrapping is per line, matching what a customer chooses online.
+              A refunded line is not charged for its wrapping, so there is
+              nothing to tick on one. */}
+          {!line.isRefunded && (
+            <label className="rg-line-giftwrap">
+              <input
+                type="checkbox"
+                checked={Boolean(line.giftWrap)}
+                onChange={e => onUpdate(line.key, { giftWrap: e.target.checked })}
+              />
+              <span>Gift wrap this item</span>
+            </label>
+          )}
         </div>
       </div>
 
@@ -870,15 +896,13 @@ const PricingFields = memo(function PricingFields({
         </label>
         <label className="rg-field rg-field--check">
           <span>Gift wrapping</span>
-          <label className="rg-check">
-            <input
-              type="checkbox"
-              checked={Boolean(draft.giftWrap?.enabled)}
-              onChange={e => actions.setGiftWrap({ enabled: e.target.checked })}
-            />
-            {/* Priced by the server, so the figure is shown, not typed. */}
-            <span>Add {kwd(draft.giftWrap?.fee || 3)} — charged once per order</span>
-          </label>
+          {/* Ticked line by line above. Priced by the server, so the figure is
+              shown here, never typed. */}
+          <span className="rg-hint">
+            {totals.giftWrapCount > 0
+              ? `${totals.giftWrapCount} item(s) — ${kwd(totals.giftWrap)}`
+              : 'Tick an item above to wrap it'}
+          </span>
         </label>
       </div>
 
@@ -916,7 +940,7 @@ const PricingFields = memo(function PricingFields({
         />
       </label>
 
-      {draft.giftWrap?.enabled && (
+      {totals.giftWrapCount > 0 && (
         <label className="rg-field">
           <span>Gift message</span>
           <textarea

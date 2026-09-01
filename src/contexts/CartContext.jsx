@@ -1,7 +1,8 @@
 import {
-  createContext, useContext, useState, useCallback, useEffect, useMemo,
+  createContext, useContext, useState, useCallback, useEffect, useMemo, useRef,
 } from 'react';
 import { CartAPI } from '../api/cart';
+import { PricingAPI } from '../api/pricing';
 import { ProductsAPI } from '../api/products';
 import { trackAddToCart } from '../utils/metaPixel';
 import { showToast } from '../components/ui/Toast';
@@ -29,11 +30,41 @@ export function CartProvider({ children }) {
     localStorage.setItem('arteva_cart', JSON.stringify(newItems));
   }, []);
 
+  /* The login sync runs on isLoggedIn/uid alone — re-running it whenever the
+   * bag changed would re-fetch the cart on every add. It still needs to see
+   * the current bag to push a guest's up, so it reads these rather than
+   * closing over stale state. */
+  const itemsRef = useRef(items);
+  const giftMessageRef = useRef('');
+
   // Derived once per basket change rather than on every provider render.
-  /* Gift wrapping is per-order, so it lives here rather than on any one
-   * screen. `fee` is whatever the server last quoted — never computed here,
-   * because a price the browser decides is a price a customer can edit. */
-  const [giftWrap, setGiftWrapState] = useState({ enabled: false, message: '', fee: 0 });
+  /* Gift wrapping is chosen line by line, so the flag lives on each item and
+   * only what applies to the whole parcel is held here: the one card message,
+   * and the per-item price the server last quoted.
+   *
+   * `unitFee` is never computed here — a price the browser decides is a price
+   * a customer can edit. It is quoted with the cart and only ever displayed;
+   * the server charges from its own copy of the bag. */
+  const [giftMessage, setGiftMessage] = useState('');
+  /* Quoted by the server, for display only — a price the browser decides is a
+   * price a customer can edit. Held in this single place; it used to be
+   * written as `|| 3` on the product page, at checkout and on the admin
+   * receipt, three copies to fall out of step the moment the real fee changed.
+   *
+   * 3 is the standing price and stands in only for the moment before the
+   * quote lands, so the row is never blank. */
+  const [unitFee, setUnitFee] = useState(3);
+
+  /* Asked for once, on mount, because a signed-out shopper sees the wrapping
+   * price on a product page without ever fetching a cart. */
+  useEffect(() => {
+    PricingAPI.get()
+      .then(res => {
+        const fee = Number(res?.data?.giftWrapFee);
+        if (Number.isFinite(fee)) setUnitFee(fee);
+      })
+      .catch(() => {});
+  }, []);
 
   const { count, subtotal } = useMemo(() => items.reduce(
     (acc, item) => {
@@ -45,7 +76,7 @@ export function CartProvider({ children }) {
     { count: 0, subtotal: 0 }
   ), [items]);
 
-  const addItem = useCallback((product, quantity = 1) => {
+  const addItem = useCallback((product, quantity = 1, giftWrap = false) => {
     const id = product._id || product.id;
 
     /* Cap the basket at what is on the shelf.
@@ -86,13 +117,21 @@ export function CartProvider({ children }) {
 
       // Fire-and-forget: so the admin cart view (and any other device the same
       // account is logged into) sees this without waiting on checkout.
-      if (isLoggedIn) CartAPI.add(id, added).catch(() => {});
+      if (isLoggedIn) CartAPI.add(id, added, giftWrap).catch(() => {});
 
       let next;
       if (existing) {
         next = prev.map(i =>
           (i._id || i.id) === id
-            ? { ...i, quantity: inCart + added, stock: available ?? i.stock }
+            ? {
+              ...i,
+              quantity: inCart + added,
+              stock: available ?? i.stock,
+              /* Adding a second one of something already in the bag can turn
+                 wrapping on for that line, but must not turn it off — the
+                 product page passes false simply by not asking. */
+              giftWrap: giftWrap ? true : Boolean(i.giftWrap),
+            }
             : i
         );
       } else {
@@ -110,6 +149,8 @@ export function CartProvider({ children }) {
           // Carried onto the line so the cart page's stepper can cap itself
           // without re-fetching every product.
           stock: available ?? undefined,
+          // Wrapping is a property of the line, not of the order.
+          giftWrap: Boolean(giftWrap),
         }];
       }
 
@@ -162,39 +203,77 @@ export function CartProvider({ children }) {
   }, [isLoggedIn]);
 
   /**
-   * Turn wrapping on or off, and keep the note with it.
+   * Wrap this line, or stop wrapping it.
    *
    * Applied locally first so the tick responds immediately, then confirmed by
    * the server, which is what actually decides the fee. A failure puts the
-   * toggle back rather than leaving the customer believing their order will
-   * be wrapped when the server never heard about it.
+   * tick back where it was rather than leaving the customer believing an item
+   * will be wrapped when the server never heard about it — and says so, which
+   * is what was missing when the box appeared to untick itself for no reason.
    */
-  const setGiftWrap = useCallback(async (enabled, message = '') => {
-    const previous = giftWrap;
-    setGiftWrapState(g => ({ ...g, enabled, message }));
+  const setItemGiftWrap = useCallback(async (id, enabled) => {
+    /* Read before the optimistic write, not inside the updater: an updater is
+       run by React when it chooses, so a value assigned from inside one is not
+       reliably there by the time the request comes back and needs to undo it. */
+    const line = itemsRef.current.find(i => (i._id || i.id) === id);
+    const previous = line ? Boolean(line.giftWrap) : null;
 
-    if (!isLoggedIn) return { success: false };
+    setItems(prev => {
+      const next = prev.map(i => (
+        (i._id || i.id) === id ? { ...i, giftWrap: Boolean(enabled) } : i
+      ));
+      localStorage.setItem('arteva_cart', JSON.stringify(next));
+      return next;
+    });
+
+    // A guest's bag lives in localStorage and has no server copy to update.
+    // The choice is carried up by the sync that runs when they sign in.
+    if (!isLoggedIn) return { success: true };
 
     try {
-      const res = await CartAPI.setGiftWrap(enabled, message);
+      const res = await CartAPI.setItemGiftWrap(id, enabled);
       if (!res.success) throw new Error(res.message || 'Could not save gift wrapping');
-      setGiftWrapState({
-        enabled: Boolean(res.data?.giftWrap?.enabled),
-        message: res.data?.giftWrap?.message || '',
-        fee: Number(res.data?.fee) || 0,
-      });
+      const quoted = Number(res.data?.unitFee);
+      if (Number.isFinite(quoted)) setUnitFee(quoted);
       return res;
     } catch (err) {
-      setGiftWrapState(previous);
+      if (previous !== null) {
+        setItems(prev => {
+          const next = prev.map(i => (
+            (i._id || i.id) === id ? { ...i, giftWrap: previous } : i
+          ));
+          localStorage.setItem('arteva_cart', JSON.stringify(next));
+          return next;
+        });
+      }
+      showToast(t('gift_wrap_failed'), 'error');
       return { success: false, message: err.message };
     }
-  }, [isLoggedIn, giftWrap]);
+  }, [isLoggedIn, t]);
+
+  /** The one card message that goes with the parcel, whatever is wrapped. */
+  const setGiftWrapMessage = useCallback(async (message = '') => {
+    const previous = giftMessage;
+    setGiftMessage(message);
+
+    if (!isLoggedIn) return { success: true };
+
+    try {
+      const res = await CartAPI.setGiftMessage(message);
+      if (!res.success) throw new Error(res.message || 'Could not save the message');
+      return res;
+    } catch (err) {
+      setGiftMessage(previous);
+      return { success: false, message: err.message };
+    }
+  }, [isLoggedIn, giftMessage]);
 
   const clearCart = useCallback(() => {
     if (isLoggedIn) CartAPI.clear().catch(() => {});
     // The server drops the wrapping request with the bag; mirror that here so
-    // the tick does not survive into the next order.
-    setGiftWrapState({ enabled: false, message: '', fee: 0 });
+    // a card message does not survive into the next order. The per-line ticks
+    // go with the lines.
+    setGiftMessage('');
     persist([]);
   }, [persist, isLoggedIn]);
 
@@ -307,6 +386,32 @@ export function CartProvider({ children }) {
     return adjustments;
   }, [items, isLoggedIn]);
 
+  /* What the whole parcel costs, derived from the lines rather than stored.
+   *
+   * One place decides whether this bag is being wrapped at all, so a screen
+   * showing the totals and a screen showing the ticks cannot disagree. The
+   * count is of wrapped lines, not units: two of the same candle ticked is
+   * one gift and one fee, which is what the server charges.
+   *
+   * `fee` is a quote for display. The server prices the order from its own
+   * copy of the bag and never trusts this number. */
+  const giftWrap = useMemo(() => {
+    const wrapped = items.filter(i => i.giftWrap);
+    return {
+      enabled: wrapped.length > 0,
+      count: wrapped.length,
+      /* A card message with nothing left to wrap is dead weight, and would
+         reappear if the customer wrapped something else having forgotten it
+         was there. The server drops it on the same condition. */
+      message: wrapped.length > 0 ? giftMessage : '',
+      unitFee,
+      fee: parseFloat((wrapped.length * unitFee).toFixed(3)),
+    };
+  }, [items, giftMessage, unitFee]);
+
+  useEffect(() => { itemsRef.current = items; }, [items]);
+  useEffect(() => { giftMessageRef.current = giftMessage; }, [giftMessage]);
+
   const uid = user?._id || user?.id || null;
 
   // Sync with server when logged in.
@@ -319,13 +424,8 @@ export function CartProvider({ children }) {
 
       /* Restored on load, which is what carries the choice back across a
        * payment redirect and across devices. */
-      if (res.data?.giftWrap) {
-        setGiftWrapState({
-          enabled: Boolean(res.data.giftWrap.enabled),
-          message: res.data.giftWrap.message || '',
-          fee: Number(res.data.giftWrapFee) || 0,
-        });
-      }
+      if (res.data?.giftWrap) setGiftMessage(res.data.giftWrap.message || '');
+      if (res.data?.giftWrapFee !== undefined) setUnitFee(Number(res.data.giftWrapFee) || 0);
 
       if (serverItems.length) {
         const normalized = serverItems.map(item => {
@@ -351,6 +451,8 @@ export function CartProvider({ children }) {
             image,
             quantity,
             stock,
+            // Which lines are gifts, restored with the lines themselves.
+            giftWrap: item.giftWrap === true,
           };
         });
         persist(normalized);
@@ -364,6 +466,19 @@ export function CartProvider({ children }) {
         const lastOwner = localStorage.getItem(CART_OWNER_KEY);
         if (lastOwner && uid && lastOwner !== uid) {
           persist([]);
+        } else if (itemsRef.current.length) {
+          /* The local bag survived, so it is now this account's bag. Push it
+           * up whole — including which lines are gifts, which the server has
+           * never been told about because the choice was made while signed
+           * out. Without this the ticks a guest made are lost at sign-in. */
+          CartAPI.replace(
+            itemsRef.current.map(i => ({
+              productId: i._id || i.id,
+              quantity: i.quantity,
+              giftWrap: Boolean(i.giftWrap),
+            })),
+            giftMessageRef.current
+          ).catch(() => {});
         }
       }
 
@@ -375,9 +490,14 @@ export function CartProvider({ children }) {
   // on every provider render — the header badge, each product card and the
   // drawer would all re-render whenever anything above them changed.
   const value = useMemo(() => ({
-    items, count, subtotal, giftWrap,
-    addItem, updateQuantity, removeItem, clearCart, refreshStock, setGiftWrap,
-  }), [items, count, subtotal, giftWrap, addItem, updateQuantity, removeItem, clearCart, refreshStock, setGiftWrap]);
+    items, count, subtotal, giftWrap, giftWrapUnitFee: unitFee,
+    addItem, updateQuantity, removeItem, clearCart, refreshStock,
+    setItemGiftWrap, setGiftWrapMessage,
+  }), [
+    items, count, subtotal, giftWrap, unitFee,
+    addItem, updateQuantity, removeItem, clearCart, refreshStock,
+    setItemGiftWrap, setGiftWrapMessage,
+  ]);
 
   return (
     <CartContext.Provider value={value}>

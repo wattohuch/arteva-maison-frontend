@@ -192,3 +192,24 @@
   letter-spacing: 0.03em;
   color: #b45309;
 }
+
+/* ── Gift wrapping, chosen line by line ──────────────────────────────────
+   Charged once for the line however many units it holds, so the label says
+   "this" rather than naming a quantity. */
+.cart-line-giftwrap {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  margin-top: var(--space-2);
+  cursor: pointer;
+  font-size: 0.82rem;
+  color: var(--color-text-muted, #6b6b6b);
+}
+.cart-line-giftwrap input {
+  flex: none;
+  width: 0.95rem;
+  height: 0.95rem;
+  accent-color: var(--color-gold);
+  cursor: pointer;
+}
+.cart-line-giftwrap:hover { color: var(--color-text, #1a1a1a); }

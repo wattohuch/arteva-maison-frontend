@@ -573,3 +573,22 @@
   accent-color: #0f6b4f;
   cursor: pointer;
 }
+
+/* Gift wrapping, ticked on the line it applies to — the same choice the
+   customer makes online. */
+.rg-line-giftwrap {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 4px;
+  cursor: pointer;
+  font-size: 0.78rem;
+  color: #64748b;
+}
+.rg-line-giftwrap input {
+  width: 0.9rem;
+  height: 0.9rem;
+  accent-color: #D4AF37;
+  cursor: pointer;
+}
+.rg-line-giftwrap:hover { color: #0f172a; }
