@@ -85,6 +85,11 @@ export default function ProductDetailPage() {
     if (product?._id) trackViewContent(product);
   }, [product?._id]); // eslint-disable-line react-hooks/exhaustive-deps
 
+  /* Seeded from the order so a shopper who already asked for wrapping sees it
+     ticked here rather than being asked twice. */
+  const [wantsWrap, setWantsWrap] = useState(Boolean(giftWrap?.enabled));
+  useEffect(() => { setWantsWrap(Boolean(giftWrap?.enabled)); }, [giftWrap?.enabled]);
+
   const handleAddToCart = useCallback(() => {
     const available = stockLevel(product);
 
@@ -106,11 +111,6 @@ export default function ProductDetailPage() {
 
     showToast(t('added_to_cart'), 'success');
   }, [addItem, product, quantity, t, lang, wantsWrap, giftWrap, setGiftWrap]);
-
-  /* Seeded from the order so a shopper who already asked for wrapping sees it
-     ticked here rather than being asked twice. */
-  const [wantsWrap, setWantsWrap] = useState(Boolean(giftWrap?.enabled));
-  useEffect(() => { setWantsWrap(Boolean(giftWrap?.enabled)); }, [giftWrap?.enabled]);
 
   const handleWishlist = useCallback(() => {
     const added = toggle(product);
