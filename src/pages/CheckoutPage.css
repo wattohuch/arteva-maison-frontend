@@ -203,7 +203,9 @@
   display: flex;
   flex-direction: column;
   margin-bottom: var(--space-4);
-  max-height: 320px;
+  /* Raised with the wrap row: at 320px the list showed two and a half items
+     and looked truncated rather than scrollable. */
+  max-height: 400px;
   overflow-y: auto;
   overscroll-behavior: contain;
 }
@@ -258,9 +260,15 @@
   align-items: center;
   justify-content: space-between;
   gap: var(--space-3);
+  /* The name and price share the first line; the wrap tick takes the second.
+     Without this the tick is a third competitor for one line and the name is
+     the thing that gives way. */
+  flex-wrap: wrap;
+  row-gap: 2px;
 }
 
 .checkout-item-name {
+  flex: 1 1 auto;
   font-size: var(--fs-sm);
   color: var(--text-primary);
   min-width: 0;
@@ -419,19 +427,41 @@
    The tick sits under the item it applies to. A single tick beside one
    product in a bag of five never said which of them was the gift. */
 .checkout-item-giftwrap {
+  /* Its own line, full width of the info column. */
+  flex: 0 0 100%;
   display: flex;
   align-items: center;
   gap: var(--space-2);
-  margin-top: 4px;
+  /* Tall enough to be a comfortable touch target without looking padded. */
+  min-height: 30px;
   cursor: pointer;
-  font-size: 0.78rem;
-  color: var(--color-text-muted, #6b6b6b);
+  font-size: var(--fs-xs);
+  line-height: 1.3;
+  color: var(--text-muted);
+  transition: color 120ms ease;
+  -webkit-tap-highlight-color: transparent;
 }
 .checkout-item-giftwrap input {
   flex: none;
-  width: 0.9rem;
-  height: 0.9rem;
+  width: 0.95rem;
+  height: 0.95rem;
+  margin: 0;
   accent-color: var(--color-gold);
   cursor: pointer;
 }
-.checkout-item-giftwrap:hover { color: var(--color-text, #1a1a1a); }
+.checkout-item-giftwrap:hover { color: var(--text-primary); }
+.checkout-item-giftwrap input:focus-visible {
+  outline: 2px solid var(--color-gold);
+  outline-offset: 2px;
+}
+
+/* Ticked reads as chosen — otherwise the only difference between a wrapped
+   item and an unwrapped one is a 15px box. */
+.checkout-item-giftwrap:has(input:checked) {
+  color: var(--color-gold-text);
+  font-weight: var(--fw-medium);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .checkout-item-giftwrap { transition: none; }
+}
