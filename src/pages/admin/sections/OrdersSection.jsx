@@ -484,6 +484,9 @@ const OrderDetail = memo(function OrderDetail({ order }) {
               <strong>{item.name}</strong>
               <small>{kwd(item.price)} × {item.quantity}</small>
               {item.isRefunded && <span className="ord-item-refunded">Refunded</span>}
+              {/* Which items to wrap, on the line, so whoever is packing this
+                  order can tell without opening the printed receipt. */}
+              {item.giftWrap && <span className="ord-item-giftwrap">✦ Gift wrapped</span>}
             </div>
             <span className="ord-item-total">{kwd(item.price * item.quantity)}</span>
           </li>
@@ -493,6 +496,12 @@ const OrderDetail = memo(function OrderDetail({ order }) {
       <dl className="ord-summary">
         <div><dt>Subtotal</dt><dd>{kwd(order.subtotal)}</dd></div>
         <div><dt>Shipping</dt><dd>{kwd(order.shippingCost)}</dd></div>
+        {/* Without this the panel did not add up: subtotal plus shipping less
+            discount fell short of the total by the wrapping fee, and nothing
+            on screen said why. */}
+        {order.giftWrap?.fee > 0 && (
+          <div><dt>Gift wrapping</dt><dd>{kwd(order.giftWrap.fee)}</dd></div>
+        )}
         {order.discount > 0 && (
           <div className="is-discount"><dt>Discount</dt><dd>−{kwd(order.discount)}</dd></div>
         )}

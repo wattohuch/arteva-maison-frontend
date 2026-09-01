@@ -216,3 +216,13 @@
 @media (prefers-reduced-motion: reduce) {
   .ord-tab { transition: none; }
 }
+
+/* Gift wrapping, marked on the line it applies to so whoever packs the order
+   can see it without opening the printed receipt. */
+.ord-item-giftwrap {
+  display: inline-block;
+  margin-top: 2px;
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: #B58C4A;
+}
